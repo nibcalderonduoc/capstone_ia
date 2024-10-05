@@ -1,0 +1,14 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>Subir Factura de Luz</title>
+</head>
+<body>
+    <h1>Subir Factura de Luz</h1>
+    <form method="post" enctype="multipart/form-data">
+        {% csrf_token %}
+        <input type="file" name="pdf_file" required>
+        <button type="submit">Subir y Procesar</button>
+    </form>
+</body>
+</html>
