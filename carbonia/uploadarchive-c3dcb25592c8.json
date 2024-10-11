@@ -1,0 +1,13 @@
+{
+  "type": "service_account",
+  "project_id": "uploadarchive",
+  "private_key_id": "c3dcb25592c845bb5a1a756a402cb852d3dc68d4",
+  "private_key": "-----BEGIN PRIVATE KEY-----\nMIIEvQIBADANBgkqhkiG9w0BAQEFAASCBKcwggSjAgEAAoIBAQDGRXuKi1njJEOI\nhEUWreNniNBs/T49U9AKDDf/JJ3XN3VMYtF5ajz6zesI+LECihANO87mbfwQaUnt\nYWRTWH4xuYyK0jXMErSEBroN2J3j6lvPROMGBGtkUO7laJdqkie7WU3ejWHUkEJh\nD1XlONMFGNwTnVZweeEXbdEHqEOf9Hmq9OvQiQEWrv/wZ7EFyqLgiazr1yl5dhPF\ncGyCybny+71XKOf4L0jwZDykxxW4dp27Xt8TNBubJscQm0ybbjhxAavNxe2bAAEi\n/9ftNx4muVnLOupSSOFh0ZsR3h0SrxSj9wPJyGJ0Sncjh39+R/Q06jmpTDXe/R4r\noFGrX8Z7AgMBAAECggEAD8MSUS9G1BHb9IxfWbA1NdPgjemL+yAgl8vk37mvep6E\nCrCIapiRhHa+SpZKrCMBp6urhRIVSdC0+dQWP7H3Rkiz7Y1MjY6nHx/RxqwD0Uye\nQ9n8GkxbpTvx4fbwop4/3lr5H8opjtZxEHpBn9lmnS8ev8hwSLzHsi8ewPcVeS+4\nYpjVMNM+LD523YjgnNyC3V1mmyt06UGoD9Nr3CmCCRRsn8zjUVnY8Uqps1KSFy3X\nVVV8Aw4oJgmtuQbZoQChbgRTOsyJLJ8ox0TyAZjdlDvU/5emw+z7QkePUeHKWBU2\nlW4sM+vyYkjeluA7KZWP8T2F0C/C7AEAjuUCewc38QKBgQDu1uzzn9IoRkz4I/Bo\nfQeos23Nr/nxbY86Md04mo6C0FwI2JdbCIS2jHQHozv1LZZb87J6+BkCxM8BOM6Z\nhYLPRGtsAYKQZHtyOQfa+o5L5NT+8Js+Di/dZFkDVrw7GLkjEI/4tY1RjE4RL1e5\nen8qriYQjZiq62dtsOJ2VhBMLwKBgQDUhF7aVQ3E489BScauKS97zcV96n3K1KUK\ncX/071aGgrY5WQ1q0unYTfHUNVHc8XnU7zyv8h4uvhP5/bRk3i+wY9QAW1wIJnul\nGjvuFQMTdNN9YD4SGN7Hr+TPepxq4FVVY5rZ1v/kFSE1H/nR6jKmZ1hm75kNkTe2\nk9KGU1wbdQKBgQCPpUQt4lmLT3zLYRIeRdRtaj0IEGbLBZG29naOrKY5lwdDasDd\nR2pKQH8oeMx+0UQ1WYRm4QBp4eR+X6QiQWJDNmtFMkNMhKKaOCK5WShsDNzt19gG\nopG3HbtLfscG4/+1TyjH9Klh+niZbVfdfgctrD/IhODlK1+xYUlS0sBKkQKBgCMp\n8/f0ct7NQxHufy16Kx01IyR+lGnnXZeoyB9jKtH+9t/uWEYAuCjOXOFcITuJyTru\niwAh89SQJwYKcLrv+LwbCI02kLfYhkT/XkM6vtONVSE9t4ePDe3EsPuTsiYNEJGc\ndZbt+FFpHaGItPGC6vaVyw7dPln8WVeghgkr6eWxAoGASGG9CPniA232Cd021I3Q\nb8RcRkzfHdpwr3Ie3hIn/I82bu9G3DjtnndnK9tstAOrhLArKp/DGs6veTjOcYz7\nUop6/t5GvgI/qlfFAp5XwXlqpkueYOPvIgqcg1xJ2fEoAJSOcGmFLFrIqJ/QFbr7\ny+k0FBtKbT0WABjtiyNJ3DA=\n-----END PRIVATE KEY-----\n",
+  "client_email": "cuentaservicecarbonia@uploadarchive.iam.gserviceaccount.com",
+  "client_id": "101309099587019916637",
+  "auth_uri": "https://accounts.google.com/o/oauth2/auth",
+  "token_uri": "https://oauth2.googleapis.com/token",
+  "auth_provider_x509_cert_url": "https://www.googleapis.com/oauth2/v1/certs",
+  "client_x509_cert_url": "https://www.googleapis.com/robot/v1/metadata/x509/cuentaservicecarbonia%40uploadarchive.iam.gserviceaccount.com",
+  "universe_domain": "googleapis.com"
+}

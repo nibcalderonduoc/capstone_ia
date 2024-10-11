@@ -11,11 +11,10 @@ https://docs.djangoproject.com/en/5.1/ref/settings/
 """
 
 from pathlib import Path
+import os
 
 # Build paths inside the project like this: BASE_DIR / 'subdir'.
 BASE_DIR = Path(__file__).resolve().parent.parent
-
-
 
 # Quick-start development settings - unsuitable for production
 # See https://docs.djangoproject.com/en/5.1/howto/deployment/checklist/
@@ -27,7 +26,6 @@ SECRET_KEY = 'django-insecure-unu2+zn%c7!baogvb2wcpo%h-m(tgjl+$u@or-+@5zom+7opgv
 DEBUG = True
 
 ALLOWED_HOSTS = []
-
 
 # Application definition
 
@@ -119,13 +117,32 @@ USE_TZ = True
 
 STATIC_URL = 'static/'
 
-import os
-
-# URL que usará Django para manejar los archivos subidos por los usuarios
+# Ruta para manejar archivos subidos por los usuarios
 MEDIA_URL = '/media/'
-
-# Ruta en el servidor donde se guardarán los archivos subidos
 MEDIA_ROOT = os.path.join(BASE_DIR, 'media')
+
+# Configuración para Google Cloud Storage
+
+# URL que usará Django para manejar los archivos subidos a Google Cloud Storage
+#GS_MEDIA_URL = 'https://storage.googleapis.com/{tu_bucket_name}/'
+GS_MEDIA_URL = 'https://storage.googleapis.com/upload_archive/'
+
+# Ruta de tus credenciales de Google Cloud (ajusta la ruta según donde guardes tu archivo de credenciales)
+#os.environ["GOOGLE_APPLICATION_CREDENTIALS"] = os.path.join(BASE_DIR, 'carbonia-30d3f9c126a8.json')
+os.environ["GOOGLE_APPLICATION_CREDENTIALS"] = os.path.join(BASE_DIR, 'proyectocarbonia-1e008ac0c29a.json')
+#os.environ["GOOGLE_APPLICATION_CREDENTIALS"] = os.path.join(BASE_DIR, 'uploadarchive-c3dcb25592c8.json')
+
+
+
+
+
+
+
+# Google Cloud Storage
+DEFAULT_FILE_STORAGE = 'storages.backends.gcloud.GoogleCloudStorage'
+GS_BUCKET_NAME = 'upload_archive'
+
+
 
 
 # Default primary key field type

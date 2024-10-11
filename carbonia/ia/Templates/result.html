@@ -1,13 +1,13 @@
 <!DOCTYPE html>
-<html>
+<html lang="es">
 <head>
-    <title>Resultados del Análisis</title>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Archivo Subido</title>
 </head>
 <body>
-    <h1>Resultados del Análisis</h1>
-    <p><strong>URL del archivo subido:</strong> <a href="{{ file_url }}">{{ file_url }}</a></p>
-    <h2>Información extraída del archivo:</h2>
-    <pre>{{ extracted_info }}</pre>
-    <a href="{% url 'index' %}">Subir otra factura</a>
+    <h1>Archivo Subido Exitosamente</h1>
+    <p>El archivo se ha subido correctamente. Puedes verlo en el siguiente enlace:</p>
+    <a href="{{ file_url }}" target="_blank">Ver archivo subido</a>
 </body>
 </html>

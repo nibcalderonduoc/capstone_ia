@@ -1,0 +1,13 @@
+{
+  "type": "service_account",
+  "project_id": "carbonia",
+  "private_key_id": "30d3f9c126a8cc0906f59b2b5977ea5b41a6739a",
+  "private_key": "-----BEGIN PRIVATE KEY-----\nMIIEvQIBADANBgkqhkiG9w0BAQEFAASCBKcwggSjAgEAAoIBAQDEbKzpRVTb7pco\n+9wa158fKgsklZDaJW4KokR7Ba78bWVZ0gumhGBImQQ2K9J1bP7ZYrQGnBcuKQCy\nQYoESzGRyB8QDgh5KF9BgMrUAyb9Eb45G5ALcjF+qslxgpE9LIuNBu/wDx3OURVt\n6jugkLohUAwwMYzudXAO5WGItrXQvwFgdh0j/4xtN+DkO4Nm+vZZfhD557K3m0eJ\nYBarGJD4biNYAkpyvMEdD340zPFc+EXMQ+dFgpSxdwVLxP1uso2yD18J2Rus74dY\no6pkLuYe9TRkB2dI2FkC6z8jdtJ+85eO6gp7dI3D3ithY89Jks/VQQw6goFCG6J8\nPyVfKtfNAgMBAAECggEAA2nsG2XEEspzwBeYfLLwpgcCCJG84b2yyuaFECpKH0L7\ndvMqlqtITRqzswlR8A6D411Oyaqe0IOP6okvD+IKq4Dx4UKNLSXhee72F3cyj0Vm\nq/FpsHk8mPn45EsjoQ+MIVhUhTSODQ7ls3JVtPWu9nNAsvm5fE94MhoUdt7ODCGt\n30ve2n9ML9A1HJ1BdSyuo7CIM5LXM/+gSIYU+r15/Z0uRC5cy5GDwdULdH/+9O6q\nHL3AVII59LVP6hmb79vr1+ruPsilYLzssh+jVIbH6n59NM1b4ZiXdDMHBgTO5C3b\nMp8OHSsdLhXmCr9zFp2H4YR07kzLTjK8iOWv8EmzIQKBgQDzc03sNECNyoWIb5hP\nDRgCvpfQ2U9SOJPC7rk9nSQ8XISgLORbpmAJdzUdYLwC8MPqkgpUQdPC1f6yUkP2\nriaHwKMCHNVnFmqikBBdxJo2D1+mFJynG4Ywv8gImHm0k0dzo11ovDPxrOW0Y77C\nxQAioMOVdQCXlopZ5ONwXpoq+QKBgQDOjMsbgHTlNn/KrEuIUGpMTRgr4BR+bNzA\nIaZJBjXLtfIUgYH0qFTHFAd9eZyg5ajFcnH4/xAJKaAw8YUQT8ACYhP/Cnt3JH+g\ncjFtZrEh85+DO0lVM7uOzJTkC9AvdGHiof8X63qE5Q52ZV9pGpKQpl3lodUpgNqd\naFVzYNfUdQKBgQCGjsGP/2V6uWhK+9tEPil6QtvofGQCPvE0ufu62WMQ1dYcLhPd\nsDy+npvF7BSez3KJ8UQyQ9wGgX7wEtYrvx/ewpOWdFdjThmMVnIlUagmnyKvyg63\nslfeE/I9BgGm1AyXFsFnRTa0qmqf5M2oG3iyqwbPUccNAhDgFMm87xzpCQKBgC1w\nyBZK0mzC6qZZ9VwN5PTYWSL970RJCt+yB3U1SoyAgLuGKmL6zXvmqicupAi5vcGC\nhhRzeMGrSLS7zbxi7ykXDrMjSTpS60kPFlStLPb9M/CZEG8QLIkj9PWeq7Rk9Ev5\nu7c1dQTbp6zgbHchA3GTSEEGs3CoCnBqzbHOcm0pAoGAWrcnDJ3ZsYPXwO7uiXAe\n2ULAWklnPjE6y2oFESA8lDmhP+lKxQTPtyG9N0lJem4cuU/9+rNSyNYEJ/XJcIcH\nzie/Lb3A/XbpBVYX10HNa+grlfltKMNcmy0FMzPGCBBaiWuRAeaqG750n7oOLsqA\n+d8BmHLmdb4rXAi2rXaHAT0=\n-----END PRIVATE KEY-----\n",
+  "client_email": "carbonia@appspot.gserviceaccount.com",
+  "client_id": "104735970822943079583",
+  "auth_uri": "https://accounts.google.com/o/oauth2/auth",
+  "token_uri": "https://oauth2.googleapis.com/token",
+  "auth_provider_x509_cert_url": "https://www.googleapis.com/oauth2/v1/certs",
+  "client_x509_cert_url": "https://www.googleapis.com/robot/v1/metadata/x509/carbonia%40appspot.gserviceaccount.com",
+  "universe_domain": "googleapis.com"
+}
