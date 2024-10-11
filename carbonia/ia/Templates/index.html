@@ -2,13 +2,16 @@
 <html>
 <head>
     <title>Subir Factura de Luz</title>
+    <link rel="stylesheet" href="nibcalderonduoc/capstone_ia/carbonia/ia/Templates/css/style.css">
 </head>
 <body>
-    <h1>Subir Factura de Luz</h1>
-    <form method="post" enctype="multipart/form-data">
-        {% csrf_token %}
-        <input type="file" name="pdf_file" required>
-        <button type="submit">Subir y Procesar</button>
-    </form>
+    <div class="file-upload">
+        <h1>Subir Factura de Luz</h1>
+        <form method="post" enctype="multipart/form-data">
+            {% csrf_token %}
+            <input type="file" name="pdf_file" required>
+            <button class="file-upload-btn" type="submit">Subir y Procesar</button>
+        </form>
+    </div>
 </body>
 </html>
