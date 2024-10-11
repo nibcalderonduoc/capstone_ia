@@ -2,12 +2,16 @@
 <html>
 <head>
     <title>Resultados del Análisis</title>
+    <link rel="stylesheet" href="nibcalderonduoc/capstone_ia/carbonia/ia/Templates/css/style.css">
 </head>
 <body>
-    <h1>Resultados del Análisis</h1>
-    <p><strong>URL del archivo subido:</strong> <a href="{{ file_url }}">{{ file_url }}</a></p>
-    <h2>Información extraída del archivo:</h2>
-    <pre>{{ extracted_info }}</pre>
-    <a href="{% url 'index' %}">Subir otra factura</a>
+    <div class="file-upload">
+        <h1>Resultados del Análisis</h1>
+        <p><strong>URL del archivo subido:</strong> <a href="{{ file_url }}">{{ file_url }}</a></p>
+        <h2>Información extraída del archivo:</h2>
+        <pre>{{ extracted_info }}</pre>
+        <a class="file-upload-btn" href="{% url 'index' %}">Subir otra factura</a>
+    </div>
+    
 </body>
 </html>
