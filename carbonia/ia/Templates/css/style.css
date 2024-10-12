@@ -2,9 +2,35 @@ body {
     font-family: sans-serif;
     background-color: #eeeeee;
   }
+
+  .logo {
+    display: flex;
+    flex-direction: row;
+    justify-content: flex-start;
+    align-items: flex-start;
+    gap: 24px;
+    width: 315px;
+    height: 104px;
+    padding: 32px;
+    box-sizing: border-box;
+  }
+
+  .icon {
+    width: 40px;
+    height: 100%;
+  }
+
+  .carbonia {
+    color: rgba(59, 203, 190, 1);
+    font-size: 28px;
+    line-height: 114%;
+    font-family: Poppins, sans-serif;
+    font-weight: 600;
+  }
   
   .file-upload {
     background-color: #ffffff;
+    text-align: center;
     width: 600px;
     margin: 0 auto;
     padding: 20px;
@@ -12,7 +38,7 @@ body {
   
   .file-upload-btn {
     width: 100%;
-    margin: 0;
+    margin-top: 20px;
     color: #fff;
     background: #1FB264;
     border: none;
