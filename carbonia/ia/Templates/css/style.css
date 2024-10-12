@@ -8,10 +8,9 @@ body {
     flex-direction: row;
     justify-content: flex-start;
     align-items: flex-start;
-    gap: 24px;
     width: 315px;
     height: 104px;
-    padding: 32px;
+    padding: 16 px;
     box-sizing: border-box;
   }
 
@@ -33,18 +32,87 @@ body {
     text-align: center;
     width: 600px;
     margin: 0 auto;
-    padding: 20px;
+    padding: 30px;
   }
   
+  #viewport {
+    padding-left: 250px;
+    -webkit-transition: all 0.5s ease;
+    -moz-transition: all 0.5s ease;
+    -o-transition: all 0.5s ease;
+    transition: all 0.5s ease;
+  }
+  
+  #content {
+    width: 100%;
+    position: relative;
+    margin-right: 0;
+  }
+  
+  /* Sidebar Styles */
+  
+  #sidebar {
+    z-index: 1000;
+    position: fixed;
+    left: 250px;
+    width: 250px;
+    height: 100%;
+    margin-left: -250px;
+    overflow-y: auto;
+    background: #37474F;
+    -webkit-transition: all 0.5s ease;
+    -moz-transition: all 0.5s ease;
+    -o-transition: all 0.5s ease;
+    transition: all 0.5s ease;
+  }
+  
+  #sidebar header {
+    background-color: #263238;
+    font-size: 20px;
+    line-height: 52px;
+    text-align: center;
+  }
+  
+  #sidebar header a {
+    color: #fff;
+    display: block;
+    text-decoration: none;
+  }
+  
+  #sidebar header a:hover {
+    color: #fff;
+  }
+  
+  #sidebar .nav{
+    
+  }
+  
+  #sidebar .nav a{
+    background: none;
+    border-bottom: 1px solid #455A64;
+    color: #CFD8DC;
+    font-size: 14px;
+    padding: 16px 24px;
+  }
+  
+  #sidebar .nav a:hover{
+    background: none;
+    color: #ECEFF1;
+  }
+  
+  #sidebar .nav a i{
+    margin-right: 16px;
+  }
+
   .file-upload-btn {
     width: 100%;
     margin-top: 20px;
     color: #fff;
-    background: #1FB264;
+    background: rgba(59, 203, 190, 1);
     border: none;
     padding: 10px;
     border-radius: 4px;
-    border-bottom: 4px solid #15824B;
+    border-bottom: 4px solid rgb(42, 154, 145);
     transition: all .2s ease;
     outline: none;
     text-transform: uppercase;
@@ -52,7 +120,7 @@ body {
   }
   
   .file-upload-btn:hover {
-    background: #1AA059;
+    background: rgb(42, 154, 145);
     color: #ffffff;
     transition: all .2s ease;
     cursor: pointer;
@@ -81,13 +149,13 @@ body {
   
   .image-upload-wrap {
     margin-top: 20px;
-    border: 4px dashed #1FB264;
+    border: 4px dashed rgba(59, 203, 190, 1);
     position: relative;
   }
   
   .image-dropping,
   .image-upload-wrap:hover {
-    background-color: #1FB264;
+    background-color: rgba(59, 203, 190, 1);
     border: 4px dashed #ffffff;
   }
   
@@ -103,7 +171,7 @@ body {
   .drag-text h3 {
     font-weight: 100;
     text-transform: uppercase;
-    color: #15824B;
+    color: rgb(42, 154, 145);
     padding: 60px 0;
   }
   
