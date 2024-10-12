@@ -20,7 +20,7 @@ body {
   }
 
   .carbonia {
-    color: rgba(59, 203, 190, 1);
+    color: rgba(59, 203, 190);
     font-size: 28px;
     line-height: 114%;
     font-family: Poppins, sans-serif;
@@ -59,7 +59,8 @@ body {
     height: 100%;
     margin-left: -250px;
     overflow-y: auto;
-    background: #37474F;
+    background: #ffffff;
+    text-decoration: none;
     -webkit-transition: all 0.5s ease;
     -moz-transition: all 0.5s ease;
     -o-transition: all 0.5s ease;
@@ -67,7 +68,7 @@ body {
   }
   
   #sidebar header {
-    background-color: #263238;
+    background-color: rgba(59, 203, 190);
     font-size: 20px;
     line-height: 52px;
     text-align: center;
@@ -80,19 +81,20 @@ body {
   }
   
   #sidebar header a:hover {
-    color: #fff;
+    color: #dbdbdb;
   }
   
   #sidebar .nav{
-    
+    margin: 10 px;
+    text-decoration: none;
   }
   
   #sidebar .nav a{
     background: none;
-    border-bottom: 1px solid #455A64;
-    color: #CFD8DC;
-    font-size: 14px;
+    color: #2a9d8f;
+    font-size: 16px;
     padding: 16px 24px;
+    text-decoration: none;
   }
   
   #sidebar .nav a:hover{
@@ -102,7 +104,15 @@ body {
   
   #sidebar .nav a i{
     margin-right: 16px;
+    margin-bottom: 10px;
+    text-decoration: none;
   }
+
+  #sidebar .nav a ul{
+    text-decoration: none;
+  }
+
+  /* File Upload */
 
   .file-upload-btn {
     width: 100%;
@@ -133,7 +143,6 @@ body {
   
   .file-upload-content {
     display: none;
-    text-align: center;
   }
   
   .file-upload-input {

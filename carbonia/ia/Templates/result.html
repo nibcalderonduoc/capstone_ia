@@ -12,7 +12,7 @@
         <!-- Sidebar -->
         <div id="sidebar">
           <header>
-            <a href="#">My App</a>
+            <a href="#">CarbonIA</a>
           </header>
           <ul class="nav">
             <li>
@@ -22,72 +22,24 @@
             </li>
             <li>
               <a href="#">
-                <i class="zmdi zmdi-link"></i> Shortcuts
-              </a>
-            </li>
-            <li>
-              <a href="#">
-                <i class="zmdi zmdi-widgets"></i> Overview
-              </a>
-            </li>
-            <li>
-              <a href="#">
-                <i class="zmdi zmdi-calendar"></i> Events
-              </a>
-            </li>
-            <li>
-              <a href="#">
-                <i class="zmdi zmdi-info-outline"></i> About
-              </a>
-            </li>
-            <li>
-              <a href="#">
-                <i class="zmdi zmdi-settings"></i> Services
-              </a>
-            </li>
-            <li>
-              <a href="#">
-                <i class="zmdi zmdi-comment-more"></i> Contact
+                <i class="zmdi zmdi-link"></i> Cargar documentos
               </a>
             </li>
           </ul>
         </div>
         <!-- Content -->
         <div id="content">
-          <nav class="navbar navbar-default">
-            <div class="container-fluid">
-              <ul class="nav navbar-nav navbar-right">
-                <li>
-                  <a href="#"><i class="zmdi zmdi-notifications text-danger"></i>
-                  </a>
-                </li>
-                <li><a href="#">Test User</a></li>
-              </ul>
-            </div>
-          </nav>
           <div class="container-fluid">
-            <h1>Simple Sidebar</h1>
-            <p>
-              Make sure to keep all page content within the 
-              <code>#content</code>.
-            </p>
+            <div class="file-upload">
+              <h1>Resultados del Análisis</h1>
+              <p><strong>URL del archivo subido:</strong> <a href="{{ file_url }}">{{ file_url }}</a></p>
+              <h2>Información extraída del archivo:</h2>
+              <pre>{{ extracted_info }}</pre>
+              <a class="file-upload-btn" href="{% url 'index' %}">Subir otra factura</a>
+          </div>
           </div>
         </div>
       </div>
-    <div class="file-upload">
-        <div className="logo">
-            <img
-              src="data:image/png;base64,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"
-              alt="Not Found"
-              className="icon"
-            />
-          </div>
-        <h1>Resultados del Análisis</h1>
-        <p><strong>URL del archivo subido:</strong> <a href="{{ file_url }}">{{ file_url }}</a></p>
-        <h2>Información extraída del archivo:</h2>
-        <pre>{{ extracted_info }}</pre>
-        <a class="file-upload-btn" href="{% url 'index' %}">Subir otra factura</a>
-    </div>
     
 </body>
 </html>
