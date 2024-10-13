@@ -28,11 +28,10 @@ body {
   }
   
   .file-upload {
-    background-color: #ffffff;
-    text-align: center;
-    width: 600px;
-    margin: 0 auto;
-    padding: 30px;
+    background-color: #ffffff;;
+    width: 800px;
+    margin: 0;
+    padding: 30px 20px;
   }
   
   #viewport {
@@ -49,6 +48,12 @@ body {
     margin-right: 0;
   }
   
+  .container-fluid {
+    padding: 0;
+    align-items: top-right;
+  }
+
+
   /* Sidebar Styles */
   
   #sidebar {
@@ -70,7 +75,7 @@ body {
   #sidebar header {
     background-color: rgba(59, 203, 190);
     font-size: 20px;
-    line-height: 52px;
+    line-height: 30px;
     text-align: center;
   }
   
@@ -78,6 +83,8 @@ body {
     color: #fff;
     display: block;
     text-decoration: none;
+    padding: 10px 0px;
+    margin-left: -80px;
   }
   
   #sidebar header a:hover {
@@ -96,10 +103,35 @@ body {
     padding: 16px 24px;
     text-decoration: none;
   }
+
+  #sidebar .nav svg{
+    margin: 0px 5px 0 0;
+    width: 20px;
+    height: 20px;
+    color: #2a9d8f; 
+    fill: #2a9d8f;
+  }
+
+  #sidebar .nav svg:hover{
+    fill: #1E7167;
+  }
+
+  #sidebar .nav a:active{
+    color: rgba(59, 203, 190);
+  }
+  
   
   #sidebar .nav a:hover{
     background: none;
-    color: #ECEFF1;
+    color: #1E7167;
+    font-weight: bold;
+  }
+
+
+  #sidebar .nav a:active{
+    background: none;
+    color: rgba(59, 203, 190);
+    font-weight: bold;
   }
   
   #sidebar .nav a i{
@@ -108,25 +140,41 @@ body {
     text-decoration: none;
   }
 
-  #sidebar .nav a ul{
+  #sidebar ul{
     text-decoration: none;
+    list-style-type: none;
+    margin-left: -50px;
+  }
+
+  #sidebar ul li{
+    padding: 10px 0;
   }
 
   /* File Upload */
 
+  .file-upload h1 {
+    padding: 0px;
+    margin: 0px;
+    color: #222;
+  }
+
+  .file-upload form {
+    padding-top: 10px;
+  }
+
   .file-upload-btn {
-    width: 100%;
     margin-top: 20px;
     color: #fff;
     background: rgba(59, 203, 190, 1);
     border: none;
-    padding: 10px;
+    padding: 10px 20px;
     border-radius: 4px;
     border-bottom: 4px solid rgb(42, 154, 145);
     transition: all .2s ease;
     outline: none;
     text-transform: uppercase;
     font-weight: 700;
+    text-decoration: none;
   }
   
   .file-upload-btn:hover {
