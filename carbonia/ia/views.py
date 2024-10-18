@@ -25,8 +25,15 @@ def upload_to_gcs(file):
     bucket_name = settings.GS_BUCKET_NAME  # El nombre del bucket debe estar en settings.py
     bucket = storage_client.bucket(bucket_name)
     blob = bucket.blob(file.name)
-    
-    blob.upload_from_file(file)
+
+    # Verifica si el archivo es un PDF y ajusta el tipo MIME
+    if file.name.endswith('.pdf'):
+        mime_type = 'application/pdf'
+    else:
+        mime_type = 'application/octet-stream'  # Para otros archivos
+
+    # Sube el archivo especificando el tipo MIME
+    blob.upload_from_file(file, content_type=mime_type)
 
     # Retorna la URL pública del archivo
     return f"https://storage.googleapis.com/{bucket_name}/{file.name}"
