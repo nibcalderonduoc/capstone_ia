@@ -2,6 +2,9 @@ from django.shortcuts import render
 from django.conf import settings
 from google.cloud import storage  # Importa Google Cloud Storage
 from django.http import HttpResponse
+import os
+from google.cloud import bigquery
+from django.shortcuts import render
 
 # Vista para subir un archivo y procesarlo
 def index(request):
@@ -37,3 +40,27 @@ def upload_to_gcs(file):
 
     # Retorna la URL pública del archivo
     return f"https://storage.googleapis.com/{bucket_name}/{file.name}"
+
+
+# Vista para obtener los datos de BigQuery y mostrarlos en el dashboard
+def dashboard(request):
+    # Inicializa el cliente de BigQuery
+    client = bigquery.Client()
+
+    # Define la consulta
+    query = """
+    SELECT * FROM `proyectocarbonia.alcance2.silver_parse_table`
+    LIMIT 100
+    """
+
+    # Ejecuta la consulta
+    query_job = client.query(query)  # Ejecuta la consulta
+    results = query_job.result()  # Obtiene los resultados
+
+    # Prepara los datos en una lista para enviar al template
+    data = []
+    for row in results:
+        data.append(dict(row))  # Convierte cada fila en un diccionario
+
+    # Renderiza los datos en el template dashboard.html
+    return render(request, 'dashboard.html', {'data': data})
