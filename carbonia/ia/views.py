@@ -65,6 +65,7 @@ def dashboard(request):
     # Renderiza los datos en el template dashboard.html
     return render(request, 'dashboard.html', {'data': data})
 
+
 # Vista para mostrar previsualización de informe
 def result(request):
     return render(request, 'result.html')
@@ -76,3 +77,7 @@ def header(request):
 # Vista para mostrar sidebar
 def sidebar(request):
     return render(request, 'sidebar.html')
+
+# Vista para mostrar content
+def content(request):
+    return render(request, 'content.html')

@@ -10,7 +10,7 @@
         {% include 'partials/sidebar.html' %}
 
         <!-- Content -->
-        <div id="content">
+          {% block content %}
             <h1>Datos de BigQuery - silver_parse_table</h1>
             <table>
                 <thead>
@@ -30,7 +30,7 @@
                     {% endfor %}
                 </tbody>
             </table>
-        </div>
+          {% endblock %}
     </div>
 </body>
 </html>
