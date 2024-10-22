@@ -39,44 +39,99 @@ body {
   display: flex;
 }
 
-.sidebar {
-  background-color: #ffffff;
-  color: #2a9d8f;
-  width: 250px;
-  height: 100vh;
-  padding: 20px;
-  position: fixed;
+#sidebar {
   z-index: 1000;
+  position: fixed;
+  left: 250px;
+  width: 250px;
+  height: 100%;
+  margin-left: -250px;
   overflow-y: auto;
+  background: #ffffff;
+  text-decoration: none;
+  -webkit-transition: all 0.5s ease;
+  -moz-transition: all 0.5s ease;
+  -o-transition: all 0.5s ease;
+  transition: all 0.5s ease;
 }
 
-.sidebar h1 {
-  font-size: 24px;
-  margin-bottom: 20px;
-  color: rgba(59, 203, 190);
+#sidebar header {
+  background-color: rgba(59, 203, 190);
+  font-size: 20px;
+  line-height: 30px;
+  text-align: center;
 }
 
-.sidebar ul {
-  list-style: none;
-  padding: 0;
-  margin-left: -40px;
-}
-
-.sidebar ul li {
-  padding: 10px 0;
-}
-
-.sidebar ul li a {
-  color: #2a9d8f;
-  font-size: 16px;
-  padding: 26px 32px;
+#sidebar header a {
+  color: #fff;
   display: block;
+  text-decoration: none;
+  padding: 10px 0px;
+  margin-left: -80px;
+}
+
+#sidebar header a:hover {
+  color: #dbdbdb;
+}
+
+#sidebar .nav{
+  margin: 10 px;
   text-decoration: none;
 }
 
-.sidebar ul li a:hover {
+#sidebar .nav a{
+  background: none;
+  color: #2a9d8f;
+  font-size: 16px;
+  padding: 16px 32px;
+  text-decoration: none;
+}
+
+#sidebar .nav svg{
+  margin: 0px 5px 0 0;
+  width: 20px;
+  height: 20px;
+  color: #2a9d8f; 
+  fill: #2a9d8f;
+}
+
+#sidebar .nav svg:hover{
+  fill: #1E7167;
+}
+
+#sidebar .nav a:active{
+  color: rgba(59, 203, 190);
+}
+
+
+#sidebar .nav a:hover{
+  background: none;
   color: #1E7167;
   font-weight: bold;
+}
+
+
+#sidebar .nav a:active{
+  background: none;
+  color: rgba(59, 203, 190);
+  font-weight: bold;
+}
+
+#sidebar .nav a i{
+  margin-right: 16px;
+  margin-bottom: 10px;
+  text-decoration: none;
+}
+
+#sidebar ul{
+  text-decoration: none;
+  list-style-type: none;
+  margin-left: -40px;
+}
+
+#sidebar ul li{
+  padding: 10px 0;
+  padding-left: 20px;
 }
 
 .main-content {
@@ -188,7 +243,7 @@ button {
 /* Botones y Subida de Archivos */
 .file-upload {
   background-color: #ffffff;
-  width: 800px;
+  width: 90%;
   margin: 0;
   padding: 30px 20px;
 }

@@ -1,9 +1,9 @@
 {% extends 'partials/base.html' %}
 
-{% block title %}Dashboard{% endblock %}
+{% block title %}Carga de documentos{% endblock %}
 
 {% block content %}
-<h1>Subir respaldo</h1>
+  <h1>Subir respaldo</h1>
               <form method="post" enctype="multipart/form-data">
               {% csrf_token %}
               <input type="file" name="pdf_file" required> <br>
