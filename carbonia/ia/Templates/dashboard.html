@@ -1,36 +1,32 @@
-<!DOCTYPE html>
-<html lang="en">
-<head>
-    <title>BigQuery Dashboard</title>
-    {% include 'partials/header.html' %}
-</head>
-<body>
-    <div id="viewport">
-        <!-- Sidebar -->
-        {% include 'partials/sidebar.html' %}
+{% extends 'partials/base.html' %}
 
-        <!-- Content -->
-          {% block content %}
-            <h1>Datos de BigQuery - silver_parse_table</h1>
-            <table>
-                <thead>
-                    <tr>
-                        {% for key in data.0.keys %}
-                        <th>{{ key }}</th>
-                        {% endfor %}
-                    </tr>
-                </thead>
-                <tbody>
-                    {% for row in data %}
-                    <tr>
-                        {% for value in row.values %}
-                        <td>{{ value }}</td>
-                        {% endfor %}
-                    </tr>
-                    {% endfor %}
-                </tbody>
-            </table>
-          {% endblock %}
-    </div>
-</body>
-</html>
+{% block title %}Dashboard{% endblock %}
+
+{% block content %}
+            <h1>Datos de BigQuery - silver_parse_table</h1> <br>
+            <table class="styled-table">
+              <thead>
+                  <tr>
+                      {% for key in data.0.keys %}
+                      <th>{{ key }}</th>
+                      {% endfor %}
+                  </tr>
+              </thead>
+              <tbody>
+                  {% for row in data %}
+                  <tr>
+                      {% for key, value in row.items %}
+                      {% if key == 'consumo' %}
+                      <td class="align-right">{{ value|floatformat:2 }}</td>
+                      {% elif key in 'CO2,NO2,CH4,TCO2' %}
+                      <td class="align-right">{{ value|floatformat:2 }}</td>
+                      {% else %}
+                      <td>{{ value }}</td>
+                      {% endif %}
+                      {% endfor %}
+                  </tr>
+                  {% endfor %}
+              </tbody>
+          </table>
+          
+{% endblock %}

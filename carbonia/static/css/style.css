@@ -1,156 +1,257 @@
+/* Estilos Globales */
+* {
+  margin: 0;
+  padding: 0;
+  box-sizing: border-box;
+}
+
 body {
-    font-family: sans-serif;
-    background-color: #eeeeee;
-  }
+  font-family: Poppins, sans-serif;
+  background-color: #eeeeee;
+}
 
-  .logo {
-    display: flex;
-    flex-direction: row;
-    justify-content: flex-start;
-    align-items: flex-start;
-    width: 315px;
-    height: 104px;
-    padding: 16 px;
-    box-sizing: border-box;
-  }
+/* Logo */
+.logo {
+  display: flex;
+  flex-direction: row;
+  justify-content: flex-start;
+  align-items: flex-start;
+  width: 315px;
+  height: 104px;
+  padding: 16px;
+  box-sizing: border-box;
+}
 
-  .icon {
-    width: 40px;
-    height: 100%;
-  }
+.icon {
+  width: 40px;
+  height: 100%;
+}
 
-  .carbonia {
-    color: rgba(59, 203, 190);
-    font-size: 28px;
-    line-height: 114%;
-    font-family: Poppins, sans-serif;
-    font-weight: 600;
-  }
-  
-  .file-upload {
-    background-color: #ffffff;;
-    width: 800px;
-    margin: 0;
-    padding: 30px 20px;
-  }
-  
-  #viewport {
-    padding-left: 250px;
-    -webkit-transition: all 0.5s ease;
-    -moz-transition: all 0.5s ease;
-    -o-transition: all 0.5s ease;
-    transition: all 0.5s ease;
-  }
-  
-  #content {
-    width: 100%;
-    position: relative;
-    margin-right: 0;
-  }
-  
-  .container-fluid {
-    padding: 0;
-    align-items: top-right;
-  }
+.carbonia {
+  color: rgba(59, 203, 190);
+  font-size: 28px;
+  line-height: 114%;
+  font-weight: 600;
+}
+
+/* Contenedor Principal */
+.container {
+  display: flex;
+}
+
+.sidebar {
+  background-color: #ffffff;
+  color: #2a9d8f;
+  width: 250px;
+  height: 100vh;
+  padding: 20px;
+  position: fixed;
+  z-index: 1000;
+  overflow-y: auto;
+}
+
+.sidebar h1 {
+  font-size: 24px;
+  margin-bottom: 20px;
+  color: rgba(59, 203, 190);
+}
+
+.sidebar ul {
+  list-style: none;
+  padding: 0;
+  margin-left: -40px;
+}
+
+.sidebar ul li {
+  padding: 10px 0;
+}
+
+.sidebar ul li a {
+  color: #2a9d8f;
+  font-size: 16px;
+  padding: 26px 32px;
+  display: block;
+  text-decoration: none;
+}
+
+.sidebar ul li a:hover {
+  color: #1E7167;
+  font-weight: bold;
+}
+
+.main-content {
+  flex: 1;
+  padding: 20px;
+  padding-left: 270px;
+  transition: all 0.5s ease;
+}
+
+/* Encabezado */
+header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  padding: 10px 0;
+}
+
+.search {
+  width: 300px;
+  padding: 10px;
+  border: 1px solid #ccc;
+  border-radius: 5px;
+}
+
+.profile {
+  background-color: #ccc;
+  width: 40px;
+  height: 40px;
+  border-radius: 50%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 20px;
+}
+
+/* Dashboard */
+.dashboard {
+  display: flex;
+  justify-content: space-between;
+  margin-top: 20px;
+}
+
+.panel {
+  background-color: white;
+  padding: 20px;
+  width: 22%;
+  text-align: center;
+  border-radius: 8px;
+  box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+}
+
+.panel span {
+  display: block;
+  font-size: 32px;
+  margin-top: 10px;
+}
+
+/* Gráficos */
+.charts {
+  display: flex;
+  justify-content: space-between;
+  margin-top: 40px;
+}
+
+.chart {
+  background-color: white;
+  padding: 20px;
+  width: 48%;
+  border-radius: 8px;
+  box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+}
+
+.donut {
+  text-align: center;
+}
+
+/* Tabla de Sucursales */
+.branches {
+  margin-top: 40px;
+}
+
+table {
+  width: 100%;
+  border-collapse: collapse;
+  margin-top: 20px;
+}
+
+table thead th {
+  background-color: rgba(59, 203, 190);
+  color: white;
+  padding: 10px;
+}
+
+table tbody td {
+  padding: 10px;
+  border-bottom: 1px solid #ddd;
+}
+
+button {
+  margin-top: 20px;
+  padding: 10px 20px;
+  background-color: rgba(59, 203, 190);
+  color: white;
+  border: none;
+  border-radius: 5px;
+  cursor: pointer;
+}
+
+/* Botones y Subida de Archivos */
+.file-upload {
+  background-color: #ffffff;
+  width: 800px;
+  margin: 0;
+  padding: 30px 20px;
+}
+
+.file-upload-btn {
+  margin-top: 20px;
+  color: #fff;
+  background: rgba(59, 203, 190);
+  border: none;
+  padding: 10px 20px;
+  border-radius: 4px;
+  border-bottom: 4px solid rgb(42, 154, 145);
+  transition: all 0.2s ease;
+  outline: none;
+  text-transform: uppercase;
+  font-weight: 700;
+}
+
+.file-upload-btn:hover {
+  background: rgb(42, 154, 145);
+  cursor: pointer;
+}
+
+.image-upload-wrap {
+  margin-top: 20px;
+  border: 4px dashed rgba(59, 203, 190);
+  position: relative;
+}
+
+.image-dropping,
+.image-upload-wrap:hover {
+  background-color: rgba(59, 203, 190);
+  border: 4px dashed white;
+}
+
+.file-upload-image {
+  max-height: 200px;
+  max-width: 200px;
+  margin: auto;
+  padding: 20px;
+}
+
+.remove-image {
+  width: 200px;
+  margin: 0;
+  color: white;
+  background: #cd4535;
+  border: none;
+  padding: 10px;
+  border-radius: 4px;
+  border-bottom: 4px solid #b02818;
+  transition: all 0.2s ease;
+  text-transform: uppercase;
+  font-weight: 700;
+}
+
+.remove-image:hover {
+  background: #c13b2a;
+  cursor: pointer;
+}
 
 
-  /* Sidebar Styles */
-  
-  #sidebar {
-    z-index: 1000;
-    position: fixed;
-    left: 250px;
-    width: 250px;
-    height: 100%;
-    margin-left: -250px;
-    overflow-y: auto;
-    background: #ffffff;
-    text-decoration: none;
-    -webkit-transition: all 0.5s ease;
-    -moz-transition: all 0.5s ease;
-    -o-transition: all 0.5s ease;
-    transition: all 0.5s ease;
-  }
-  
-  #sidebar header {
-    background-color: rgba(59, 203, 190);
-    font-size: 20px;
-    line-height: 30px;
-    text-align: center;
-  }
-  
-  #sidebar header a {
-    color: #fff;
-    display: block;
-    text-decoration: none;
-    padding: 10px 0px;
-    margin-left: -80px;
-  }
-  
-  #sidebar header a:hover {
-    color: #dbdbdb;
-  }
-  
-  #sidebar .nav{
-    margin: 10 px;
-    text-decoration: none;
-  }
-  
-  #sidebar .nav a{
-    background: none;
-    color: #2a9d8f;
-    font-size: 16px;
-    padding: 16px 24px;
-    text-decoration: none;
-  }
-
-  #sidebar .nav svg{
-    margin: 0px 5px 0 0;
-    width: 20px;
-    height: 20px;
-    color: #2a9d8f; 
-    fill: #2a9d8f;
-  }
-
-  #sidebar .nav svg:hover{
-    fill: #1E7167;
-  }
-
-  #sidebar .nav a:active{
-    color: rgba(59, 203, 190);
-  }
-  
-  
-  #sidebar .nav a:hover{
-    background: none;
-    color: #1E7167;
-    font-weight: bold;
-  }
-
-
-  #sidebar .nav a:active{
-    background: none;
-    color: rgba(59, 203, 190);
-    font-weight: bold;
-  }
-  
-  #sidebar .nav a i{
-    margin-right: 16px;
-    margin-bottom: 10px;
-    text-decoration: none;
-  }
-
-  #sidebar ul{
-    text-decoration: none;
-    list-style-type: none;
-    margin-left: -50px;
-  }
-
-  #sidebar ul li{
-    padding: 10px 0;
-  }
-
-  /* File Upload */
+/* File Upload */
 
   .file-upload h1 {
     padding: 0px;
@@ -265,3 +366,95 @@ body {
     border: 0;
     transition: all .2s ease;
   }
+
+/* Viewport contenido */
+
+  #viewport {
+    padding-left: 250px;
+    -webkit-transition: all 0.5s ease;
+    -moz-transition: all 0.5s ease;
+    -o-transition: all 0.5s ease;
+    transition: all 0.5s ease;
+  }
+  
+  #content {
+    width: 100%;
+    position: relative;
+    margin-right: 0;
+    background-color: #fff;
+  }
+  
+  .container-fluid {
+    padding: 0;
+    align-items: top-right;
+  }
+
+  /* Estilos de tabla dashboard */
+  /* Estilos Generales */
+.styled-table {
+  width: 100%;
+  border-collapse: collapse;
+  font-family: Arial, sans-serif;
+  font-size: 14px;
+  margin: 20px 0;
+  background-color: #f9f9f9;
+}
+
+.styled-table thead th {
+  background-color: #4CAF50;
+  color: white;
+  padding: 10px;
+  text-align: left;
+  font-weight: bold;
+}
+
+.styled-table tbody td {
+  padding: 10px;
+  border-bottom: 1px solid #ddd;
+}
+
+/* Alternar color de filas */
+.styled-table tbody tr:nth-of-type(even) {
+  background-color: #f3f3f3;
+}
+
+/* Alineación de texto para datos numéricos */
+.align-right {
+  text-align: right;
+}
+
+/* Resaltar valores numéricos altos */
+.styled-table tbody td {
+  padding: 10px;
+  border-bottom: 1px solid #ddd;
+}
+
+.styled-table tbody td.align-right {
+  padding: 10px;
+  text-align: right;
+}
+
+/* Estilos de cabecera */
+.styled-table thead th {
+  background-color: #4CAF50;
+  color: white;
+  padding: 12px;
+  text-align: left;
+  font-size: 16px;
+}
+
+/* Resaltar valores importantes */
+.styled-table tbody td.highlight-high {
+  background-color: #e74c3c;
+  color: white;
+}
+
+.styled-table tbody td.highlight-medium {
+  background-color: #f39c12;
+  color: white;
+}
+
+.styled-table tbody td.highlight-low {
+  background-color: #27ae60;
+  color: white;
+}

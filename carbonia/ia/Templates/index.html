@@ -1,29 +1,12 @@
-<!DOCTYPE html>
-<html lang="es">
-<head>
-    <title>Subir Factura de Luz</title>
-    {% include 'partials/header.html' %}
-</head>
-<body>
-  <body>
-    <div id="viewport">
-        <!-- Sidebar -->
-        {% include 'partials/sidebar.html' %}
-        
-        <!-- Content -->
-        <div id="content">
-          <div class="container-fluid">
-            <div class="file-upload">
-              <h1>Subir respaldo</h1>
+{% extends 'partials/base.html' %}
+
+{% block title %}Dashboard{% endblock %}
+
+{% block content %}
+<h1>Subir respaldo</h1>
               <form method="post" enctype="multipart/form-data">
               {% csrf_token %}
               <input type="file" name="pdf_file" required> <br>
               <button class="file-upload-btn" type="submit">Subir y Procesar</button>
               </form>
-          </div>
-          
-          </div>
-        </div>
-      </div>
-</body>
-</html> 
+{% endblock %}

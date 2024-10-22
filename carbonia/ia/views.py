@@ -71,8 +71,8 @@ def result(request):
     return render(request, 'result.html')
 
 # Vista para mostrar Header
-def header(request):
-    return render(request, 'header.html')
+def base(request):
+    return render(request, 'base.html')
 
 # Vista para mostrar sidebar
 def sidebar(request):
