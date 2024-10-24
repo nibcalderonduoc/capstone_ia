@@ -266,3 +266,82 @@ body {
     border: 0;
     transition: all .2s ease;
   }
+
+  
+  /* Estilos de tabla dashboard */
+  /* Estilos Generales */
+  .styled-table-container {
+    width: 100%;
+    overflow-x: auto; /* Habilita el scroll horizontal */
+    display: block; /* Asegura que sea un contenedor de bloque */
+    white-space: nowrap; /* Evita que el contenido de las celdas haga salto de línea */
+}
+
+  .styled-table {
+  width: 100%;
+  border-collapse: collapse;
+  font-family: Arial, sans-serif;
+  font-size: 14px;
+  margin: 20px 0;
+  background-color: #f9f9f9;
+  overflow: scroll;
+}
+
+.styled-table thead th {
+  background-color: #4CAF50;
+  color: white;
+  padding: 10px;
+  text-align: left;
+  font-weight: bold;
+}
+
+.styled-table tbody td {
+  padding: 10px;
+  border-bottom: 1px solid #ddd;
+}
+
+/* Alternar color de filas */
+.styled-table tbody tr:nth-of-type(even) {
+  background-color: #f3f3f3;
+}
+
+/* Alineación de texto para datos numéricos */
+.align-right {
+  text-align: right;
+}
+
+/* Resaltar valores numéricos altos */
+.styled-table tbody td {
+  padding: 10px;
+  border-bottom: 1px solid #ddd;
+}
+
+.styled-table tbody td.align-right {
+  padding: 10px;
+  text-align: right;
+}
+
+/* Estilos de cabecera */
+.styled-table thead th {
+  background-color: #4CAF50;
+  color: white;
+  padding: 12px;
+  text-align: left;
+  font-size: 16px;
+}
+
+/* Resaltar valores importantes */
+.styled-table tbody td.highlight-high {
+  background-color: #e74c3c;
+  color: white;
+}
+
+.styled-table tbody td.highlight-medium {
+  background-color: #f39c12;
+  color: white;
+}
+
+.styled-table tbody td.highlight-low {
+  background-color: #27ae60;
+  color: white;
+}
