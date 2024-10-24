@@ -31,7 +31,7 @@ body {
     background-color: #ffffff;;
     width: 800px;
     margin: 0;
-    padding: 30px 20px;
+    padding: 20px;
   }
   
   #viewport {
@@ -84,7 +84,7 @@ body {
     display: block;
     text-decoration: none;
     padding: 10px 0px;
-    margin-left: -80px;
+    text-align: center;
   }
   
   #sidebar header a:hover {
