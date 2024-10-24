@@ -154,6 +154,7 @@ body {
 
   .file-upload h1 {
     padding: 0px;
+    padding-bottom: 10px;
     margin: 0px;
     color: #222;
   }
