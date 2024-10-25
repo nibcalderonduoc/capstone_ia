@@ -81,3 +81,7 @@ def sidebar(request):
 # Vista para mostrar content
 def content(request):
     return render(request, 'content.html')
+
+# Vista para mostrar infostoric
+def infostoric(request):
+    return render(request, 'infostoric.html')

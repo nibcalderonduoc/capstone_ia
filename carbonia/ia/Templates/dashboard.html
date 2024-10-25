@@ -3,32 +3,6 @@
 {% block title %}Dashboard{% endblock %}
 
 {% block content %}
-            <h1>Datos de BigQuery - silver_parse_table</h1> <br>
-            <div class="styled-table-container">
-              <table class="styled-table">
-                  <thead>
-                      <tr>
-                          {% for key in data.0.keys %}
-                          <th>{{ key }}</th>
-                          {% endfor %}
-                      </tr>
-                  </thead>
-                  <tbody>
-                      {% for row in data %}
-                      <tr>
-                          {% for key, value in row.items %}
-                          {% if key == 'consumo' %}
-                          <td class="align-right">{{ value|floatformat:2 }}</td>
-                          {% elif key in 'CO2,NO2,CH4,TCO2' %}
-                          <td class="align-right">{{ value|floatformat:2 }}</td>
-                          {% else %}
-                          <td>{{ value }}</td>
-                          {% endif %}
-                          {% endfor %}
-                      </tr>
-                      {% endfor %}
-                  </tbody>
-              </table>
-          </div>
+            <h1>Datos actuales</h1> <br>
           
 {% endblock %}
