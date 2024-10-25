@@ -227,7 +227,7 @@ def dashboard(request):
     """
     consumo_results = client.query(consumo_query).result()
 
-    # Consulta para TCO2 mensual
+    # Consulta para TCO2 mensual extraído de la tabla
     tco2_query = """
     SELECT 
       EXTRACT(YEAR FROM fec_ter) AS year,
