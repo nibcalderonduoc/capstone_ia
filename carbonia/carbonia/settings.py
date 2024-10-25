@@ -138,6 +138,10 @@ os.environ["GOOGLE_APPLICATION_CREDENTIALS"] = os.path.join(BASE_DIR, 'proyectoc
 
 
 
+# settings.py
+
+# Clave API de OpenAI
+OPENAI_API_KEY = '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'
 
 
 

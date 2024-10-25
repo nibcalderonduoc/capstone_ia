@@ -1,8 +1,256 @@
 {% extends 'partials/base.html' %}
 
-{% block title %}Carga de documentos{% endblock %}
+{% block title %}Recomendaciones{% endblock %}
 
 {% block content %}
-  <h1>Te recomendamos que..</h1>
-              
+    <h1>Datos actuales</h1> <br>
+
+    <!-- Combobox para seleccionar el gráfico -->
+    <label for="graphType">Selecciona el gráfico para visualizar y obtener una recomendación:</label>
+    <select id="graphType" name="graphType" onchange="updateGraph()">
+        <option value="" selected>Elija una Opción...</option>  <!-- Opción predeterminada -->
+        <option value="consumo">Consumo Mensual</option>
+        <option value="TCO2">TCO2 Mensual</option>
+        <option value="distribuidora">Consumo por Distribuidora</option>
+    </select>
+
+    <!-- Botón para solicitar la recomendación -->
+    <button onclick="getRecommendation()">Obtener Recomendación</button>
+
+    <!-- Mostrar la recomendación generada -->
+    <div id="recommendation" style="margin-top: 20px; padding: 10px; background-color: #f0f0f0; border-radius: 5px;">
+        <p id="recommendationText">Aquí aparecerá la recomendación...</p>
+    </div>
+
+    <!-- Gráficos (solo uno será visible a la vez) -->
+    <h2>Gráficos</h2>
+
+    <div id="consumoGraph" style="display: none;">
+        <h2>Consumo Mensual</h2>
+        <div style="width: 100%; max-width: 600px; margin: auto;"> <!-- Margen centrado -->
+            <canvas id="consumoChart" style="width:100%; height:400px;"></canvas> <!-- Ajuste de tamaño -->
+        </div>
+    </div>
+
+    <div id="TCO2Graph" style="display: none;">
+        <h2>TCO2 Mensual</h2>
+        <div style="width: 100%; max-width: 600px; margin: auto;"> <!-- Margen centrado -->
+            <canvas id="TCO2Chart" style="width:100%; height:400px;"></canvas> <!-- Ajuste de tamaño -->
+        </div>
+    </div>
+
+    <div id="distribuidoraGraph" style="display: none;">
+        <h2>Consumo por Distribuidora</h2>
+        <div style="width: 100%; max-width: 600px; margin: auto;"> <!-- Margen centrado -->
+            <canvas id="distribuidoraChart" style="width:100%; height:400px;"></canvas> <!-- Ajuste de tamaño -->
+        </div>
+    </div>
+
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+
+    <script>
+        // Función para mostrar el gráfico seleccionado
+        function updateGraph() {
+            var graphType = document.getElementById('graphType').value;
+
+            // Ocultar todos los gráficos
+            document.getElementById('consumoGraph').style.display = 'none';
+            document.getElementById('TCO2Graph').style.display = 'none';
+            document.getElementById('distribuidoraGraph').style.display = 'none';
+
+            // Mostrar solo el gráfico seleccionado
+            if (graphType === 'consumo') {
+                document.getElementById('consumoGraph').style.display = 'block';
+            } else if (graphType === 'TCO2') {
+                document.getElementById('TCO2Graph').style.display = 'block';
+            } else if (graphType === 'distribuidora') {
+                document.getElementById('distribuidoraGraph').style.display = 'block';
+            }
+        }
+
+        // Inicializar gráficos al cargar la página
+        document.addEventListener('DOMContentLoaded', function() {
+            var ctx1 = document.getElementById('consumoChart').getContext('2d');
+            var consumoChart = new Chart(ctx1, {
+                type: 'line',
+                data: {
+                    labels: {{ labels|safe }},
+                    datasets: [{
+                        label: 'Consumo',
+                        data: {{ consumo_data|safe }},
+                        borderColor: 'rgba(75, 192, 192, 1)',
+                        borderWidth: 3,
+                        backgroundColor: 'rgba(75, 192, 192, 0.1)',
+                        tension: 0.4,
+                        pointBackgroundColor: 'rgba(75, 192, 192, 1)',
+                        pointBorderColor: 'white',
+                        pointBorderWidth: 2
+                    }]
+                },
+                options: {
+                    responsive: true,
+                    plugins: {
+                        title: {
+                            display: true,
+                            text: 'Consumo Mensual',
+                            font: {
+                                size: 18
+                            }
+                        },
+                        legend: {
+                            position: 'top',
+                            labels: {
+                                font: {
+                                    size: 14
+                                }
+                            }
+                        }
+                    },
+                    scales: {
+                        x: {
+                            ticks: {
+                                font: {
+                                    size: 12
+                                }
+                            }
+                        },
+                        y: {
+                            beginAtZero: true,
+                            ticks: {
+                                font: {
+                                    size: 12
+                                }
+                            }
+                        }
+                    }
+                }
+            });
+
+            var ctx2 = document.getElementById('TCO2Chart').getContext('2d');
+            var TCO2Chart = new Chart(ctx2, {
+                type: 'line',
+                data: {
+                    labels: {{ labels|safe }},
+                    datasets: [{
+                        label: 'TCO2',
+                        data: {{ tco2_data|safe }},
+                        borderColor: 'rgba(255, 99, 132, 1)',
+                        borderWidth: 3,
+                        backgroundColor: 'rgba(255, 99, 132, 0.1)',
+                        tension: 0.4,
+                        pointBackgroundColor: 'rgba(255, 99, 132, 1)',
+                        pointBorderColor: 'white',
+                        pointBorderWidth: 2
+                    }]
+                },
+                options: {
+                    responsive: true,
+                    plugins: {
+                        title: {
+                            display: true,
+                            text: 'TCO2 Mensual',
+                            font: {
+                                size: 18
+                            }
+                        },
+                        legend: {
+                            position: 'top',
+                            labels: {
+                                font: {
+                                    size: 14
+                                }
+                            }
+                        }
+                    },
+                    scales: {
+                        x: {
+                            ticks: {
+                                font: {
+                                    size: 12
+                                }
+                            }
+                        },
+                        y: {
+                            beginAtZero: true,
+                            ticks: {
+                                font: {
+                                    size: 12
+                                }
+                            }
+                        }
+                    }
+                }
+            });
+
+            var ctx3 = document.getElementById('distribuidoraChart').getContext('2d');
+            var distribuidoraChart = new Chart(ctx3, {
+                type: 'bar',
+                data: {
+                    labels: {{ distribuidora_labels|safe }},
+                    datasets: [{
+                        label: 'Consumo por Distribuidora',
+                        data: {{ distribuidora_data|safe }},
+                        backgroundColor: 'rgba(54, 162, 235, 0.6)',
+                        borderColor: 'rgba(54, 162, 235, 1)',
+                        borderWidth: 2,
+                        hoverBackgroundColor: 'rgba(54, 162, 235, 0.8)',
+                        hoverBorderColor: 'rgba(54, 162, 235, 1)'
+                    }]
+                },
+                options: {
+                    responsive: true,
+                    plugins: {
+                        title: {
+                            display: true,
+                            text: 'Consumo por Distribuidora',
+                            font: {
+                                size: 18
+                            }
+                        },
+                        legend: {
+                            position: 'top',
+                            labels: {
+                                font: {
+                                    size: 14
+                                }
+                            }
+                        }
+                    },
+                    scales: {
+                        x: {
+                            ticks: {
+                                font: {
+                                    size: 12
+                                }
+                            }
+                        },
+                        y: {
+                            beginAtZero: true,
+                            ticks: {
+                                font: {
+                                    size: 12
+                                }
+                            }
+                        }
+                    }
+                }
+            });
+        });
+
+        // Función para obtener la recomendación de OpenAI
+        function getRecommendation() {
+            var graphType = document.getElementById('graphType').value; // Obtener el valor del combobox
+
+            // Realizar la solicitud de recomendación al servidor
+            fetch(`/get_recommendation/?type=${graphType}`)
+                .then(response => response.json())
+                .then(data => {
+                    document.getElementById('recommendationText').innerText = data.recommendation;
+                })
+                .catch(error => {
+                    console.error('Error:', error);
+                    document.getElementById('recommendationText').innerText = 'Error al obtener la recomendación.';
+                });
+        }
+    </script>
 {% endblock %}

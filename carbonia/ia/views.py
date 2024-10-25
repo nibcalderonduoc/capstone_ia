@@ -5,6 +5,10 @@ from django.http import HttpResponse
 import os
 from google.cloud import bigquery
 from django.shortcuts import render
+import openai
+from django.http import JsonResponse
+from django.conf import settings
+
 
 # Vista para subir un archivo y procesarlo
 def index(request):
@@ -216,6 +220,113 @@ def upload_to_gcs(file):
 
     return render(request, 'dashboard.html', context)
 
+from django.shortcuts import render
+from django.conf import settings
+from google.cloud import storage  # Importa Google Cloud Storage
+from django.http import HttpResponse
+import os
+from google.cloud import bigquery
+from django.shortcuts import render
+
+# Vista para subir un archivo y procesarlo
+def index(request):
+    if request.method == 'POST' and request.FILES.get('pdf_file'):
+        # Obtener el archivo subido
+        uploaded_file = request.FILES['pdf_file']
+        
+        # Subir el archivo a Google Cloud Storage
+        uploaded_file_url = upload_to_gcs(uploaded_file)
+        
+        # Pasar la URL del archivo al contexto para mostrarlo en la plantilla
+        context = {'file_url': uploaded_file_url}
+        return render(request, 'result.html', context)
+
+    return render(request, 'index.html')
+
+# Función para subir el archivo a Google Cloud Storage
+def upload_to_gcs(file):
+    """Sube el archivo a Google Cloud Storage y retorna la URL pública"""
+    storage_client = storage.Client()
+    bucket_name = settings.GS_BUCKET_NAME  # El nombre del bucket debe estar en settings.py
+    bucket = storage_client.bucket(bucket_name)
+    blob = bucket.blob(file.name)
+
+    # Verifica si el archivo es un PDF y ajusta el tipo MIME
+    if file.name.endswith('.pdf'):
+        mime_type = 'application/pdf'
+    else:
+        mime_type = 'application/octet-stream'  # Para otros archivos
+
+    # Sube el archivo especificando el tipo MIME
+    blob.upload_from_file(file, content_type=mime_type)
+
+    # Retorna la URL pública del archivo
+    return f"https://storage.googleapis.com/{bucket_name}/{file.name}"
+
+
+# Vista para obtener los datos de BigQuery y mostrarlos en el dashboard
+#def dashboard(request):
+    # Inicializa el cliente de BigQuery
+    client = bigquery.Client()
+
+    # Define la consulta
+    query = """
+    SELECT * FROM `proyectocarbonia.alcance2.silver_parse_table`
+    LIMIT 100
+    """
+
+    # Ejecuta la consulta
+    query_job = client.query(query)  # Ejecuta la consulta
+    results = query_job.result()  # Obtiene los resultados
+
+    # Prepara los datos en una lista para enviar al template
+    data = []
+    for row in results:
+        data.append(dict(row))  # Convierte cada fila en un diccionario
+
+    # Renderiza los datos en el template dashboard.html
+    return render(request, 'dashboard.html', {'data': data})
+
+
+#def dashboard(request):
+    client = bigquery.Client()
+
+    query = """
+    SELECT 
+      EXTRACT(YEAR FROM fec_ter) AS year,
+      EXTRACT(MONTH FROM fec_ter) AS month,
+      SUM(consumo) AS total_consumo,
+      SUM(CO2) AS total_CO2,
+      SUM(TCO2) AS total_TCO2
+    FROM `proyectocarbonia.alcance2.silver_parse_table`
+    GROUP BY year, month
+    ORDER BY year, month
+    """
+    
+    query_job = client.query(query)
+    results = query_job.result()
+
+    # Prepara los datos para el gráfico
+    labels = []
+    consumo_data = []
+    CO2_data = []
+    TCO2_data = []
+
+    for row in results:
+        labels.append(f"{int(row['year'])}-{int(row['month']):02d}")  # Formato "Año-Mes"
+        consumo_data.append(row['total_consumo'])
+        CO2_data.append(row['total_CO2'])
+        TCO2_data.append(row['total_TCO2'])
+
+    context = {
+        'labels': labels,
+        'consumo_data': consumo_data,
+        'CO2_data': CO2_data,
+        'TCO2_data': TCO2_data,
+    }
+
+    return render(request, 'dashboard.html', context)
+
 def dashboard(request):
     client = bigquery.Client()
 
@@ -231,7 +342,7 @@ def dashboard(request):
     """
     consumo_results = client.query(consumo_query).result()
 
-    # Consulta para TCO2 mensual extraído de la tabla
+    # Consulta para TCO2 mensual
     tco2_query = """
     SELECT 
       EXTRACT(YEAR FROM fec_ter) AS year,
@@ -281,4 +392,106 @@ def dashboard(request):
     }
 
     return render(request, 'dashboard.html', context)
+
+## ver graficos en combobox y recomendaciones
+def recomendaciones(request):
+    client = bigquery.Client()
+
+    # Consultas para los gráficos de consumo y TCO2 mensual
+    query = """
+    SELECT 
+      EXTRACT(YEAR FROM fec_ter) AS year,
+      EXTRACT(MONTH FROM fec_ter) AS month,
+      SUM(consumo) AS total_consumo,
+      SUM(TCO2) AS total_TCO2
+    FROM `proyectocarbonia.alcance2.silver_parse_table`
+    GROUP BY year, month
+    ORDER BY year, month
+    """
+    query_job = client.query(query)
+    results = query_job.result()
+
+    # Preparar los datos para los gráficos
+    labels = []
+    consumo_data = []
+    tco2_data = []
+
+    for row in results:
+        labels.append(f"{int(row['year'])}-{int(row['month']):02d}")  # Formato "Año-Mes"
+        consumo_data.append(row['total_consumo'])
+        tco2_data.append(row['total_TCO2'])
+
+    # Imprimir los datos para ver si son correctos
+    print("Labels:", labels)
+    print("Consumo Data:", consumo_data)
+    print("TCO2 Data:", tco2_data)
+
+    # Si los datos son correctos, sigamos con la consulta de distribuidoras
+    distribuidora_query = """
+    SELECT 
+      nom_dist,
+      SUM(consumo) AS total_consumo
+    FROM `proyectocarbonia.alcance2.silver_parse_table`
+    GROUP BY nom_dist
+    ORDER BY total_consumo DESC
+    """
+    distribuidora_results = client.query(distribuidora_query).result()
+
+    distribuidora_labels = []
+    distribuidora_data = []
+    for row in distribuidora_results:
+        distribuidora_labels.append(row['nom_dist'])
+        distribuidora_data.append(row['total_consumo'])
+
+    print("Distribuidora Labels:", distribuidora_labels)
+    print("Distribuidora Data:", distribuidora_data)
+
+    # Preparar los datos para enviarlos al template
+    context = {
+        'labels': labels,
+        'consumo_data': consumo_data,
+        'tco2_data': tco2_data,
+        'distribuidora_labels': distribuidora_labels,
+        'distribuidora_data': distribuidora_data
+    }
+
+    return render(request, 'recomendaciones.html', context)
+
+### revisar
+from langchain_openai import ChatOpenAI
+from langchain.prompts import ChatPromptTemplate
+from langchain.chains import LLMChain
+from django.http import JsonResponse
+from django.conf import settings
+
+# Vista para obtener la recomendación según el gráfico seleccionado
+def get_recommendation(request):
+    graph_type = request.GET.get('type')  # Obtener el valor seleccionado en el combobox
+
+    if graph_type == 'consumo':
+        prompt = "Dado los datos actuales de consumo, ¿cuál es tu recomendación para reducir el consumo de energía y mejorar la huella de carbono?"
+    elif graph_type == 'TCO2':
+        prompt = "Dado los datos actuales de TCO2, ¿cuál es tu recomendación para reducir las emisiones de carbono?"
+    elif graph_type == 'distribuidora':
+        prompt = "Dado los datos de consumo por distribuidora, ¿cómo podríamos mejorar la eficiencia energética?"
+    else:
+        return JsonResponse({'recommendation': 'Tipo de gráfico no reconocido.'})
+
+    # Configura LangChain con OpenAI
+    llm = ChatOpenAI(model="gpt-3.5-turbo", openai_api_key=settings.OPENAI_API_KEY)
+
+    # Crear una cadena para obtener la recomendación
+    chat_prompt = ChatPromptTemplate.from_messages([
+        {"role": "user", "content": prompt}
+    ])
+
+    chain = LLMChain(llm=llm, prompt=chat_prompt)
+
+    # Ejecutar la cadena
+    try:
+        recommendation = chain.run()
+    except Exception as e:
+        return JsonResponse({'recommendation': f"Error al obtener la recomendación: {str(e)}"}, status=500)
+
+    return JsonResponse({'recommendation': recommendation})
 

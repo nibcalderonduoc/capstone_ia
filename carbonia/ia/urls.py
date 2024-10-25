@@ -10,4 +10,6 @@ urlpatterns = [
     path('content/', views.content, name='content'),  # Página mostrar content
     path('infostoric/', views.infostoric, name='infostoric'),  # Página mostrar infostoric
     path('recomendaciones/', views.recomendaciones, name='recomendaciones'),  # Página mostrar recomendaciones
+    path('get_recommendation/', views.get_recommendation, name='get_recommendation'),  # Esta es la ruta para la API de recomendación
+
 ]

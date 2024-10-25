@@ -3,23 +3,30 @@
 {% block title %}Dashboard{% endblock %}
 
 {% block content %}
-            <h1>Datos actuales</h1> <br>
+    <h1>Datos actuales</h1> <br>
 
-            <!DOCTYPE html>
     <h1>Gráficos de Consumo, TCO2 por Distribuidora</h1>
 
     <!-- Gráfico de Consumo Mensual -->
     <h2>Consumo Mensual</h2>
-    <canvas id="consumoChart" width="400" height="200"></canvas>
+    <div style="width: 100%; max-width: 600px; margin: auto;">
+        <canvas id="consumoChart" style="width:100%; max-width:600px; height:400px;"></canvas>
+    </div>
 
     <!-- Gráfico de TCO2 Mensual -->
     <h2>TCO2 Mensual</h2>
-    <canvas id="TCO2Chart" width="400" height="200"></canvas>
+    <div style="width: 100%; max-width: 600px; margin: auto;">
+        <canvas id="TCO2Chart" style="width:100%; max-width:600px; height:400px;"></canvas>
+    </div>
 
     <!-- Gráfico de Consumo por Distribuidora -->
     <h2>Consumo por Distribuidora</h2>
-    <canvas id="distribuidoraChart" width="400" height="200"></canvas>
+    <div style="width: 100%; max-width: 600px; margin: auto;">
+        <canvas id="distribuidoraChart" style="width:100%; max-width:600px; height:400px;"></canvas>
+    </div>
 
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+    
     <script>
         // Gráfico de Consumo Mensual
         var ctx1 = document.getElementById('consumoChart').getContext('2d');
@@ -31,14 +38,48 @@
                     label: 'Consumo',
                     data: {{ consumo_data|safe }},
                     borderColor: 'rgba(75, 192, 192, 1)',
-                    borderWidth: 2,
-                    fill: false
+                    borderWidth: 3,
+                    backgroundColor: 'rgba(75, 192, 192, 0.1)',
+                    tension: 0.4,  // Hace la línea más suave
+                    pointBackgroundColor: 'rgba(75, 192, 192, 1)',
+                    pointBorderColor: 'white',
+                    pointBorderWidth: 2
                 }]
             },
             options: {
+                responsive: true,
+                plugins: {
+                    title: {
+                        display: true,
+                        text: 'Consumo Mensual',
+                        font: {
+                            size: 18
+                        }
+                    },
+                    legend: {
+                        position: 'top',
+                        labels: {
+                            font: {
+                                size: 14
+                            }
+                        }
+                    }
+                },
                 scales: {
+                    x: {
+                        ticks: {
+                            font: {
+                                size: 12
+                            }
+                        }
+                    },
                     y: {
-                        beginAtZero: true
+                        beginAtZero: true,
+                        ticks: {
+                            font: {
+                                size: 12
+                            }
+                        }
                     }
                 }
             }
@@ -54,14 +95,48 @@
                     label: 'TCO2',
                     data: {{ tco2_data|safe }},
                     borderColor: 'rgba(255, 99, 132, 1)',
-                    borderWidth: 2,
-                    fill: false
+                    borderWidth: 3,
+                    backgroundColor: 'rgba(255, 99, 132, 0.1)',
+                    tension: 0.4,  // Hace la línea más suave
+                    pointBackgroundColor: 'rgba(255, 99, 132, 1)',
+                    pointBorderColor: 'white',
+                    pointBorderWidth: 2
                 }]
             },
             options: {
+                responsive: true,
+                plugins: {
+                    title: {
+                        display: true,
+                        text: 'TCO2 Mensual',
+                        font: {
+                            size: 18
+                        }
+                    },
+                    legend: {
+                        position: 'top',
+                        labels: {
+                            font: {
+                                size: 14
+                            }
+                        }
+                    }
+                },
                 scales: {
+                    x: {
+                        ticks: {
+                            font: {
+                                size: 12
+                            }
+                        }
+                    },
                     y: {
-                        beginAtZero: true
+                        beginAtZero: true,
+                        ticks: {
+                            font: {
+                                size: 12
+                            }
+                        }
                     }
                 }
             }
@@ -76,20 +151,50 @@
                 datasets: [{
                     label: 'Consumo por Distribuidora',
                     data: {{ distribuidora_data|safe }},
-                    backgroundColor: 'rgba(54, 162, 235, 0.2)',
+                    backgroundColor: 'rgba(54, 162, 235, 0.6)',
                     borderColor: 'rgba(54, 162, 235, 1)',
-                    borderWidth: 1
+                    borderWidth: 2,
+                    hoverBackgroundColor: 'rgba(54, 162, 235, 0.8)',
+                    hoverBorderColor: 'rgba(54, 162, 235, 1)'
                 }]
             },
             options: {
+                responsive: true,
+                plugins: {
+                    title: {
+                        display: true,
+                        text: 'Consumo por Distribuidora',
+                        font: {
+                            size: 18
+                        }
+                    },
+                    legend: {
+                        position: 'top',
+                        labels: {
+                            font: {
+                                size: 14
+                            }
+                        }
+                    }
+                },
                 scales: {
+                    x: {
+                        ticks: {
+                            font: {
+                                size: 12
+                            }
+                        }
+                    },
                     y: {
-                        beginAtZero: true
+                        beginAtZero: true,
+                        ticks: {
+                            font: {
+                                size: 12
+                            }
+                        }
                     }
                 }
             }
         });
     </script>
-
-          
 {% endblock %}
