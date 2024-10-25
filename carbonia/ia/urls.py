@@ -9,4 +9,5 @@ urlpatterns = [
     path('sidebar/', views.sidebar, name='sidebar'),  # Página mostrar sidebar
     path('content/', views.content, name='content'),  # Página mostrar content
     path('infostoric/', views.infostoric, name='infostoric'),  # Página mostrar infostoric
+    path('recomendaciones/', views.recomendaciones, name='recomendaciones'),  # Página mostrar recomendaciones
 ]

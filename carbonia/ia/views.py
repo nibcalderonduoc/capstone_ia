@@ -82,6 +82,10 @@ def sidebar(request):
 def content(request):
     return render(request, 'content.html')
 
+# Vista para mostrar recomendaciones
+def recomendaciones(request):
+    return render(request, 'recomendaciones.html')
+
 # Vista para mostrar infostoric
 def infostoric(request):
      # Inicializa el cliente de BigQuery
@@ -277,3 +281,4 @@ def dashboard(request):
     }
 
     return render(request, 'dashboard.html', context)
+
