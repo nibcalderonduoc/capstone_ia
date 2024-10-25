@@ -239,18 +239,28 @@
 
         // Función para obtener la recomendación de OpenAI
         function getRecommendation() {
-            var graphType = document.getElementById('graphType').value; // Obtener el valor del combobox
-
-            // Realizar la solicitud de recomendación al servidor
-            fetch(`/get_recommendation/?type=${graphType}`)
-                .then(response => response.json())
-                .then(data => {
-                    document.getElementById('recommendationText').innerText = data.recommendation;
-                })
-                .catch(error => {
-                    console.error('Error:', error);
-                    document.getElementById('recommendationText').innerText = 'Error al obtener la recomendación.';
-                });
-        }
+          var graphType = document.getElementById('graphType').value;
+      
+          // Obtener los datos del gráfico seleccionado
+          var labels = {{ labels|safe }};
+          var data = [];
+          if (graphType === 'consumo') {
+              data = {{ consumo_data|safe }};
+          } else if (graphType === 'TCO2') {
+              data = {{ tco2_data|safe }};
+          }
+      
+          // Realizar la solicitud de recomendación al servidor
+          fetch(`/get_recommendation/?type=${graphType}&labels[]=${labels.join('&labels[]=')}&data[]=${data.join('&data[]=')}`)
+              .then(response => response.json())
+              .then(data => {
+                  document.getElementById('recommendationText').innerText = data.recommendation;
+              })
+              .catch(error => {
+                  console.error('Error:', error);
+                  document.getElementById('recommendationText').innerText = 'Error al obtener la recomendación.';
+              });
+      }
+      
     </script>
 {% endblock %}

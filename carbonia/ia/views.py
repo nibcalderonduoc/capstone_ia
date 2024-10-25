@@ -8,6 +8,11 @@ from django.shortcuts import render
 import openai
 from django.http import JsonResponse
 from django.conf import settings
+from langchain_openai import ChatOpenAI
+from langchain.prompts import ChatPromptTemplate
+from langchain.chains import LLMChain
+from django.http import JsonResponse
+from django.conf import settings
 
 
 # Vista para subir un archivo y procesarlo
@@ -458,40 +463,34 @@ def recomendaciones(request):
     return render(request, 'recomendaciones.html', context)
 
 ### revisar
-from langchain_openai import ChatOpenAI
+from langchain_openai import ChatOpenAI  # Actualizado a la nueva versión
 from langchain.prompts import ChatPromptTemplate
-from langchain.chains import LLMChain
-from django.http import JsonResponse
-from django.conf import settings
 
-# Vista para obtener la recomendación según el gráfico seleccionado
 def get_recommendation(request):
-    graph_type = request.GET.get('type')  # Obtener el valor seleccionado en el combobox
+    graph_type = request.GET.get('type')
+    labels = request.GET.getlist('labels[]')
+    data = [float(value) for value in request.GET.getlist('data[]')]
 
-    if graph_type == 'consumo':
-        prompt = "Dado los datos actuales de consumo, ¿cuál es tu recomendación para reducir el consumo de energía y mejorar la huella de carbono?"
-    elif graph_type == 'TCO2':
-        prompt = "Dado los datos actuales de TCO2, ¿cuál es tu recomendación para reducir las emisiones de carbono?"
-    elif graph_type == 'distribuidora':
-        prompt = "Dado los datos de consumo por distribuidora, ¿cómo podríamos mejorar la eficiencia energética?"
-    else:
+    # Configurar el prompt dinámico basado en el gráfico seleccionado
+    prompts = {
+        'consumo': f"Dado los datos de consumo mensual: Labels: {labels} y Consumo Data: {data}, ¿cuál es tu recomendación para reducir el consumo de energía y mejorar la huella de carbono?",
+        'TCO2': f"Dado los datos de emisiones mensuales de TCO2: Labels: {labels} y TCO2 Data: {data}, ¿cuál es tu recomendación para reducir las emisiones de carbono?",
+    }
+
+    prompt = prompts.get(graph_type)
+    if not prompt:
         return JsonResponse({'recommendation': 'Tipo de gráfico no reconocido.'})
 
-    # Configura LangChain con OpenAI
-    llm = ChatOpenAI(model="gpt-3.5-turbo", openai_api_key=settings.OPENAI_API_KEY)
+    # Usar el modelo GPT-4o
+    llm = ChatOpenAI(model="gpt-4o", openai_api_key=settings.OPENAI_API_KEY)
 
-    # Crear una cadena para obtener la recomendación
-    chat_prompt = ChatPromptTemplate.from_messages([
-        {"role": "user", "content": prompt}
-    ])
-
-    chain = LLMChain(llm=llm, prompt=chat_prompt)
-
-    # Ejecutar la cadena
     try:
-        recommendation = chain.run()
+        # Pasar el prompt directamente como una cadena
+        recommendation_response = llm.invoke(prompt)
+        recommendation_text = recommendation_response.content  # Acceder directamente al contenido del mensaje
     except Exception as e:
         return JsonResponse({'recommendation': f"Error al obtener la recomendación: {str(e)}"}, status=500)
 
-    return JsonResponse({'recommendation': recommendation})
+    return JsonResponse({'recommendation': recommendation_text})
+
 
