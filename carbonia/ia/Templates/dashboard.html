@@ -4,5 +4,102 @@
 
 {% block content %}
             <h1>Datos actuales</h1> <br>
+
+            <!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Dashboard</title>
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+</head>
+<body>
+    <h1>Gráficos de Consumo, TCO2 y Consumo por Distribuidora</h1>
+
+    <!-- Gráfico de Consumo Mensual -->
+    <h2>Consumo Mensual</h2>
+    <canvas id="consumoChart" width="400" height="200"></canvas>
+
+    <!-- Gráfico de TCO2 Mensual -->
+    <h2>TCO2 Mensual</h2>
+    <canvas id="TCO2Chart" width="400" height="200"></canvas>
+
+    <!-- Gráfico de Consumo por Distribuidora -->
+    <h2>Consumo por Distribuidora</h2>
+    <canvas id="distribuidoraChart" width="400" height="200"></canvas>
+
+    <script>
+        // Gráfico de Consumo Mensual
+        var ctx1 = document.getElementById('consumoChart').getContext('2d');
+        var consumoChart = new Chart(ctx1, {
+            type: 'line',
+            data: {
+                labels: {{ labels|safe }},  // Etiquetas de mes
+                datasets: [{
+                    label: 'Consumo',
+                    data: {{ consumo_data|safe }},
+                    borderColor: 'rgba(75, 192, 192, 1)',
+                    borderWidth: 2,
+                    fill: false
+                }]
+            },
+            options: {
+                scales: {
+                    y: {
+                        beginAtZero: true
+                    }
+                }
+            }
+        });
+
+        // Gráfico de TCO2 Mensual
+        var ctx2 = document.getElementById('TCO2Chart').getContext('2d');
+        var TCO2Chart = new Chart(ctx2, {
+            type: 'line',
+            data: {
+                labels: {{ labels|safe }},  // Etiquetas de mes
+                datasets: [{
+                    label: 'TCO2',
+                    data: {{ tco2_data|safe }},
+                    borderColor: 'rgba(255, 99, 132, 1)',
+                    borderWidth: 2,
+                    fill: false
+                }]
+            },
+            options: {
+                scales: {
+                    y: {
+                        beginAtZero: true
+                    }
+                }
+            }
+        });
+
+        // Gráfico de Consumo por Distribuidora
+        var ctx3 = document.getElementById('distribuidoraChart').getContext('2d');
+        var distribuidoraChart = new Chart(ctx3, {
+            type: 'bar',
+            data: {
+                labels: {{ distribuidora_labels|safe }},  // Nombres de distribuidoras
+                datasets: [{
+                    label: 'Consumo por Distribuidora',
+                    data: {{ distribuidora_data|safe }},
+                    backgroundColor: 'rgba(54, 162, 235, 0.2)',
+                    borderColor: 'rgba(54, 162, 235, 1)',
+                    borderWidth: 1
+                }]
+            },
+            options: {
+                scales: {
+                    y: {
+                        beginAtZero: true
+                    }
+                }
+            }
+        });
+    </script>
+</body>
+</html>
+
           
 {% endblock %}
