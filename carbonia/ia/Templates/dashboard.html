@@ -3,25 +3,21 @@
 {% block title %}Dashboard{% endblock %}
 
 {% block content %}
-    <h1>Datos actuales</h1> <br>
-
     <h1>Gráficos de Consumo, TCO2 por Distribuidora</h1>
 
     <!-- Gráfico de Consumo Mensual -->
     <h2>Consumo Mensual</h2>
-    <div style="width: 100%; max-width: 600px; margin: auto;">
+    <div class="chart">
         <canvas id="consumoChart" style="width:100%; max-width:600px; height:400px;"></canvas>
     </div>
 
-    <!-- Gráfico de TCO2 Mensual -->
-    <h2>TCO2 Mensual</h2>
-    <div style="width: 100%; max-width: 600px; margin: auto;">
+    <!-- Gráfico de TCO2 Mensual -->    
+    <div class="chart">
         <canvas id="TCO2Chart" style="width:100%; max-width:600px; height:400px;"></canvas>
     </div>
 
     <!-- Gráfico de Consumo por Distribuidora -->
-    <h2>Consumo por Distribuidora</h2>
-    <div style="width: 100%; max-width: 600px; margin: auto;">
+    <div class="chart">
         <canvas id="distribuidoraChart" style="width:100%; max-width:600px; height:400px;"></canvas>
     </div>
 
