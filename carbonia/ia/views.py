@@ -493,4 +493,11 @@ def get_recommendation(request):
 
     return JsonResponse({'recommendation': recommendation_text})
 
+def alcance1(request):
+    return render(request, 'alcance1.html')
 
+def alcance2(request):
+    return render(request, 'alcance2.html')
+
+def alcance3(request):  
+    return render(request, 'alcance3.html')

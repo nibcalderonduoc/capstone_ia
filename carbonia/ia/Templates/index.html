@@ -4,9 +4,100 @@
 
 {% block content %}
   <h1>Subir respaldo</h1>
-              <form method="post" enctype="multipart/form-data">
-              {% csrf_token %}
-              <input type="file" name="pdf_file" required> <br>
-              <button class="file-upload-btn" type="submit">Subir y Procesar</button>
-              </form>
+  
+  <!-- Contenedor de los alcances -->
+  <div class="alcances-container">
+    <div class="alcance-box">
+      <h3>Alcance 1</h3>
+      <p>Descripción de Alcance 1</p>
+      <button onclick="location.href='{% url 'alcance1' %}'" class="alcance-btn">Ir a Alcance 1</button>
+    </div>
+    
+    <div class="alcance-box">
+      <h3>Alcance 2</h3>
+      <p>Descripción de Alcance 2</p>
+      <button onclick="location.href='{% url 'alcance2' %}'" class="alcance-btn">Ir a Alcance 2</button>
+    </div>
+    
+    <div class="alcance-box">
+      <h3>Alcance 3</h3>
+      <p>Descripción de Alcance 3</p>
+      <button onclick="location.href='{% url 'alcance3' %}'" class="alcance-btn">Ir a Alcance 3</button>
+    </div>
+  </div>
+
+  <!-- Formulario de carga de documentos -->
+  <form method="post" enctype="multipart/form-data" class="file-upload-form">
+    {% csrf_token %}
+    <input type="file" name="pdf_file" required> <br>
+    <button class="file-upload-btn" type="submit">Subir y Procesar</button>
+  </form>
 {% endblock %}
+
+<style>
+  /* Estilo para el contenedor de alcances */
+  .alcances-container {
+    display: flex;
+    justify-content: space-between;
+    gap: 20px;
+    margin-bottom: 20px;
+  }
+
+  /* Estilo para cada cajita de alcance */
+  .alcance-box {
+    background-color: #f9f9f9;
+    padding: 20px;
+    border-radius: 8px;
+    box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
+    width: 30%;
+    text-align: center;
+  }
+
+  .alcance-box h3 {
+    font-size: 20px;
+    color: #333;
+    margin-bottom: 10px;
+  }
+
+  .alcance-box p {
+    font-size: 14px;
+    color: #666;
+    margin-bottom: 15px;
+  }
+
+  /* Estilo para el botón dentro de cada cajita */
+  .alcance-btn {
+    background-color: #4CAF50;
+    color: white;
+    padding: 10px 15px;
+    font-size: 14px;
+    border: none;
+    border-radius: 5px;
+    cursor: pointer;
+    transition: background-color 0.3s ease;
+  }
+
+  .alcance-btn:hover {
+    background-color: #45a049;
+  }
+
+  /* Estilo para el formulario de carga de archivos */
+  .file-upload-form {
+    margin-top: 20px;
+  }
+
+  .file-upload-btn {
+    background-color: #4CAF50;
+    color: white;
+    padding: 10px 20px;
+    font-size: 16px;
+    border: none;
+    border-radius: 5px;
+    cursor: pointer;
+    transition: background-color 0.3s ease;
+  }
+
+  .file-upload-btn:hover {
+    background-color: #45a049;
+  }
+</style>
