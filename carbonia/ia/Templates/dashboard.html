@@ -7,8 +7,10 @@
     <div class="charts">
         <!-- Gráfico de Consumo Mensual -->
         <div class="chart">
+            <a href="{% url 'alcance1' %}"> 
             <canvas id="consumoChart" style="width:100%; max-width:600px; height:400px;"></canvas>
             <button onclick="handleConsumo()">Ver detalles de Consumo</button>
+            </a>
         </div>
 
         <!-- Gráfico de TCO2 Mensual -->    

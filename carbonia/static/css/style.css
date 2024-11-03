@@ -507,28 +507,31 @@ button {
   gap: 20px;
   margin-bottom: 15px;
   padding: 15px;
+  background: #fff;
+  border-radius: 8px;
+  box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
   position: relative;
 }
 
 .item-number {
-      font-size: 16px;
-      font-weight: bold;
-      color: #333;
-      width: 60px;
-    }
+  font-size: 16px;
+  font-weight: bold;
+  color: #333;
+  width: 60px;
+}
 
-    .input-group {
-      display: flex;
-      flex-direction: column;
-      flex-grow: 1;
-      margin-right: 15px;
-    }
+.input-group {
+  display: flex;
+  flex-direction: column;
+  flex-grow: 1;
+  margin-right: 15px;
+}
 
-    .input-group label {
-      font-size: 14px;
-      color: #555;
-      margin-bottom: 5px;
-    }
+.input-group label {
+  font-size: 14px;
+  color: #555;
+  margin-bottom: 5px;
+}
 
     /* Input and Select Styles */
     .tipo-emision-select, .categoria-select, .carbon-value {
@@ -574,5 +577,5 @@ button {
     }
 
     .add-item-btn:hover {
-      background-color: rgb(59, 177, 203);
+      background-color: rgba(59, 203, 190);
     }
