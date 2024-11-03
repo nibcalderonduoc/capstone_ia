@@ -15,14 +15,18 @@
 
         <!-- Gráfico de TCO2 Mensual -->    
         <div class="chart">
+            <a href="{% url 'alcance2' %}"> 
             <canvas id="TCO2Chart" style="width:100%; max-width:600px; height:400px;"></canvas>
             <button onclick="handleTCO2()">Ver detalles de TCO2</button>
+            </a>
         </div>
 
         <!-- Gráfico de Consumo por Distribuidora -->
         <div class="chart">
+            <a href="{% url 'alcance3' %}"> 
             <canvas id="distribuidoraChart" style="width:100%; max-width:600px; height:400px;"></canvas>
             <button onclick="handleDistribuidora()">Ver detalles de Distribuidora</button>
+            </a>
         </div>
     </div>
 
