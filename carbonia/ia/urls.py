@@ -15,6 +15,8 @@ urlpatterns = [
     path('alcance1/', views.alcance1, name='alcance1'),  # Página mostrar alcance1
     path('alcance2/', views.alcance2, name='alcance2'),  # Página mostrar alcance2
     path('alcance3/', views.alcance3, name='alcance3'),  # Página mostrar alcance3
+    path('obtener_datos_bigquery/', views.obtener_datos_bigquery, name='obtener_datos_bigquery'),
+    path('upload_to_bigquery/', views.upload_to_bigquery, name='upload_to_bigquery'),
     
     
 

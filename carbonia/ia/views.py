@@ -501,3 +501,115 @@ def alcance2(request):
 
 def alcance3(request):  
     return render(request, 'alcance3.html')
+
+from django.http import JsonResponse
+from google.cloud import bigquery
+
+def obtener_datos_bigquery(request):
+    client = bigquery.Client()
+    query = """
+    SELECT 
+    c.nombre AS categoria, 
+    s.nombre AS subcategoria, 
+    e.nombre AS elemento,
+    u.unidad AS unidad
+    FROM `proyectocarbonia.datacarbonia.categoria` c
+    JOIN `proyectocarbonia.datacarbonia.subcategoria` s 
+    ON c.id_categoria = s.id_categoria
+    JOIN `proyectocarbonia.datacarbonia.elemento` e 
+    ON s.id_subcategoria = e.id_subcategoria
+    JOIN `proyectocarbonia.datacarbonia.unidad_medida` u 
+    ON e.id_elemento = u.id_elemento
+    JOIN `proyectocarbonia.datacarbonia.alcance` a
+    ON c.id_alcance = a.id_alcance
+    WHERE a.id_alcance = 3
+    """
+    query_job = client.query(query)
+    resultados = query_job.result()
+
+    data = {}
+    for row in resultados:
+        categoria = row.categoria
+        subcategoria = row.subcategoria
+        elemento = row.elemento
+        unidad = row.unidad
+        
+        if categoria not in data:
+            data[categoria] = {}
+        if subcategoria not in data[categoria]:
+            data[categoria][subcategoria] = []
+        data[categoria][subcategoria].append({'elemento': elemento, 'unidad': unidad})
+    
+    return JsonResponse(data)
+
+#subir datos a bigquery
+from django.http import JsonResponse
+from django.views.decorators.csrf import csrf_protect
+from django.views.decorators.http import require_POST
+import json
+from google.cloud import bigquery
+from datetime import datetime
+
+@csrf_protect
+@require_POST
+def upload_to_bigquery(request):
+    try:
+        data = json.loads(request.body)
+
+        # Validación de datos
+        for item in data:
+            required_fields = ['categoria', 'subcategoria', 'elemento', 'valor', 'unidad', 'fechaRegistro']
+            for field in required_fields:
+                if field not in item or not item[field]:
+                    return JsonResponse({'message': f'El campo {field} es requerido.'}, status=400)
+
+        client = bigquery.Client()
+        table_id = 'proyectocarbonia.alcance3.alcance3_data'
+
+        # Preparar filas para insertar
+        rows_to_insert = []
+        for item in data:
+            # Convertir valor a float
+            try:
+                valor = float(item["valor"])
+            except ValueError:
+                return JsonResponse({'message': f'El valor "{item["valor"]}" no es un número válido.'}, status=400)
+
+            # Convertir fecha a formato DATE
+            try:
+                fecha_registro = datetime.strptime(item["fechaRegistro"], '%Y-%m-%d').date()
+            except ValueError:
+                return JsonResponse({'message': f'La fecha "{item["fechaRegistro"]}" no tiene el formato correcto YYYY-MM-DD.'}, status=400)
+
+            row = {
+                "id_cliente": 1,          # Se establece como None
+                "nombre_cliente": "Nombre de prueba",      # Se establece como None
+                "rut": "00000000-0" ,                 # Se establece como None
+                "categoria": item["categoria"],
+                "subcategoria": item["subcategoria"],
+                "elemento": item["elemento"],
+                "valor": valor,
+                "unidad": item["unidad"],
+                "fecha_registro": str(fecha_registro)
+            }
+
+            rows_to_insert.append(row)
+
+        # Obtener la tabla para asegurar que el esquema coincide
+        table = client.get_table(table_id)
+
+        errors = client.insert_rows_json(table, rows_to_insert)
+
+        if not errors:
+            return JsonResponse({'message': 'Datos subidos exitosamente'})
+        else:
+            # Imprimir errores para depuración
+            print('Errors:', errors)
+            return JsonResponse({'message': 'Error al subir los datos', 'errors': errors}, status=400)
+
+    except json.JSONDecodeError:
+        return JsonResponse({'message': 'Datos JSON inválidos'}, status=400)
+    except Exception as e:
+        # Imprimir excepción para depuración
+        print('Exception:', str(e))
+        return JsonResponse({'message': f'Error del servidor: {str(e)}'}, status=500)
