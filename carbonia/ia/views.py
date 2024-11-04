@@ -613,3 +613,7 @@ def upload_to_bigquery(request):
         # Imprimir excepción para depuración
         print('Exception:', str(e))
         return JsonResponse({'message': f'Error del servidor: {str(e)}'}, status=500)
+
+# Vista para mostrar la página de login
+def login(request):
+    return render(request, 'login.html')
