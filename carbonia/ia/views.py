@@ -652,7 +652,7 @@ def registro(request):
         # Configura el cliente de BigQuery
         client = bigquery.Client()
 
-        # Define tu dataset y tabla
+        # Define tu dataset y tabla proyectocarbonia.datacarbonia.cliente
         dataset_id = 'datacarbonia'
         table_id = 'cliente'
         table_ref = client.dataset(dataset_id).table(table_id)
