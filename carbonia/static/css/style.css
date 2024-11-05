@@ -8,13 +8,15 @@ body {
 /* Logo */
 .logo {
   display: flex;
-  flex-direction: row;
-  justify-content: flex-start;
-  align-items: flex-start;
-  width: 315px;
-  height: 104px;
-  padding: 16 px;
-  box-sizing: border-box;
+  justify-content: center; /* Centra horizontalmente */
+  align-items: center; /* Centra verticalmente */
+  margin-bottom: 20px;
+  height: auto;
+}
+
+.logo img {
+  height: 50px; /* Ajustar la altura para que el logo sea proporcional */
+  max-width: 100%; /* Asegura que no exceda el ancho del contenedor */
 }
 
 .icon {
@@ -228,6 +230,12 @@ body {
   display: flex;
   align-items: center;
   gap: 10px;
+  
+}
+
+.file-upload-form form{
+  background-color: #fff;
+  border-radius: 30%;
 }
 
 .file-upload-form input[type="file"] {
@@ -509,7 +517,9 @@ button {
   /* Estilos Generales */
   .styled-table-container {
     width: 100%;
+    height: 600px;
     overflow-x: auto; /* Habilita el scroll horizontal */
+    overflow-y: auto;
     display: block; /* Asegura que sea un contenedor de bloque */
     white-space: nowrap; /* Evita que el contenido de las celdas haga salto de línea */
 }
@@ -705,7 +715,7 @@ button {
 }
 
 .login-page .logo img {
-  width: 50px;
+  width: auto;
   height: 50px;
 }
 

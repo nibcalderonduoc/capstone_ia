@@ -3,28 +3,28 @@
 {% block title %}Recomendaciones{% endblock %}
 
 {% block content %}
-    <h1>Datos actuales</h1> <br>
+    <h1>Recomendación en base a consumo</h1>
 
     <!-- Combobox para seleccionar el gráfico -->
     <label for="graphType">Selecciona el gráfico para visualizar y obtener una recomendación:</label>
+    <br><br>
     <select id="graphType" name="graphType" onchange="updateGraph()">
         <option value="" selected>Elija una Opción...</option>  <!-- Opción predeterminada -->
         <option value="consumo">Consumo Mensual</option>
         <option value="TCO2">TCO2 Mensual</option>
         <option value="distribuidora">Consumo por Distribuidora</option>
     </select>
+    <br>
 
     <!-- Botón para solicitar la recomendación -->
     <button onclick="getRecommendation()">Obtener Recomendación</button>
 
     <!-- Mostrar la recomendación generada -->
     <div id="recommendation" style="margin-top: 20px; padding: 10px; background-color: #f0f0f0; border-radius: 5px;">
-        <p id="recommendationText">Aquí aparecerá la recomendación...</p>
+        <p id="recommendationText">Elija una opción para mostrar la recomendación...</p>
     </div>
 
-    <!-- Gráficos (solo uno será visible a la vez) -->
-    <h2>Gráficos</h2>
-
+    <!-- Gráfico seleccionado (solo uno será visible a la vez) -->
     <div id="consumoGraph" style="display: none;">
         <h2>Consumo Mensual</h2>
         <div style="width: 100%; max-width: 600px; margin: auto;"> <!-- Margen centrado -->

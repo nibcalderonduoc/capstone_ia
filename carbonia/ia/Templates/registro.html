@@ -7,10 +7,9 @@
     <div class="login-container">
         <div class="logo">
             <img src="{% static 'img/LogoColor.png' %}" alt="CarbonIA Logo">
-            <div class="brand-name">CarbonIA</div>
         </div>
         <div class="form-title">REGISTRO</div>
-        <div class="form-subtitle">Ingrese sus credenciales</div>
+        <div class="form-subtitle">Ingrese sus datos</div>
         <form id="registroForm" action="{% url 'registro' %}" method="post">
             {% csrf_token %}
             <div class="input-group">
