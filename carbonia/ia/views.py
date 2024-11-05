@@ -617,3 +617,94 @@ def upload_to_bigquery(request):
 # Vista para mostrar la página de login
 def login(request):
     return render(request, 'login.html')
+
+
+from django.http import JsonResponse
+from django.shortcuts import render, redirect
+from google.cloud import bigquery
+import datetime
+from django.contrib.auth.hashers import make_password
+
+def registro(request):
+    if request.method == 'POST':
+        rut = request.POST['rut']
+        username = request.POST['nomcliente']
+        direccion = request.POST['dircliente']
+        encargado = request.POST['encargado']
+        email = request.POST['emailcliente']
+        password = request.POST['psscliente']
+        confirm_password = request.POST['psscliente2']
+
+        # Verificar si las contraseñas coinciden
+        if password != confirm_password:
+            error_message = "Las contraseñas no coinciden."
+            if request.headers.get('x-requested-with') == 'XMLHttpRequest':
+                return JsonResponse({'status': 'error', 'message': error_message})
+            else:
+                return render(request, 'registro.html', {'error_message': error_message})
+
+        # Hashear la contraseña
+        hashed_password = make_password(password)
+
+        # Formatea la fecha actual
+        fecha_registro = datetime.date.today().isoformat()
+
+        # Configura el cliente de BigQuery
+        client = bigquery.Client()
+
+        # Define tu dataset y tabla
+        dataset_id = 'datacarbonia'
+        table_id = 'cliente'
+        table_ref = client.dataset(dataset_id).table(table_id)
+
+        # Verificar si el RUT ya está registrado
+        query = f"""
+            SELECT COUNT(1) as count
+            FROM `{dataset_id}.{table_id}`
+            WHERE id_cliente = @rut
+        """
+        job_config = bigquery.QueryJobConfig(
+            query_parameters=[
+                bigquery.ScalarQueryParameter("rut", "STRING", rut)
+            ]
+        )
+        query_job = client.query(query, job_config=job_config)
+        results = query_job.result()
+        count = next(results).count
+
+        if count > 0:
+            error_message = "El RUT ya está registrado."
+            if request.headers.get('x-requested-with') == 'XMLHttpRequest':
+                return JsonResponse({'status': 'error', 'message': error_message})
+            else:
+                return render(request, 'registro.html', {'error_message': error_message})
+
+        # Crea la fila para insertar
+        rows_to_insert = [
+            {
+                "id_cliente": rut,  # RUT como id_cliente
+                "nomcliente": username,
+                "dircliente": direccion,
+                "encargado": encargado,
+                "emailcliente": email,
+                "psscliente": hashed_password,  # Almacena la contraseña hasheada
+                "fecha_registro": fecha_registro
+            }
+        ]
+
+        # Inserta la fila en la tabla de BigQuery
+        errors = client.insert_rows_json(table_ref, rows_to_insert)
+
+        if not errors:
+            if request.headers.get('x-requested-with') == 'XMLHttpRequest':
+                return JsonResponse({'status': 'success', 'message': 'Datos registrados exitosamente.'})
+            else:
+                return redirect('success')
+        else:
+            error_message = f"Error al registrar los datos: {errors}. Por favor, intente nuevamente."
+            if request.headers.get('x-requested-with') == 'XMLHttpRequest':
+                return JsonResponse({'status': 'error', 'message': error_message})
+            else:
+                return render(request, 'registro.html', {'error_message': error_message})
+
+    return render(request, 'registro.html')

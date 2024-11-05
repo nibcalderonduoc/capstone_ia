@@ -1,0 +1,145 @@
+{% extends 'partials/base-sinsidebar.html' %}
+{% load static %}
+{% block title %}Registro - Carbonia{% endblock %}
+
+{% block content %}
+<div class="login-page">
+    <div class="login-container">
+        <div class="logo">
+            <img src="{% static 'img/LogoColor.png' %}" alt="CarbonIA Logo">
+            <div class="brand-name">CarbonIA</div>
+        </div>
+        <div class="form-title">REGISTRO</div>
+        <div class="form-subtitle">Ingrese sus credenciales</div>
+        <form id="registroForm" action="{% url 'registro' %}" method="post">
+            {% csrf_token %}
+            <div class="input-group">
+                <label for="rut">RUT</label>
+                <input type="text" id="rut" name="rut" required aria-describedby="rutError">
+                <small id="rutError" class="error-text"></small>
+            </div>
+            <div class="input-group">
+                <label for="nomcliente">Nombre del Cliente</label>
+                <input type="text" id="nomcliente" name="nomcliente" required>
+            </div>
+            <div class="input-group">
+                <label for="dircliente">Dirección</label>
+                <input type="text" id="dircliente" name="dircliente">
+            </div>
+            <div class="input-group">
+                <label for="encargado">Encargado</label>
+                <input type="text" id="encargado" name="encargado">
+            </div>
+            <div class="input-group">
+                <label for="emailcliente">Correo Electrónico</label>
+                <input type="email" id="emailcliente" name="emailcliente" required aria-describedby="emailError">
+                <small id="emailError" class="error-text"></small>
+            </div>
+            <div class="input-group password-group">
+                <label for="psscliente">Contraseña</label>
+                <input type="password" id="psscliente" name="psscliente" required aria-describedby="passwordError">
+                <span class="toggle-password" 
+                      onmousedown="togglePassword('psscliente', true)" 
+                      onmouseup="togglePassword('psscliente', false)"
+                      onmouseleave="togglePassword('psscliente', false)">
+                    &#128065;
+                </span>
+                <small id="passwordError" class="error-text"></small>
+            </div>
+            <div class="input-group password-group">
+                <label for="psscliente2">Repetir Contraseña</label>
+                <input type="password" id="psscliente2" name="psscliente2" required>
+                <span class="toggle-password" 
+                      onmousedown="togglePassword('psscliente2', true)" 
+                      onmouseup="togglePassword('psscliente2', false)"
+                      onmouseleave="togglePassword('psscliente2', false)">
+                    &#128065;
+                </span>
+            </div>
+            <div class="checkbox-group">
+                <input type="checkbox" id="terms" name="terms" required>
+                <label for="terms">Acepto términos & condiciones</label>
+            </div>
+            <button type="submit" class="submit-btn">REGISTER</button>
+        </form>
+        <div class="link">
+            ¿Ya tienes una cuenta? <a href="{% url 'login' %}">Inicia sesión aquí</a>
+        </div>
+    </div>
+</div>
+
+<!-- Incluye jQuery desde un CDN -->
+<script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
+
+<script>
+    $(document).ready(function() {
+        $('#registroForm').on('submit', function(event) {
+            event.preventDefault(); // Evita el envío tradicional del formulario
+
+            // Serializa los datos del formulario
+            var formData = $(this).serialize();
+
+            $.ajax({
+                type: 'POST',
+                url: $(this).attr('action'),
+                data: formData,
+                success: function(response) {
+                    if (response.status === 'success') {
+                        alert(response.message); // Muestra mensaje de éxito
+                        $('#registroForm')[0].reset(); // Opcional: reinicia el formulario
+                    } else if (response.status === 'error') {
+                        alert(response.message); // Muestra mensaje de error
+                    }
+                },
+                error: function(xhr, status, error) {
+                    alert('Ha ocurrido un error. Por favor, inténtelo nuevamente.');
+                }
+            });
+        });
+    });
+
+    function togglePassword(fieldId, show) {
+        var field = document.getElementById(fieldId);
+        field.setAttribute('type', show ? 'text' : 'password');
+    }
+
+    function validarRUT(rut) {
+        var rutPattern = /^[0-9]+[-|‐]{1}[0-9kK]{1}$/;
+        if (!rutPattern.test(rut)) {
+            return false;
+        }
+        
+        var tmp = rut.split('-');
+        var rutBody = parseInt(tmp[0], 10);
+        var digv = tmp[1].toLowerCase();
+
+        function dv(T) {
+            var M = 0, S = 1;
+            for (; T; T = Math.floor(T / 10)) {
+                S = (S + T % 10 * (9 - M++ % 6)) % 11;
+            }
+            return S ? S - 1 : 'k';
+        }
+
+        var calculatedDv = dv(rutBody);
+        return (calculatedDv == digv);
+    }
+
+    document.getElementById("rut").addEventListener("input", function(event) {
+        var rutInput = event.target;
+        var formattedRUT = formatRUT(rutInput.value);
+        rutInput.value = formattedRUT;
+    });
+
+    function formatRUT(rut) {
+        rut = rut.replace(/^0+/, '').replace(/[^\dkK]+/g, '');
+        if (rut.length > 1) {
+            var cuerpo = rut.slice(0, -1);
+            var dv = rut.slice(-1);
+            return cuerpo + '-' + dv;
+        }
+        return rut;
+    }
+</script>
+
+{% endblock %}

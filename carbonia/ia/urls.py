@@ -18,6 +18,8 @@ urlpatterns = [
     path('obtener_datos_bigquery/', views.obtener_datos_bigquery, name='obtener_datos_bigquery'),
     path('upload_to_bigquery/', views.upload_to_bigquery, name='upload_to_bigquery'),
     path('login/', views.login, name='login'), # Página mostrar login
+    path('registro/', views.registro, name='registro'), # Página mostrar registro
+   
     
     
 
