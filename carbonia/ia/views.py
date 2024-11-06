@@ -728,3 +728,51 @@ def registro(request):
                 return render(request, 'registro.html', {'error_message': error_message})
 
     return render(request, 'registro.html')
+
+from django.shortcuts import render, redirect
+from google.cloud import bigquery
+from django.contrib.auth.hashers import check_password
+
+def login_view(request):
+    if request.method == 'POST':
+        email = request.POST.get('email')
+        password = request.POST.get('password')
+        
+        # Configura el cliente de BigQuery
+        client = bigquery.Client()
+        
+        # Define tu dataset y tabla
+        dataset_id = 'datacarbonia'
+        table_id = 'cliente'
+        
+        # Realiza la consulta a BigQuery para buscar el usuario por correo
+        query = f"""
+            SELECT psscliente FROM `{dataset_id}.{table_id}`
+            WHERE emailcliente = @correo
+        """
+        job_config = bigquery.QueryJobConfig(
+            query_parameters=[
+                bigquery.ScalarQueryParameter("correo", "STRING", email)
+            ]
+        )
+        query_job = client.query(query, job_config=job_config)
+        results = query_job.result()
+
+        # Verificar si el usuario existe y si la contraseña coincide
+        user = None
+        for row in results:
+            if check_password(password, row.psscliente):
+                user = True
+                break
+        
+        if user:
+            # Guardar el email en la sesión
+            request.session['email'] = email  # Almacena el email en la sesión
+            
+            # Redirige a la página principal si el login es exitoso
+            return redirect('index')
+        else:
+            error_message = "Correo o contraseña incorrectos."
+            return render(request, 'login.html', {'error_message': error_message})
+
+    return render(request, 'login.html')

@@ -63,6 +63,7 @@ ROOT_URLCONF = 'carbonia.urls'
        #         'django.template.context_processors.request',
         #        'django.contrib.auth.context_processors.auth',
          #       'django.contrib.messages.context_processors.messages',
+                
           #  ],
        # },
     #},
@@ -80,6 +81,8 @@ TEMPLATES = [
                 'django.template.context_processors.request',
                 'django.contrib.auth.context_processors.auth',
                 'django.contrib.messages.context_processors.messages',
+                'ia.context_processors.perfil_cliente',  # Agregar el contexto personalizado
+                
             ],
         },
     },

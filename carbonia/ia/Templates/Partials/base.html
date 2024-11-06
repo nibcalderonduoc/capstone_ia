@@ -1,60 +1,66 @@
 <!DOCTYPE html>
 <html lang="es">
-<head>
-    <title>{% block title %}Mi Sitio{% endblock %}</title>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <head>
+    <title>
+      {% block title %}
+        Mi Sitio
+      {% endblock %}
+    </title>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
     {% load static %}
-    <link rel="icon" type="image/x-icon" href="https://firebasestorage.googleapis.com/v0/b/unify-v3-copy.appspot.com/o/noflxksrkig-4%3A77?alt=media&token=fde79ac1-99f6-40c9-ad56-22c825ce3670">
-    <link rel="stylesheet" type="text/css" href="{% static 'css/style.css' %}">
+    <link rel="icon" type="image/x-icon" href="https://firebasestorage.googleapis.com/v0/b/unify-v3-copy.appspot.com/o/noflxksrkig-4%3A77?alt=media&token=fde79ac1-99f6-40c9-ad56-22c825ce3670" />
+    <link rel="stylesheet" type="text/css" href="{% static 'css/style.css' %}" />
     <head>
       <!-- Asegúrate de incluir este script en el head de tu archivo -->
       <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+    </head>
   </head>
-  
-</head>
-<body>
+  <body>
     <div id="viewport">
-        <!-- Sidebar -->        
-        {% include 'partials/sidebar.html' %}
+      <!-- Sidebar -->
+      {% include 'partials/sidebar.html' %}
 
-        <!-- Content -->
-        <div id="content">
-          <div class="button-form-container">
-            <!--Volver atras-->
-            <button onclick="goBack()" class="back-button">
-              <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 512 512">
-              <path d="M377.9 105.9L500.7 228.7c7.2 7.2 11.3 17.1 11.3 27.3s-4.1 20.1-11.3 27.3L377.9 406.1c-6.4 6.4-15 9.9-24 9.9c-18.7 0-33.9-15.2-33.9-33.9l0-62.1-128 0c-17.7 0-32-14.3-32-32l0-64c0-17.7 14.3-32 32-32l128 0 0-62.1c0-18.7 15.2-33.9 33.9-33.9c9 0 17.6 3.6 24 9.9zM160 96L96 96c-17.7 0-32 14.3-32 32l0 256c0 17.7 14.3 32 32 32l64 0c17.7 0 32 14.3 32 32s-14.3 32-32 32l-64 0c-53 0-96-43-96-96L0 128C0 75 43 32 96 32l64 0c17.7 0 32 14.3 32 32s-14.3 32-32 32z"/></svg>
-              Volver atras
-            </button>
-            <!-- Formulario de carga de documentos -->
-            <form method="post" enctype="multipart/form-data" class="file-upload-form">
-              {% csrf_token %}
-              <input type="file" name="pdf_file" required> <br>
-              <button class="back-button" type="submit">Subir y procesar</button>
-            </form>
-          </div>
-      
+      <!-- Content -->
+      <div id="content">
+        <div class="button-form-container">
+          <!-- Volver atras -->
+          <button onclick="goBack()" class="back-button">
+            <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 512 512">
+              <path d="M377.9 105.9L500.7 228.7c7.2 7.2 11.3 17.1 11.3 27.3s-4.1 20.1-11.3 27.3L377.9 406.1c-6.4 6.4-15 9.9-24 9.9c-18.7 0-33.9-15.2-33.9-33.9l0-62.1-128 0c-17.7 0-32-14.3-32-32l0-64c0-17.7 14.3-32 32-32l128 0 0-62.1c0-18.7 15.2-33.9 33.9-33.9c9 0 17.6 3.6 24 9.9zM160 96L96 96c-17.7 0-32 14.3-32 32l0 256c0 17.7 14.3 32 32 32l64 0c17.7 0 32 14.3 32 32s-14.3 32-32 32l-64 0c-53 0-96-43-96-96L0 128C0 75 43 32 96 32l64 0c17.7 0 32 14.3 32 32s-14.3 32-32 32z" />
+            </svg>Volver atras
+          </button>
+          <!-- colocar nombre de perfil de cliente que se encuentra registrado en la tabla cliente en BigQuery. -->
+          <span class="profile-name">Nombre de Empresa: {{ profile_name }}</span><br />
+          <span class="rut">RUT: {{ rut }}</span><br />
+          <span class="encargado-name">Encargado: {{ encargado }}</span><br />
+          
 
-          <div class="container-fluid">
-            <div class="file-upload">
-              
-    
+          <a href="{% url 'login' %}" class="logout-button">Cerrar sesión</a>
+          <!-- cambios -->
 
-                {% block content %}
+          <!-- Formulario de carga de documentos -->
+          <form method="post" enctype="multipart/form-data" class="file-upload-form">
+            {% csrf_token %}
+            <input type="file" name="pdf_file" required /> <br />
+            <button class="back-button" type="submit">Subir y procesar</button>
+          </form>
+        </div>
 
-                <!-- El contenido dinámico se cargará aquí -->
-
-                {% endblock %}
-          </div>
+        <div class="container-fluid">
+          <div class="file-upload">
+            {% block content %}
+              <!-- El contenido dinámico se cargará aquí -->
+            {% endblock %}
           </div>
         </div>
       </div>
-      <!-- Script volver atras -->
-      <script>
-        function goBack() {
-          window.history.back();
-        }
-      </script>
-</body>
+    </div>
+    <!-- Script volver atras -->
+    <script>
+      function goBack() {
+        window.history.back()
+      }
+    </script>
+  </body>
 </html>
