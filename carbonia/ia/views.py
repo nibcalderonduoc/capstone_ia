@@ -465,6 +465,10 @@ def recomendaciones(request):
 ### revisar
 from langchain_openai import ChatOpenAI  # Actualizado a la nueva versión
 from langchain.prompts import ChatPromptTemplate
+from django.utils.html import escape
+from django.http import JsonResponse
+from django.conf import settings
+import re
 
 def get_recommendation(request):
     graph_type = request.GET.get('type')
@@ -473,8 +477,8 @@ def get_recommendation(request):
 
     # Configurar el prompt dinámico basado en el gráfico seleccionado
     prompts = {
-        'consumo': f"Dado los datos de consumo mensual: Labels: {labels} y Consumo Data: {data}, ¿cuál es tu recomendación para reducir el consumo de energía y mejorar la huella de carbono?",
-        'TCO2': f"Dado los datos de emisiones mensuales de TCO2: Labels: {labels} y TCO2 Data: {data}, ¿cuál es tu recomendación para reducir las emisiones de carbono?",
+        'consumo': f"A partir de los siguientes datos de consumo mensual, etiquetas: {labels} y datos de consumo: {data}, ¿qué estrategias específicas podrías recomendar para reducir el consumo de energía y mejorar la huella de carbono? Por favor, incluye de 1 o 2 medidas prácticas y efectivas, solo las más relevantes.",
+        'TCO2': f"Dado el conjunto de datos de emisiones mensuales en TCO2, etiquetas: {labels} y datos de emisiones: {data}, ¿cuáles son 3 recomendaciones más efectivas para reducir las emisiones de carbono? Por favor, proporciona sugerencias orientadas a resultados medibles."
     }
 
     prompt = prompts.get(graph_type)
@@ -488,10 +492,26 @@ def get_recommendation(request):
         # Pasar el prompt directamente como una cadena
         recommendation_response = llm.invoke(prompt)
         recommendation_text = recommendation_response.content  # Acceder directamente al contenido del mensaje
+
+        # Escapar el texto para evitar problemas de seguridad
+        recommendation_text = escape(recommendation_text)
+
+        # Convertir **texto** a <strong>texto</strong> solo en las partes entre ** y no en todo el texto
+        recommendation_text = re.sub(r'\*\*(.*?)\*\*', r'<strong>\1</strong>', recommendation_text)
+
+        # Agregar saltos de línea después de cada sugerencia específica
+        recommendation_text = recommendation_text.replace(" - ", "<br>- ")
+
+        # Crear una lista HTML para las recomendaciones con espacio entre elementos
+        recommendation_text = recommendation_text.replace("1.", "<li style='margin-bottom: 15px;'>").replace("2.", "</li><li style='margin-bottom: 15px;'>") + "</li>"
+        recommendation_text = f"<ol style='text-align: justify;'>{recommendation_text}</ol>"
+
     except Exception as e:
         return JsonResponse({'recommendation': f"Error al obtener la recomendación: {str(e)}"}, status=500)
 
     return JsonResponse({'recommendation': recommendation_text})
+
+
 
 def alcance1(request):
     return render(request, 'alcance1.html')
