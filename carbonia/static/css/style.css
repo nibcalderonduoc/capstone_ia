@@ -1,3 +1,117 @@
+/* Estilos responsive para tablet y móvil */
+
+/* Responsive para tablet */
+@media (max-width: 1024px) {
+  #viewport {
+    padding-left: 250px; /* Ancho del sidebar */
+    margin-left: 0; /* Eliminar margen adicional a la izquierda */
+  }
+
+  #sidebar {
+    width: 200px;
+    padding: 10px;
+  }
+
+  .charts {
+    flex-direction: column;
+    gap: 20px;
+  }
+
+  .chart, .file-upload, canvas, .styled-table-container {
+    width: 80%;
+    margin: auto;
+  }
+
+  .button-form-container, .file-upload-form {
+    flex-direction: column;
+    width: 100%;
+    align-items: center;
+  }
+
+  .back-button, .file-upload-btn {
+    width: 100%;
+  }
+}
+
+/* Responsive para móvil */
+@media (max-width: 768px) {
+  #sidebar {
+    width: 100%;
+    padding: 10px;
+    text-align: center;
+  }
+
+  .button-form-container, .file-upload-form {
+    flex-direction: column;
+    width: 100%;
+    align-items: center;
+    margin-top: 10px;
+  }
+
+  .charts {
+    flex-direction: column;
+    gap: 15px;
+  }
+
+  .chart, .file-upload, canvas, .styled-table-container {
+    width: 90%;
+  }
+
+  h1 {
+    font-size: 20px;
+  }
+
+  label, select, button {
+    font-size: 14px;
+  }
+
+  #recommendation {
+    font-size: 14px;
+  }
+
+  .styled-table {
+    font-size: 12px;
+  }
+
+  .styled-table thead th, .styled-table tbody td {
+    padding: 8px;
+  }
+}
+
+/* Responsive para dispositivos muy pequeños */
+@media (max-width: 480px) {
+  h1 {
+    font-size: 18px;
+  }
+
+  label, select, button {
+    font-size: 12px;
+  }
+
+  #recommendation {
+    font-size: 12px;
+    padding: 8px;
+  }
+
+  .charts {
+    gap: 10px;
+  }
+
+  .chart, .file-upload, canvas, .styled-table-container {
+    width: 100%;
+  }
+
+  .styled-table {
+    font-size: 10px;
+  }
+
+  .styled-table thead th, .styled-table tbody td {
+    padding: 6px;
+  }
+}
+
+
+/*-----------------------------*/
 /* Estilos Globales */
 
 body {
@@ -32,6 +146,7 @@ body {
   font-weight: 600;
 }
 
+
 /* Contenedor Principal */
 
 .file-upload {
@@ -43,21 +158,18 @@ body {
 
 #viewport {
   padding-left: 250px;
-  -webkit-transition: all 0.5s ease;
-  -moz-transition: all 0.5s ease;
-  -o-transition: all 0.5s ease;
   transition: all 0.5s ease;
 }
 
 #content {
-  position: relative;
-  padding: 0px;
-  margin: 0px;
+  padding: 0px; /* Menos padding en los laterales */
+  margin: 0; /* Centrar el contenido dentro del área disponible */
+  max-width: calc(100% - 250px); /* Asegura que el contenido no sobrepase el ancho disponible */
 }
 
 .container-fluid {
   padding: 0;
-  align-items: top-right;
+  align-content: flex-start;
 }
 
 /* Sidebar */
@@ -73,9 +185,6 @@ body {
   text-decoration: none;
   display: flex;
   flex-direction: column;
-  -webkit-transition: all 0.5s ease;
-  -moz-transition: all 0.5s ease;
-  -o-transition: all 0.5s ease;
   transition: all 0.5s ease;
 }
 
@@ -83,8 +192,9 @@ body {
 #sidebar header {
   background-color: rgba(59, 203, 190);
   font-size: 20px;
-  line-height: 30px;
   text-align: center;
+  padding: 10px;
+  color: white;
 }
 
 #sidebar header a {
@@ -107,7 +217,6 @@ body {
 }
 
 #sidebar .nav a {
-  margin: 0px;
   display: flex;
   align-items: center;
   padding: 8px 12px;
@@ -117,13 +226,11 @@ body {
   transition: color 0.3s ease;
 }
 
-#sidebar .nav svg{
-  margin: 0px 5px 0 0;
+#sidebar .nav svg {
+  margin-right: 5px;
   width: 20px;
   height: 20px;
-  color: #2a9d8f; 
   fill: #2a9d8f;
-  transition: color 0.3s ease;
 }
 
 #sidebar .nav svg:hover{
@@ -187,6 +294,16 @@ body {
   transition: color 0.3s ease;
 }
 
+#sidebar .logout-container p {
+  color: #2a9d8f;
+  font-size: 14px;
+  margin: 0;
+  padding: 10px 0px;
+  line-height: 1.5;
+  text-align: left;
+}
+
+
 .back-button {
   margin: 0;
   padding: 10px 20px;
@@ -213,6 +330,7 @@ body {
   color: white;
   width: 20px;
   height: 20px;
+  transform: rotate(180deg)
 }
 
 
@@ -228,9 +346,10 @@ body {
 
 .file-upload-form {
   display: flex;
+  justify-content: flex-end; /* Alinear a la derecha */
   align-items: center;
   gap: 10px;
-  
+  padding: 10px 0;
 }
 
 .file-upload-form form{
@@ -246,19 +365,18 @@ body {
 .charts {
   display: flex;
   justify-content: space-between;
+  gap: 20px;
   margin-top: 20px;
 }
 
-.chart {
-  align-items: center;
-  align-content: center;
+.chart, .file-upload {
   background-color: white;
   text-align: center;
   padding: 20px;
-  margin-bottom: 20px;
-  width: 48%;
   border-radius: 8px;
   box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+  width: 100%;
+  margin: auto;
 }
 
 .chart h3 {
@@ -322,12 +440,6 @@ button {
 }
 
 /* Botones y Subida de Archivos */
-.file-upload {
-  background-color: #ffffff;
-  width: auto;
-  margin: 0;
-  padding: 20px;
-}
 
 .file-upload-btn {
   margin-top: 20px;
