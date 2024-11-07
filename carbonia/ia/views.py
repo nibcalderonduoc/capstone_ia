@@ -515,7 +515,7 @@ def login_view(request):
             request.session['email'] = email  # Almacena el email en la sesión
             
             # Redirige a la página principal si el login es exitoso
-            return redirect('index')
+            return redirect('dashboard')
         else:
             error_message = "Correo o contraseña incorrectos."
             return render(request, 'login.html', {'error_message': error_message})
