@@ -1,19 +1,22 @@
-from django.shortcuts import render
+# Description: Vistas de Django para la aplicación de IA.
+from django.shortcuts import render, redirect
 from django.conf import settings
-from google.cloud import storage  # Importa Google Cloud Storage
-from django.http import HttpResponse
-import os
-from google.cloud import bigquery
-from django.shortcuts import render
+from django.http import HttpResponse, JsonResponse
+from django.views.decorators.csrf import csrf_protect
+from django.views.decorators.http import require_POST
+from django.contrib.auth.hashers import make_password, check_password
+from django.utils.html import *
+# Importar las bibliotecas necesarias
+from google.cloud import storage, bigquery
 import openai
-from django.http import JsonResponse
-from django.conf import settings
 from langchain_openai import ChatOpenAI
 from langchain.prompts import ChatPromptTemplate
 from langchain.chains import LLMChain
-from django.http import JsonResponse
-from django.conf import settings
-
+# Importar las bibliotecas necesarias
+import os
+import re
+import json
+from datetime import datetime
 
 # Vista para subir un archivo y procesarlo
 def index(request):
@@ -49,30 +52,6 @@ def upload_to_gcs(file):
 
     # Retorna la URL pública del archivo
     return f"https://storage.googleapis.com/{bucket_name}/{file.name}"
-
-
-# Vista para obtener los datos de BigQuery y mostrarlos en el 
-#def dashboard(request):
-    # Inicializa el cliente de BigQuery
-    client = bigquery.Client()
-
-    # Define la consulta
-    query = """
-    SELECT * FROM `proyectocarbonia.alcance2.silver_parse_table`
-    LIMIT 100
-    """
-
-    # Ejecuta la consulta
-    query_job = client.query(query)  # Ejecuta la consulta
-    results = query_job.result()  # Obtiene los resultados
-
-    # Prepara los datos en una lista para enviar al template
-    data = []
-    for row in results:
-        data.append(dict(row))  # Convierte cada fila en un diccionario
-
-    # Renderiza los datos en el template dashboard.html
-    return render(request, 'dashboard.html', {'data': data})
 
 
 # Vista para mostrar previsualización de informe
@@ -118,220 +97,7 @@ def infostoric(request):
       # Renderiza los datos en el template dashboard.html
     return render(request, 'infostoric.html', {'data': data})
 
-from django.shortcuts import render
-from django.conf import settings
-from google.cloud import storage  # Importa Google Cloud Storage
-from django.http import HttpResponse
-import os
-from google.cloud import bigquery
-from django.shortcuts import render
-
-# Vista para subir un archivo y procesarlo
-def index(request):
-    if request.method == 'POST' and request.FILES.get('pdf_file'):
-        # Obtener el archivo subido
-        uploaded_file = request.FILES['pdf_file']
-        
-        # Subir el archivo a Google Cloud Storage
-        uploaded_file_url = upload_to_gcs(uploaded_file)
-        
-        # Pasar la URL del archivo al contexto para mostrarlo en la plantilla
-        context = {'file_url': uploaded_file_url}
-        return render(request, 'result.html', context)
-
-    return render(request, 'index.html')
-
-# Función para subir el archivo a Google Cloud Storage
-def upload_to_gcs(file):
-    """Sube el archivo a Google Cloud Storage y retorna la URL pública"""
-    storage_client = storage.Client()
-    bucket_name = settings.GS_BUCKET_NAME  # El nombre del bucket debe estar en settings.py
-    bucket = storage_client.bucket(bucket_name)
-    blob = bucket.blob(file.name)
-
-    # Verifica si el archivo es un PDF y ajusta el tipo MIME
-    if file.name.endswith('.pdf'):
-        mime_type = 'application/pdf'
-    else:
-        mime_type = 'application/octet-stream'  # Para otros archivos
-
-    # Sube el archivo especificando el tipo MIME
-    blob.upload_from_file(file, content_type=mime_type)
-
-    # Retorna la URL pública del archivo
-    return f"https://storage.googleapis.com/{bucket_name}/{file.name}"
-
-
 # Vista para obtener los datos de BigQuery y mostrarlos en el dashboard
-#def dashboard(request):
-    # Inicializa el cliente de BigQuery
-    client = bigquery.Client()
-
-    # Define la consulta
-    query = """
-    SELECT * FROM `proyectocarbonia.alcance2.silver_parse_table`
-    LIMIT 100
-    """
-
-    # Ejecuta la consulta
-    query_job = client.query(query)  # Ejecuta la consulta
-    results = query_job.result()  # Obtiene los resultados
-
-    # Prepara los datos en una lista para enviar al template
-    data = []
-    for row in results:
-        data.append(dict(row))  # Convierte cada fila en un diccionario
-
-    # Renderiza los datos en el template dashboard.html
-    return render(request, 'dashboard.html', {'data': data})
-
-
-#def dashboard(request):
-    client = bigquery.Client()
-
-    query = """
-    SELECT 
-      EXTRACT(YEAR FROM fec_ter) AS year,
-      EXTRACT(MONTH FROM fec_ter) AS month,
-      SUM(consumo) AS total_consumo,
-      SUM(CO2) AS total_CO2,
-      SUM(TCO2) AS total_TCO2
-    FROM `proyectocarbonia.alcance2.silver_parse_table`
-    GROUP BY year, month
-    ORDER BY year, month
-    """
-    
-    query_job = client.query(query)
-    results = query_job.result()
-
-    # Prepara los datos para el gráfico
-    labels = []
-    consumo_data = []
-    CO2_data = []
-    TCO2_data = []
-
-    for row in results:
-        labels.append(f"{int(row['year'])}-{int(row['month']):02d}")  # Formato "Año-Mes"
-        consumo_data.append(row['total_consumo'])
-        CO2_data.append(row['total_CO2'])
-        TCO2_data.append(row['total_TCO2'])
-
-    context = {
-        'labels': labels,
-        'consumo_data': consumo_data,
-        'CO2_data': CO2_data,
-        'TCO2_data': TCO2_data,
-    }
-
-    return render(request, 'dashboard.html', context)
-
-from django.shortcuts import render
-from django.conf import settings
-from google.cloud import storage  # Importa Google Cloud Storage
-from django.http import HttpResponse
-import os
-from google.cloud import bigquery
-from django.shortcuts import render
-
-# Vista para subir un archivo y procesarlo
-def index(request):
-    if request.method == 'POST' and request.FILES.get('pdf_file'):
-        # Obtener el archivo subido
-        uploaded_file = request.FILES['pdf_file']
-        
-        # Subir el archivo a Google Cloud Storage
-        uploaded_file_url = upload_to_gcs(uploaded_file)
-        
-        # Pasar la URL del archivo al contexto para mostrarlo en la plantilla
-        context = {'file_url': uploaded_file_url}
-        return render(request, 'result.html', context)
-
-    return render(request, 'index.html')
-
-# Función para subir el archivo a Google Cloud Storage
-def upload_to_gcs(file):
-    """Sube el archivo a Google Cloud Storage y retorna la URL pública"""
-    storage_client = storage.Client()
-    bucket_name = settings.GS_BUCKET_NAME  # El nombre del bucket debe estar en settings.py
-    bucket = storage_client.bucket(bucket_name)
-    blob = bucket.blob(file.name)
-
-    # Verifica si el archivo es un PDF y ajusta el tipo MIME
-    if file.name.endswith('.pdf'):
-        mime_type = 'application/pdf'
-    else:
-        mime_type = 'application/octet-stream'  # Para otros archivos
-
-    # Sube el archivo especificando el tipo MIME
-    blob.upload_from_file(file, content_type=mime_type)
-
-    # Retorna la URL pública del archivo
-    return f"https://storage.googleapis.com/{bucket_name}/{file.name}"
-
-
-# Vista para obtener los datos de BigQuery y mostrarlos en el dashboard
-#def dashboard(request):
-    # Inicializa el cliente de BigQuery
-    client = bigquery.Client()
-
-    # Define la consulta
-    query = """
-    SELECT * FROM `proyectocarbonia.alcance2.silver_parse_table`
-    LIMIT 100
-    """
-
-    # Ejecuta la consulta
-    query_job = client.query(query)  # Ejecuta la consulta
-    results = query_job.result()  # Obtiene los resultados
-
-    # Prepara los datos en una lista para enviar al template
-    data = []
-    for row in results:
-        data.append(dict(row))  # Convierte cada fila en un diccionario
-
-    # Renderiza los datos en el template dashboard.html
-    return render(request, 'dashboard.html', {'data': data})
-
-
-#def dashboard(request):
-    client = bigquery.Client()
-
-    query = """
-    SELECT 
-      EXTRACT(YEAR FROM fec_ter) AS year,
-      EXTRACT(MONTH FROM fec_ter) AS month,
-      SUM(consumo) AS total_consumo,
-      SUM(CO2) AS total_CO2,
-      SUM(TCO2) AS total_TCO2
-    FROM `proyectocarbonia.alcance2.silver_parse_table`
-    GROUP BY year, month
-    ORDER BY year, month
-    """
-    
-    query_job = client.query(query)
-    results = query_job.result()
-
-    # Prepara los datos para el gráfico
-    labels = []
-    consumo_data = []
-    CO2_data = []
-    TCO2_data = []
-
-    for row in results:
-        labels.append(f"{int(row['year'])}-{int(row['month']):02d}")  # Formato "Año-Mes"
-        consumo_data.append(row['total_consumo'])
-        CO2_data.append(row['total_CO2'])
-        TCO2_data.append(row['total_TCO2'])
-
-    context = {
-        'labels': labels,
-        'consumo_data': consumo_data,
-        'CO2_data': CO2_data,
-        'TCO2_data': TCO2_data,
-    }
-
-    return render(request, 'dashboard.html', context)
-
 def dashboard(request):
     client = bigquery.Client()
 
@@ -463,12 +229,7 @@ def recomendaciones(request):
     return render(request, 'recomendaciones.html', context)
 
 ### revisar
-from langchain_openai import ChatOpenAI  # Actualizado a la nueva versión
-from langchain.prompts import ChatPromptTemplate
-from django.utils.html import escape
-from django.http import JsonResponse
-from django.conf import settings
-import re
+# Vista para obtener recomendaciones basadas en los datos del gráfico
 
 def get_recommendation(request):
     graph_type = request.GET.get('type')
@@ -522,8 +283,7 @@ def alcance2(request):
 def alcance3(request):  
     return render(request, 'alcance3.html')
 
-from django.http import JsonResponse
-from google.cloud import bigquery
+# Vista para obtener los datos de BigQuery y mostrarlos en el dashboard
 
 def obtener_datos_bigquery(request):
     client = bigquery.Client()
@@ -563,13 +323,6 @@ def obtener_datos_bigquery(request):
     return JsonResponse(data)
 
 #subir datos a bigquery
-from django.http import JsonResponse
-from django.views.decorators.csrf import csrf_protect
-from django.views.decorators.http import require_POST
-import json
-from google.cloud import bigquery
-from datetime import datetime
-
 @csrf_protect
 @require_POST
 def upload_to_bigquery(request):
@@ -639,12 +392,7 @@ def login(request):
     return render(request, 'login.html')
 
 
-from django.http import JsonResponse
-from django.shortcuts import render, redirect
-from google.cloud import bigquery
-import datetime
-from django.contrib.auth.hashers import make_password
-
+# Vista para mostrar la página de registro
 def registro(request):
     if request.method == 'POST':
         rut = request.POST['rut']
@@ -729,10 +477,7 @@ def registro(request):
 
     return render(request, 'registro.html')
 
-from django.shortcuts import render, redirect
-from google.cloud import bigquery
-from django.contrib.auth.hashers import check_password
-
+# Vista para mostrar la página de éxito
 def login_view(request):
     if request.method == 'POST':
         email = request.POST.get('email')
