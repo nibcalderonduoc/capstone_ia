@@ -330,12 +330,24 @@ def obtener_datos_bigquery(request):
     
     return JsonResponse(data)
 
-#subir datos a bigquery
+from django.views.decorators.csrf import csrf_protect
+from django.views.decorators.http import require_POST
+from django.http import JsonResponse
+from google.cloud import bigquery
+import json
+from datetime import datetime
+import time
+
 @csrf_protect
 @require_POST
 def upload_to_bigquery(request):
     try:
+        # Depuración para ver el contenido del cuerpo de la solicitud
+        print("Contenido de la solicitud:", request.body)
+        
+        # Intentar cargar los datos JSON
         data = json.loads(request.body)
+        print("Datos JSON recibidos:", data)
 
         # Validación de datos
         for item in data:
@@ -344,12 +356,32 @@ def upload_to_bigquery(request):
                 if field not in item or not item[field]:
                     return JsonResponse({'message': f'El campo {field} es requerido.'}, status=400)
 
+        # Obtener datos del perfil desde la sesión
+        rut = request.session.get('rut', 'No Disponible')
+        nombre_cliente = request.session.get('profile_name', 'No Disponible')
+        encargado = request.session.get('encargado', 'No Disponible')
+        
+        # Imprimir datos de sesión para depuración
+        print("Datos de la sesión - RUT:", rut)
+        print("Datos de la sesión - Nombre del cliente:", nombre_cliente)
+        print("Datos de la sesión - Encargado:", encargado)
+
+        # Verificación adicional de los datos esenciales del perfil
+        if rut == 'No Disponible' or nombre_cliente == 'No Disponible':
+            return JsonResponse({'message': 'Los datos del perfil del cliente no están completos.'}, status=400)
+
+        # Asegurarse de que id_cliente (rut) sea enviado como STRING
+        id_cliente = str(rut)
+
         client = bigquery.Client()
         table_id = 'proyectocarbonia.alcance3.alcance3_data'
 
         # Preparar filas para insertar
         rows_to_insert = []
         for item in data:
+            # Generar un ID único basado en el tiempo en milisegundos
+            unique_id = int(time.time() * 1000)
+
             # Convertir valor a float
             try:
                 valor = float(item["valor"])
@@ -362,10 +394,12 @@ def upload_to_bigquery(request):
             except ValueError:
                 return JsonResponse({'message': f'La fecha "{item["fechaRegistro"]}" no tiene el formato correcto YYYY-MM-DD.'}, status=400)
 
+            # Crear el diccionario de la fila a insertar
             row = {
-                "id_cliente": 1,          # Se establece como None
-                "nombre_cliente": "Nombre de prueba",      # Se establece como None
-                "rut": "00000000-0" ,                 # Se establece como None
+                "id": unique_id,                  # ID único para cada registro, basado en tiempo en milisegundos
+                "id_cliente": id_cliente,         # RUT como id_cliente en STRING
+                "nombre_cliente": nombre_cliente, # Nombre del cliente desde el perfil
+                "rut": rut,                       # RUT completo con guion
                 "categoria": item["categoria"],
                 "subcategoria": item["subcategoria"],
                 "elemento": item["elemento"],
@@ -379,6 +413,7 @@ def upload_to_bigquery(request):
         # Obtener la tabla para asegurar que el esquema coincide
         table = client.get_table(table_id)
 
+        # Insertar filas en BigQuery
         errors = client.insert_rows_json(table, rows_to_insert)
 
         if not errors:
@@ -394,6 +429,9 @@ def upload_to_bigquery(request):
         # Imprimir excepción para depuración
         print('Exception:', str(e))
         return JsonResponse({'message': f'Error del servidor: {str(e)}'}, status=500)
+
+
+
 
 # Vista para mostrar la página de login
 def login(request):
@@ -504,9 +542,7 @@ def login_view(request):
             WHERE emailcliente = @correo
         """
         job_config = bigquery.QueryJobConfig(
-            query_parameters=[
-                bigquery.ScalarQueryParameter("correo", "STRING", email)
-            ]
+            query_parameters=[bigquery.ScalarQueryParameter("correo", "STRING", email)]
         )
         query_job = client.query(query, job_config=job_config)
         results = query_job.result()
@@ -520,7 +556,13 @@ def login_view(request):
         
         if user:
             # Guardar el email en la sesión
-            request.session['email'] = email  # Almacena el email en la sesión
+            request.session['email'] = email
+
+            # Inicializar el perfil en la sesión llamando a initialize_profile
+            perfil_data = perfil_cliente(request)
+            request.session['rut'] = perfil_data.get('rut', 'No Disponible')
+            request.session['profile_name'] = perfil_data.get('profile_name', 'No Disponible')
+            request.session['encargado'] = perfil_data.get('encargado', 'No Disponible')
             
             # Redirige a la página principal si el login es exitoso
             return redirect('index')
@@ -529,3 +571,16 @@ def login_view(request):
             return render(request, 'login.html', {'error_message': error_message})
 
     return render(request, 'login.html')
+
+from django.http import JsonResponse
+from ia.context_processors import perfil_cliente
+
+def initialize_profile(request):
+    # Ejecuta el context processor y guarda los datos en la sesión
+    perfil_data = perfil_cliente(request)
+
+    # Comprobar si los datos se inicializaron correctamente
+    if perfil_data.get('rut') and perfil_data.get('profile_name'):
+        return JsonResponse({'message': 'Datos de perfil inicializados correctamente en la sesión.'})
+    else:
+        return JsonResponse({'message': 'No se pudieron inicializar los datos del perfil.'}, status=400)
