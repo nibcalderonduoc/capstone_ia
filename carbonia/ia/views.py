@@ -24,8 +24,11 @@ def index(request):
         # Obtener el archivo subido
         uploaded_file = request.FILES['pdf_file']
         
-        # Subir el archivo a Google Cloud Storage
-        uploaded_file_url = upload_to_gcs(uploaded_file)
+        # Obtener el RUT del cliente desde la sesión o contexto
+        perfil_id = request.session.get('rut', 'No Disponible')  # Usa 'No Disponible' como valor predeterminado si no hay RUT
+
+        # Subir el archivo a Google Cloud Storage con el RUT como perfil_id
+        uploaded_file_url = upload_to_gcs(uploaded_file, perfil_id)
         
         # Pasar la URL del archivo al contexto para mostrarlo en la plantilla
         context = {'file_url': uploaded_file_url}
@@ -34,7 +37,7 @@ def index(request):
     return render(request, 'index.html')
 
 # Función para subir el archivo a Google Cloud Storage
-def upload_to_gcs(file):
+def upload_to_gcs(file, perfil_id):
     """Sube el archivo a Google Cloud Storage y retorna la URL pública"""
     storage_client = storage.Client()
     bucket_name = settings.GS_BUCKET_NAME  # El nombre del bucket debe estar en settings.py
@@ -42,13 +45,14 @@ def upload_to_gcs(file):
     blob = bucket.blob(file.name)
 
     # Verifica si el archivo es un PDF y ajusta el tipo MIME
-    if file.name.endswith('.pdf'):
-        mime_type = 'application/pdf'
-    else:
-        mime_type = 'application/octet-stream'  # Para otros archivos
+    mime_type = 'application/pdf' if file.name.endswith('.pdf') else 'application/octet-stream'
 
     # Sube el archivo especificando el tipo MIME
     blob.upload_from_file(file, content_type=mime_type)
+
+    # Agrega metadatos al archivo, incluyendo el perfil_id como RUT
+    blob.metadata = {'perfil_id': perfil_id}  # Aquí, perfil_id ahora está definido correctamente
+    blob.patch()  # Guarda los metadatos
 
     # Retorna la URL pública del archivo
     return f"https://storage.googleapis.com/{bucket_name}/{file.name}"
@@ -515,7 +519,7 @@ def login_view(request):
             request.session['email'] = email  # Almacena el email en la sesión
             
             # Redirige a la página principal si el login es exitoso
-            return redirect('dashboard')
+            return redirect('index')
         else:
             error_message = "Correo o contraseña incorrectos."
             return render(request, 'login.html', {'error_message': error_message})

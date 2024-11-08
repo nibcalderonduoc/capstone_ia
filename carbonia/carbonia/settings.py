@@ -151,7 +151,7 @@ MEDIA_ROOT = os.path.join(BASE_DIR, 'media')
 
 # URL que usará Django para manejar los archivos subidos a Google Cloud Storage
 #GS_MEDIA_URL = 'https://storage.googleapis.com/{tu_bucket_name}/'
-GS_MEDIA_URL = 'https://storage.googleapis.com/upload_archive/'
+GS_MEDIA_URL = 'https://storage.googleapis.com/alcance1/'
 
 # Ruta de tus credenciales de Google Cloud (ajusta la ruta según donde guardes tu archivo de credenciales)
 #os.environ["GOOGLE_APPLICATION_CREDENTIALS"] = os.path.join(BASE_DIR, 'carbonia-30d3f9c126a8.json')
@@ -170,7 +170,7 @@ OPENAI_API_KEY = 'sk-proj-sjFhGSURi-Rf_sm0UtwkwIhcIOfYKZP4mRnfqb_O-g6y44gobSslBt
 
 # Google Cloud Storage
 DEFAULT_FILE_STORAGE = 'storages.backends.gcloud.GoogleCloudStorage'
-GS_BUCKET_NAME = 'upload_archive'
+GS_BUCKET_NAME = 'alcance1'
 
 
 
