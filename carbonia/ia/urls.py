@@ -19,6 +19,7 @@ urlpatterns = [
     path('upload_to_bigquery/', views.upload_to_bigquery, name='upload_to_bigquery'),
     path('login/', views.login_view, name='login'), # Página mostrar login
     path('registro/', views.registro, name='registro'), # Página mostrar 
+    path('carga-item-alcance3/', views.carga_item_alcance3, name='carga_item_alcance3'),
 
 
    

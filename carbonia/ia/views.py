@@ -78,6 +78,10 @@ def content(request):
 def recomendaciones(request):
     return render(request, 'recomendaciones.html')
 
+# Vista para mostrar carga-item-alcance3
+def carga_item_alcance3(request):
+    return render(request, 'carga-item-alcance3.html')
+
 # Vista para mostrar infostoric
 def infostoric(request):
      # Inicializa el cliente de BigQuery
