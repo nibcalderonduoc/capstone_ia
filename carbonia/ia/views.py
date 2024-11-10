@@ -288,7 +288,7 @@ def alcance1(request):
 def alcance2(request):
     return render(request, 'alcance2.html')
 
-def alcance3(request):  
+#def alcance3(request):  
     return render(request, 'alcance3.html')
 
 # Vista para obtener los datos de BigQuery y mostrarlos en el dashboard
@@ -584,3 +584,65 @@ def initialize_profile(request):
         return JsonResponse({'message': 'Datos de perfil inicializados correctamente en la sesión.'})
     else:
         return JsonResponse({'message': 'No se pudieron inicializar los datos del perfil.'}, status=400)
+
+from django.shortcuts import render
+from google.cloud import bigquery
+import json
+
+def alcance3(request):
+    # Inicializa el cliente de BigQuery
+    client = bigquery.Client()
+
+    # Define la consulta modificada para usar "anio" en lugar de "año"
+    query = """
+    SELECT 
+        categoria,
+        subcategoria,
+        elemento,
+        SUM(valor) AS total_valor,
+        EXTRACT(MONTH FROM fecha_registro) AS mes,
+        EXTRACT(YEAR FROM fecha_registro) AS anio
+    FROM `proyectocarbonia.alcance3.alcance3_data`
+    GROUP BY categoria, subcategoria, elemento, mes, anio
+    ORDER BY anio, mes
+    """
+    
+    # Ejecuta la consulta
+    query_job = client.query(query)
+    results = query_job.result()
+
+    # Prepara los datos para los gráficos
+    categorias_data = {}
+    evolucion_data = {}
+    for row in results:
+        categoria = row.categoria
+        subcategoria = row.subcategoria
+        elemento = row.elemento
+        total_valor = row.total_valor
+        mes = row.mes
+        anio = row.anio
+
+        # Agrupar datos para el gráfico de torta
+        if categoria not in categorias_data:
+            categorias_data[categoria] = {}
+        if subcategoria not in categorias_data[categoria]:
+            categorias_data[categoria][subcategoria] = {}
+        
+        categorias_data[categoria][subcategoria][elemento] = total_valor
+
+        # Agrupar datos para el gráfico de líneas (evolución en el tiempo)
+        if categoria not in evolucion_data:
+            evolucion_data[categoria] = {}
+        if subcategoria not in evolucion_data[categoria]:
+            evolucion_data[categoria][subcategoria] = {}
+        if anio not in evolucion_data[categoria][subcategoria]:
+            evolucion_data[categoria][subcategoria][anio] = {}
+        evolucion_data[categoria][subcategoria][anio][mes] = total_valor
+
+    # Convertir datos a JSON para la plantilla
+    context = {
+        "categorias_data": json.dumps(categorias_data),
+        "evolucion_data": json.dumps(evolucion_data)
+    }
+
+    return render(request, 'alcance3.html', context)

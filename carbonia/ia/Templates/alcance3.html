@@ -1,11 +1,137 @@
 {% extends 'partials/base.html' %}
 {% load static %}
 
-{% block title %}Carga de documentos - Alcance 3{% endblock %}
+{% block title %}Gráficos de Alcance 3{% endblock %}
 
 {% block content %}
-  <!--Título del sitio-->
-  <h1 class="page-title">Alcance 3 - Huella de Carbono</h1>
-  <button onclick="location.href='{% url 'carga_item_alcance3' %}'">Cargar documentos</button>
-  
+<!--Título del sitio-->
+<h1 class="page-title">Alcance 3 - Datos de la Huella de Carbono</h1>
+<button onclick="location.href='{% url 'carga_item_alcance3' %}'">Cargar documentos</button>
+  <h1>Gráficos de Alcance 3 - Huella de Carbono</h1>
+
+  <h2>Distribución de Categorías (Gráficos de Torta)</h2>
+  <canvas id="categoriaPieChart"></canvas>
+
+  <h2>Distribución de Subcategorías y Elementos (Gráficos de Torta)</h2>
+  <div id="subcategoriaPieChartsContainer"></div>
+
+  <h2>Evolución de Valores por Mes y Año (Gráficos de Líneas)</h2>
+  <div id="lineChartsContainer"></div>
+
+  <!-- Cargar Chart.js -->
+  <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+
+  <script>
+      // Datos enviados desde Django
+      const categoriasData = JSON.parse('{{ categorias_data|escapejs }}');
+      const evolucionData = JSON.parse('{{ evolucion_data|escapejs }}');
+
+      // Crear gráfico de torta para categorías
+      const categoriaLabels = Object.keys(categoriasData);
+      const categoriaValues = categoriaLabels.map(categoria => {
+          return Object.values(categoriasData[categoria]).reduce((acc, subcategorias) => {
+              return acc + Object.values(subcategorias).reduce((accSub, valor) => accSub + valor, 0);
+          }, 0);
+      });
+
+      new Chart(document.getElementById('categoriaPieChart'), {
+          type: 'pie',
+          data: {
+              labels: categoriaLabels,
+              datasets: [{
+                  data: categoriaValues
+              }]
+          },
+          options: { responsive: true }
+      });
+
+      // Crear gráficos de torta para cada subcategoría y sus elementos
+      const subcategoriaContainer = document.getElementById('subcategoriaPieChartsContainer');
+      
+      categoriaLabels.forEach(categoria => {
+          const subcategorias = categoriasData[categoria];
+          Object.keys(subcategorias).forEach(subcategoria => {
+              const elementos = Object.keys(subcategorias[subcategoria]);
+              const valores = elementos.map(elemento => subcategorias[subcategoria][elemento]);
+
+              // Crear un canvas para cada gráfico de subcategoría
+              const canvas = document.createElement('canvas');
+              subcategoriaContainer.appendChild(canvas);
+
+              new Chart(canvas, {
+                  type: 'pie',
+                  data: {
+                      labels: elementos,
+                      datasets: [{
+                          data: valores
+                      }]
+                  },
+                  options: {
+                      responsive: true,
+                      plugins: {
+                          title: {
+                              display: true,
+                              text: `${categoria} - ${subcategoria}`
+                          }
+                      }
+                  }
+              });
+          });
+      });
+
+      // Crear gráficos de líneas para la evolución de los valores por mes y año
+      const lineContainer = document.getElementById('lineChartsContainer');
+
+      categoriaLabels.forEach(categoria => {
+          const subcategorias = evolucionData[categoria];
+          Object.keys(subcategorias).forEach(subcategoria => {
+              const años = Object.keys(subcategorias[subcategoria]);
+              años.forEach(año => {
+                  const meses = Object.keys(subcategorias[subcategoria][año]);
+                  const valores = meses.map(mes => subcategorias[subcategoria][año][mes]);
+
+                  // Crear un canvas para cada gráfico de evolución
+                  const canvas = document.createElement('canvas');
+                  lineContainer.appendChild(canvas);
+
+                  new Chart(canvas, {
+                      type: 'line',
+                      data: {
+                          labels: meses,
+                          datasets: [{
+                              label: `Evolución en ${subcategoria} (${año})`,
+                              data: valores,
+                              fill: false,
+                              borderColor: 'rgba(75, 192, 192, 1)',
+                              tension: 0.1
+                          }]
+                      },
+                      options: {
+                          responsive: true,
+                          plugins: {
+                              title: {
+                                  display: true,
+                                  text: `${categoria} - ${subcategoria} (${año})`
+                              }
+                          },
+                          scales: {
+                              x: {
+                                  title: {
+                                      display: true,
+                                      text: 'Mes'
+                                  }
+                              },
+                              y: {
+                                  title: {
+                                      display: true,
+                                      text: 'Valor'
+                                  }
+                              }
+                          }
+                      }
+                  });
+              });
+          });
+      });
+  </script>
 {% endblock %}
