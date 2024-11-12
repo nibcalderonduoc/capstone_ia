@@ -20,6 +20,10 @@ urlpatterns = [
     path('', views.login_view, name='login'), # Página mostrar login
     path('registro/', views.registro, name='registro'), # Página mostrar 
     path('carga-item-alcance3/', views.carga_item_alcance3, name='carga_item_alcance3'),
+    path('base-admin/', views.base_admin, name='base_admin'),
+    path('registro-admin/', views.registro_admin, name='registro_admin'),
+    path('dashboard-admin/', views.dashboard_admin, name='dashboard_admin'),
+    path('login-admin/', views.login_admin, name='login_admin'),
 
 
    

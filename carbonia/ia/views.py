@@ -82,6 +82,22 @@ def recomendaciones(request):
 def carga_item_alcance3(request):
     return render(request, 'carga-item-alcance3.html')
 
+# Vista para mostrar base-admin
+def base_admin(request):
+    return render(request, 'base-admin.html')
+
+# Vista para mostrar dashboard-admin
+def dashboard_admin(request):
+    return render(request, 'dashboard-admin.html')
+
+# Vista para mostrar registro-admin 
+def registro_admin(request):
+    return render(request, 'registro-admin.html')
+
+# Vista para mostrar login-admin
+def login_admin(request):
+    return render(request, 'login-admin.html')
+
 # Vista para mostrar infostoric
 def infostoric(request):
      # Inicializa el cliente de BigQuery
