@@ -38,7 +38,7 @@ deactivate () {
 # unset irrelevant variables
 deactivate nondestructive
 
-VIRTUAL_ENV="C:\Carbonia\capstone_ia\vic"
+VIRTUAL_ENV="C:\Carbonia\capstone_ia\capstone_ia\vic"
 export VIRTUAL_ENV
 
 _OLD_VIRTUAL_PATH="$PATH"

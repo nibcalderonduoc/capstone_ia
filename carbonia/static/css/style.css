@@ -227,7 +227,7 @@ body {
 }
 
 #sidebar .nav svg {
-  margin-right: 5px;
+  margin-right: 8px;
   width: 20px;
   height: 20px;
   fill: #2a9d8f;
@@ -270,7 +270,7 @@ body {
 
 #sidebar .logout-container {
   margin-top: auto;
-  padding: 20px;
+  padding: 10px;
 }
 
 #sidebar .logout-container a {
@@ -298,7 +298,7 @@ body {
   color: #2a9d8f;
   font-size: 14px;
   margin: 0;
-  padding: 10px 0px;
+  padding: 5px 10px;
   line-height: 1.5;
   text-align: left;
 }
@@ -917,6 +917,13 @@ button {
 
 .alcances {
   margin: 0px 0 10px 30px;
+}
+
+.alcances svg{
+  fill: #2a9d8f;
+  margin-right: 10px;
+  width: 20px;
+  height: 20px;
 }
 
 .downsidebar {

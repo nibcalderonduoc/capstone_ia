@@ -66,9 +66,9 @@
    <!-- logout-->
     <div class="logout-container">
       <!-- colocar nombre de perfil de cliente que se encuentra registrado en la tabla cliente en BigQuery. -->
-      <p>Nombre de Empresa: {{ profile_name }}<br />
-        RUT: {{ rut }}<br />
-        Encargado: {{ encargado }}</p><br>
+      <p><b>Nombre de Empresa</b>: {{ profile_name }}</p>
+        <p><b>RUT</b>: {{ rut }}</p>
+        <p><b>Encargado</b>: {{ encargado }}</p><br>
       
       <!-- Logout -->
         <a href="{% url 'login' %}">

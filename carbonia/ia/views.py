@@ -62,6 +62,10 @@ def upload_to_gcs(file, perfil_id):
 def result(request):
     return render(request, 'result.html')
 
+# Vista para mostrar empresas-registradas
+def empresas_registradas(request):  
+    return render(request, 'empresas-registradas.html')
+
 # Vista para mostrar Header
 def base(request):
     return render(request, 'base.html')
