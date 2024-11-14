@@ -102,6 +102,10 @@ def registro_admin(request):
 def login_admin(request):
     return render(request, 'login-admin.html')
 
+# Vista para mostrar sidebar-admin
+def sidebar_admin(request):
+    return render(request, 'sidebar-admin.html')
+
 # Vista para mostrar infostoric
 def infostoric(request):
      # Inicializa el cliente de BigQuery
