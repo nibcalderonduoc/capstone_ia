@@ -143,6 +143,7 @@ STATICFILES_DIRS = [
 ]
 
 
+
 # Ruta para manejar archivos subidos por los usuarios
 MEDIA_URL = '/media/'
 MEDIA_ROOT = os.path.join(BASE_DIR, 'media')
@@ -151,7 +152,9 @@ MEDIA_ROOT = os.path.join(BASE_DIR, 'media')
 
 # URL que usará Django para manejar los archivos subidos a Google Cloud Storage
 #GS_MEDIA_URL = 'https://storage.googleapis.com/{tu_bucket_name}/'
-GS_MEDIA_URL = 'https://storage.googleapis.com/alcance1/'
+
+#modificare el gs media
+#GS_MEDIA_URL = 'https://storage.googleapis.com/alcance1/'
 
 # Ruta de tus credenciales de Google Cloud (ajusta la ruta según donde guardes tu archivo de credenciales)
 #os.environ["GOOGLE_APPLICATION_CREDENTIALS"] = os.path.join(BASE_DIR, 'carbonia-30d3f9c126a8.json')
@@ -167,10 +170,29 @@ OPENAI_API_KEY = 'sk-proj-sjFhGSURi-Rf_sm0UtwkwIhcIOfYKZP4mRnfqb_O-g6y44gobSslBt
 
 
 
-
+#---- modificacion de bucket ---#
 # Google Cloud Storage
+#DEFAULT_FILE_STORAGE = 'storages.backends.gcloud.GoogleCloudStorage'
+#GS_BUCKET_NAME = 'alcance1'
+#----------------------------------------#
+
+
+
+# Google Cloud Storage buckets for each scope
+GS_BUCKET_NAME_ALCANCE1 = 'alcance1'
+GS_BUCKET_NAME_ALCANCE2 = 'alcance2'
+
+
+# Google Cloud Storage configuration
 DEFAULT_FILE_STORAGE = 'storages.backends.gcloud.GoogleCloudStorage'
-GS_BUCKET_NAME = 'alcance1'
+
+# Function to get the correct bucket name based on scope
+def get_bucket_name(alcance):
+    if alcance == '1':
+        return GS_BUCKET_NAME_ALCANCE1
+    elif alcance == '2':
+        return GS_BUCKET_NAME_ALCANCE2
+    return GS_BUCKET_NAME_ALCANCE1  # Default bucket if no scope is provided
 
 
 

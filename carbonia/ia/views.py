@@ -19,29 +19,54 @@ import json
 from datetime import datetime
 
 # Vista para subir un archivo y procesarlo
-def index(request):
-    if request.method == 'POST' and request.FILES.get('pdf_file'):
-        # Obtener el archivo subido
-        uploaded_file = request.FILES['pdf_file']
+#def index(request):
+#    if request.method == 'POST' and request.FILES.get('pdf_file'):
+#        # Obtener el archivo subido
+#        uploaded_file = request.FILES['pdf_file']
         
-        # Obtener el RUT del cliente desde la sesión o contexto
-        perfil_id = request.session.get('rut', 'No Disponible')  # Usa 'No Disponible' como valor predeterminado si no hay RUT
+#        # Obtener el RUT del cliente desde la sesión o contexto
+#        perfil_id = request.session.get('rut', 'No Disponible')  # Usa 'No Disponible' como valor predeterminado si no hay RUT
 
-        # Subir el archivo a Google Cloud Storage con el RUT como perfil_id
-        uploaded_file_url = upload_to_gcs(uploaded_file, perfil_id)
+#        # Subir el archivo a Google Cloud Storage con el RUT como perfil_id
+#        uploaded_file_url = upload_to_gcs(uploaded_file, perfil_id)
         
-        # Pasar la URL del archivo al contexto para mostrarlo en la plantilla
-        context = {'file_url': uploaded_file_url}
-        return render(request, 'result.html', context)
+#        # Pasar la URL del archivo al contexto para mostrarlo en la plantilla
+#        context = {'file_url': uploaded_file_url}
+#        return render(request, 'result.html', context)
 
-    return render(request, 'index.html')
+#    return render(request, 'index.html')
 
 # Función para subir el archivo a Google Cloud Storage
-def upload_to_gcs(file, perfil_id):
-    """Sube el archivo a Google Cloud Storage y retorna la URL pública"""
-    storage_client = storage.Client()
-    bucket_name = settings.GS_BUCKET_NAME  # El nombre del bucket debe estar en settings.py
-    bucket = storage_client.bucket(bucket_name)
+#def upload_to_gcs(file, perfil_id):
+#    """Sube el archivo a Google Cloud Storage y retorna la URL pública"""
+#    storage_client = storage.Client()
+#    bucket_name = settings.GS_BUCKET_NAME  # El nombre del bucket debe estar en settings.py
+#    bucket = storage_client.bucket(bucket_name)
+#    blob = bucket.blob(file.name)
+
+#    # Verifica si el archivo es un PDF y ajusta el tipo MIME
+#    mime_type = 'application/pdf' if file.name.endswith('.pdf') else 'application/octet-stream'
+
+#    # Sube el archivo especificando el tipo MIME
+#    blob.upload_from_file(file, content_type=mime_type)
+
+    # Agrega metadatos al archivo, incluyendo el perfil_id como RUT
+#    blob.metadata = {'perfil_id': perfil_id}  # Aquí, perfil_id ahora está definido correctamente
+#    blob.patch()  # Guarda los metadatos
+
+    # Retorna la URL pública del archivo
+#    return f"https://storage.googleapis.com/{bucket_name}/{file.name}"
+from django.shortcuts import render
+from django.conf import settings
+from google.cloud import storage
+import datetime
+from datetime import timedelta
+
+def upload_to_gcs_and_generate_signed_url(file, perfil_id, bucket_name):
+    """Sube un archivo a Google Cloud Storage y genera una URL firmada."""
+    # Crear cliente de Google Cloud Storage
+    client = storage.Client()
+    bucket = client.bucket(bucket_name)
     blob = bucket.blob(file.name)
 
     # Verifica si el archivo es un PDF y ajusta el tipo MIME
@@ -51,11 +76,46 @@ def upload_to_gcs(file, perfil_id):
     blob.upload_from_file(file, content_type=mime_type)
 
     # Agrega metadatos al archivo, incluyendo el perfil_id como RUT
-    blob.metadata = {'perfil_id': perfil_id}  # Aquí, perfil_id ahora está definido correctamente
+    blob.metadata = {'perfil_id': perfil_id}
     blob.patch()  # Guarda los metadatos
 
-    # Retorna la URL pública del archivo
-    return f"https://storage.googleapis.com/{bucket_name}/{file.name}"
+    # Generar la URL firmada (válida por 1 hora)
+    url_duration = timedelta(hours=1)
+    signed_url = blob.generate_signed_url(
+        expiration=url_duration,
+        method="GET"
+    )
+
+    # Retorna la URL firmada
+    return signed_url
+
+def get_bucket_name(alcance):
+    # Mapea el alcance a su bucket correspondiente
+    if alcance == '1':
+        return settings.GS_BUCKET_NAME_ALCANCE1
+    elif alcance == '2':
+        return settings.GS_BUCKET_NAME_ALCANCE2    
+    return settings.GS_BUCKET_NAME_ALCANCE1  # Bucket predeterminado si no se especifica un alcance
+
+def index(request):
+    if request.method == 'POST' and request.FILES.get('pdf_file'):
+        uploaded_file = request.FILES['pdf_file']
+        perfil_id = request.session.get('rut', 'No Disponible')  # Usa 'No Disponible' como valor predeterminado si no hay RUT
+        alcance = request.POST.get('alcance', 'default')  # Asegúrate de que 'alcance' se envía correctamente desde el formulario
+
+        bucket_name = get_bucket_name(alcance)  # Obtiene el nombre del bucket basado en el alcance
+        signed_file_url = upload_to_gcs_and_generate_signed_url(uploaded_file, perfil_id, bucket_name)  # Sube el archivo y genera URL firmada
+        
+        context = {'file_url': signed_file_url}
+        return render(request, 'result.html', context)  # Muestra la URL en una página de resultados
+    
+    return render(request, 'index.html')  # Retorna el formulario de subida si no es POST
+
+
+#
+
+
+
 
 
 # Vista para mostrar previsualización de informe

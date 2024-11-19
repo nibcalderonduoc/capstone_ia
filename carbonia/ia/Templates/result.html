@@ -5,10 +5,18 @@
 {% block content %}
 
   <h1>Resultados del Análisis</h1>
+  <!--
+  <p><strong>URL del archivo subido:</strong> <a href="{{ file_url }}" target="_blank">{{ file_url }}</a></p>
+ -->
+  <!-- Mostrar el PDF directamente -->
+  <h2>Vista previa del PDF:</h2>
+  <iframe src="{{ file_url }}" width="100%" height="600px" style="border: none;">
+      Este navegador no soporta la visualización de PDFs. Descarga el archivo haciendo clic <a href="{{ file_url }}">aquí</a>.
+  </iframe>
   
-              <p><strong>URL del archivo subido:</strong> <a href="{{ file_url }}">{{ file_url }}</a></p>
-              <h2>Información extraída del archivo:</h2>
-              <pre>{{ extracted_info }}</pre>
-              <a class="file-upload-btn" href="{% url 'index' %}">Subir otra factura</a>
+  <h2>Información extraída del archivo:</h2>
+  <pre>{{ extracted_info }}</pre>
+  
+  <a class="file-upload-btn" href="{% url 'index' %}">Subir otra factura</a>
 
 {% endblock %}
