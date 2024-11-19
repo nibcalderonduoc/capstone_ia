@@ -12,16 +12,6 @@
     padding: 10px;
   }
 
-  .charts {
-    flex-direction: column;
-    gap: 20px;
-  }
-
-  .chart, .file-upload, canvas, .styled-table-container {
-    width: 80%;
-    margin: auto;
-  }
-
   .button-form-container, .file-upload-form {
     flex-direction: column;
     width: 100%;
@@ -48,12 +38,7 @@
     margin-top: 10px;
   }
 
-  .charts {
-    flex-direction: column;
-    gap: 15px;
-  }
-
-  .chart, .file-upload, canvas, .styled-table-container {
+  .file-upload, canvas, .styled-table-container {
     width: 90%;
   }
 
@@ -92,15 +77,6 @@
     font-size: 12px;
     padding: 8px;
   }
-
-  .charts {
-    gap: 10px;
-  }
-
-  .chart, .file-upload, canvas, .styled-table-container {
-    width: 100%;
-  }
-
   .styled-table {
     font-size: 10px;
   }
@@ -363,13 +339,15 @@ body {
 
 /* Gráficos */
 .charts {
+  align-content: start;
   display: flex;
   justify-content: space-between;
-  gap: 20px;
+  align-items: flex-start; /* Alinea los gráficos hacia la parte superior */
+  gap: 10px;
   margin-top: 20px;
 }
 
-.chart, .file-upload {
+.file-upload {
   background-color: white;
   text-align: center;
   padding: 20px;
@@ -377,6 +355,21 @@ body {
   box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
   width: 100%;
   margin: auto;
+  align-content: start;
+}
+
+.chart {
+  background-color: white;
+  text-align: center;
+  padding: 20px;
+  border-radius: 8px;
+  box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+  width: 100%;
+  margin: 0; /* Elimina márgenes adicionales */
+  display: flex;
+  flex-direction: column; /* Asegura que los elementos internos estén en columna */
+  align-items: center; /* Centra los elementos internos horizontalmente */
+  justify-content: flex-start; /* Alinea los elementos internos hacia arriba */
 }
 
 .chart h3 {

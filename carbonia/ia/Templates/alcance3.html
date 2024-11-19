@@ -7,17 +7,29 @@
 <!--Título del sitio-->
 <h1 class="page-title">Alcance 3: Otras Emisiones Indirectas</h1>
 <button onclick="location.href='{% url 'carga_item_alcance3' %}'">Cargar documentos</button>
-  <h1>Gráficos de Alcance 3 - Huella de Carbono</h1>
 
-  <h2>Distribución de Categorías (Gráficos de Torta)</h2>
-  <canvas id="categoriaPieChart"></canvas>
+<br><br>
+<h2>Gráficos de Alcance 3 - Huella de Carbono</h2>
 
-  <h2>Distribución de Subcategorías y Elementos (Gráficos de Torta)</h2>
-  <div id="subcategoriaPieChartsContainer"></div>
+<div class="charts"> 
+    
+    <div class="chart">
+        <h3>Distribución de Categorías (Gráficos de Torta)</h3>
+        <canvas id="categoriaPieChart"></canvas>
+    </div>
 
-  <h2>Evolución de Valores por Mes y Año (Gráficos de Líneas)</h2>
-  <div id="lineChartsContainer"></div>
-
+    <div class="chart">
+        <h3>Distribución de Subcategorías y Elementos (Gráficos de Torta)</h3>
+        <div id="subcategoriaPieChartsContainer"></div>
+    </div>
+</div>
+<div class="charts">
+    <div class="chart">
+        <h3>Evolución de Valores por Mes y Año (Gráficos de Líneas)</h3>
+        <div id="lineChartsContainer"></div>
+    </div>
+</div>
+  
   <!-- Cargar Chart.js -->
   <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
 
