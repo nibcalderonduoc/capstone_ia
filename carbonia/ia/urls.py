@@ -2,7 +2,7 @@ from django.urls import path
 from . import views
 
 urlpatterns = [
-    path('index', views.index, name='index'),  # Página principal para subir el documento
+    path('index/', views.index, name='index'),  # Página principal para subir el documento
     path('dashboard/', views.dashboard, name='dashboard'),  # Página para mostrar el dashboard de BigQuery
     path('result/', views.result, name='result'),  # Página mostrar resultados
     path('base/', views.base, name='base'),  # Página mostrar header
@@ -26,7 +26,7 @@ urlpatterns = [
     path('login-admin/', views.login_admin, name='login_admin'),
     path('empresas-registradas/', views.empresas_registradas, name='empresas_registradas'),
     path('sidebar-admin/', views.sidebar_admin, name='sidebar_admin'),
-
+    
 
    
     
