@@ -1,5 +1,6 @@
 from django.urls import path
 from . import views
+from .views import result
 
 urlpatterns = [
     path('index/', views.index, name='index'),  # Página principal para subir el documento
@@ -26,6 +27,7 @@ urlpatterns = [
     path('login-admin/', views.login_admin, name='login_admin'),
     path('empresas-registradas/', views.empresas_registradas, name='empresas_registradas'),
     path('sidebar-admin/', views.sidebar_admin, name='sidebar_admin'),
+    path('revisar/', result, name='nombre_de_tu_url_a_result'),
     
 
    

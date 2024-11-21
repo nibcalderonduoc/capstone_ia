@@ -100,27 +100,57 @@ def get_bucket_name(alcance):
 def index(request):
     if request.method == 'POST' and request.FILES.get('pdf_file'):
         uploaded_file = request.FILES['pdf_file']
-        perfil_id = request.session.get('rut', 'No Disponible')  # Usa 'No Disponible' como valor predeterminado si no hay RUT
-        alcance = request.POST.get('alcance', 'default')  # Asegúrate de que 'alcance' se envía correctamente desde el formulario
+        perfil_id = request.session.get('rut', 'No Disponible')  # Default value if RUT is not in session
+        alcance = request.POST.get('alcance', 'default')  
 
-        bucket_name = get_bucket_name(alcance)  # Obtiene el nombre del bucket basado en el alcance
-        signed_file_url = upload_to_gcs_and_generate_signed_url(uploaded_file, perfil_id, bucket_name)  # Sube el archivo y genera URL firmada
+        bucket_name = get_bucket_name(alcance)  
+        signed_file_url = upload_to_gcs_and_generate_signed_url(uploaded_file, perfil_id, bucket_name)  
         
-        context = {'file_url': signed_file_url}
-        return render(request, 'result.html', context)  # Muestra la URL en una página de resultados
+        request.session['file_url'] = signed_file_url  # Guarda la URL en la sesión
+        return redirect('result')  # Redirecciona a la vista de resultado
     
     return render(request, 'index.html')  # Retorna el formulario de subida si no es POST
 
 
-#
-
-
-
-
-
 # Vista para mostrar previsualización de informe
+from google.cloud import bigquery
+
 def result(request):
-    return render(request, 'result.html')
+    client = bigquery.Client()
+    query = """
+    SELECT
+        num_cli AS numero_cliente,
+        num_bol AS numero_boleta,
+        com_cli AS comuna,
+        consumo,
+        CASE 
+            WHEN LOWER(class_bol) LIKE '%gas natural%' OR LOWER(class_bol) LIKE '%gas cañería%' THEN 'm3'
+            ELSE 'lt'
+        END AS unidad,
+        class_bol AS elemento,
+        updated
+    FROM
+        `proyectocarbonia.alcance_1.parse_table`
+    ORDER BY
+        updated DESC
+    LIMIT 1;
+    """
+    query_job = client.query(query)
+    results = query_job.result()
+    extracted_info = [dict(row.items()) for row in results]
+
+    file_url = request.session.get('file_url', None)  # Suponiendo que el archivo subido se almacena en la sesión
+
+    context = {
+        'file_url': file_url,
+        'extracted_info': extracted_info
+    }
+    return render(request, 'result.html', context)
+
+
+
+
+
 
 # Vista para mostrar empresas-registradas
 def empresas_registradas(request):  

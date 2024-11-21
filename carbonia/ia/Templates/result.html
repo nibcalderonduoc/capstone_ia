@@ -1,22 +1,51 @@
 {% extends 'partials/base.html' %}
 
-{% block title %}Analisis de datos{% endblock %}
+{% block title %}Análisis de datos{% endblock %}
 
 {% block content %}
 
   <h1>Resultados del Análisis</h1>
-  <!--
-  <p><strong>URL del archivo subido:</strong> <a href="{{ file_url }}" target="_blank">{{ file_url }}</a></p>
- -->
-  <!-- Mostrar el PDF directamente -->
   <h2>Vista previa del PDF:</h2>
-  <iframe src="{{ file_url }}" width="100%" height="600px" style="border: none;">
-      Este navegador no soporta la visualización de PDFs. Descarga el archivo haciendo clic <a href="{{ file_url }}">aquí</a>.
-  </iframe>
+  <iframe src="{{ file_url }}" width="100%" height="600px" style="border: none;"></iframe>
   
   <h2>Información extraída del archivo:</h2>
-  <pre>{{ extracted_info }}</pre>
-  
+  {% if extracted_info %}
+  <table>
+    <thead>
+      <tr>
+        <th>Número Cliente</th>
+        <th>Número Boleta</th>
+        <th>Comuna</th>
+        <th>Consumo</th>
+        <th>Unidad</th>
+        <th>Elemento</th>
+      </tr>
+    </thead>
+    <tbody>
+      {% for row in extracted_info %}
+      <tr>
+        <td>{{ row.numero_cliente }}</td>
+        <td>{{ row.numero_boleta }}</td>
+        <td>{{ row.comuna }}</td>
+        <td>{{ row.consumo }}</td>
+        <td>{{ row.unidad }}</td>
+        <td>{{ row.elemento }}</td>
+      </tr>
+      {% endfor %}
+    </tbody>
+  </table>
+  {% else %}
+  <p>No hay datos disponibles.</p>
+  {% endif %}
+
+  <!-- Botón para revisar datos -->
+  <form action="{% url 'nombre_de_tu_url_a_result' %}" method="get">
+    <button type="submit" class="btn btn-primary">Revisar Datos</button>
+  </form>
+
+  <div> 
+    <p>Acá los datos</p>
+  </div>
   <a class="file-upload-btn" href="{% url 'index' %}">Subir otra factura</a>
 
 {% endblock %}
