@@ -30,6 +30,10 @@ urlpatterns = [
     path('empresas-registradas/', views.empresas_registradas, name='empresas_registradas'),
     path('sidebar-admin/', views.sidebar_admin, name='sidebar_admin'),
     path('revisar/', result, name='nombre_de_tu_url_a_result'),
+    path('get_regions/', views.get_regions, name='get_regions'),
+    path('get_provinces/', views.get_provinces, name='get_provinces'),
+    path('get_communes/', views.get_communes, name='get_communes'),
+    path('get_statistics/', views.get_statistics, name='get_statistics'),
     
 
    

@@ -864,3 +864,91 @@ def alcance3(request):
 
     # Renderizar la página con el contexto
     return render(request, 'dashboard.html', context)
+
+
+from django.http import JsonResponse
+from google.cloud import bigquery
+
+def get_regions(request):
+    """Obtiene todas las regiones desde BigQuery."""
+    client = bigquery.Client()
+    query = """
+    SELECT DISTINCT id_region, nombre_region
+    FROM `proyectocarbonia.datacarbonia.region`
+    ORDER BY nombre_region
+    """
+    query_job = client.query(query)
+    results = query_job.result()
+
+    regions = [{'id': row.id_region, 'name': row.nombre_region} for row in results]
+    return JsonResponse({'regions': regions})
+
+
+def get_provinces(request):
+    """Obtiene las provincias según la región seleccionada."""
+    region_id = request.GET.get('region_id')
+    if not region_id:
+        return JsonResponse({'error': 'region_id es requerido'}, status=400)
+
+    client = bigquery.Client()
+    query = f"""
+    SELECT DISTINCT id_provincia, nombre_provincia
+    FROM `proyectocarbonia.datacarbonia.provincia`
+    WHERE id_region = {region_id}
+    ORDER BY nombre_provincia
+    """
+    query_job = client.query(query)
+    results = query_job.result()
+
+    provinces = [{'id': row.id_provincia, 'name': row.nombre_provincia} for row in results]
+    return JsonResponse({'provinces': provinces})
+
+
+def get_communes(request):
+    """Obtiene las comunas según la provincia seleccionada."""
+    province_id = request.GET.get('province_id')
+    if not province_id:
+        return JsonResponse({'error': 'province_id es requerido'}, status=400)
+
+    client = bigquery.Client()
+    query = f"""
+    SELECT DISTINCT id_comuna, nombre_comuna
+    FROM `proyectocarbonia.datacarbonia.comuna`
+    WHERE id_provincia = {province_id}
+    ORDER BY nombre_comuna
+    """
+    query_job = client.query(query)
+    results = query_job.result()
+
+    communes = [{'id': row.id_comuna, 'name': row.nombre_comuna} for row in results]
+    return JsonResponse({'communes': communes})
+
+
+def get_statistics(request):
+    """Obtiene estadísticas basadas en la comuna seleccionada."""
+    commune_id = request.GET.get('commune_id')
+    if not commune_id:
+        return JsonResponse({'error': 'commune_id es requerido'}, status=400)
+
+    client = bigquery.Client()
+    query = f"""
+    SELECT 
+        SUM(consumo) AS total_consumo,
+        SUM(TCO2) AS total_tco2
+    FROM `proyectocarbonia.datacarbonia.sucursales`
+    WHERE id_comuna = {commune_id}
+    GROUP BY id_comuna
+    """
+    query_job = client.query(query)
+    result = query_job.result()
+
+    # Extraer datos de la consulta
+    for row in result:
+        data = {
+            'commune': commune_id,
+            'tco2': row.total_tco2,
+            'consumo': row.total_consumo
+        }
+        return JsonResponse(data)
+
+    return JsonResponse({'error': 'No se encontraron estadísticas para esta comuna.'}, status=404)

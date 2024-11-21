@@ -1,115 +1,119 @@
 {% extends 'partials/base.html' %}
-{% load static %}
-
-{% block title %}Estadísticas por Sucursal{% endblock %}
+{% block title %}Alcance 1{% endblock %}
 
 {% block content %}
-<h1>Estadísticas por Región, Provincia y Comuna</h1>
+<h1>Filtrar Estadísticas por Ubicación</h1>
 
-<div class="filter-section">
-    <label for="region">Región:</label>
-    <select id="region" name="region"></select>
-
-    <label for="provincia">Provincia:</label>
-    <select id="provincia" name="provincia" disabled></select>
-
-    <label for="comuna">Comuna:</label>
-    <select id="comuna" name="comuna" disabled></select>
-
-    <button id="apply-filter" disabled>Aplicar Filtro</button>
+<div>
+    <label for="region-select">Región:</label>
+    <select id="region-select">
+        <option value="">Seleccione una región</option>
+    </select>
 </div>
 
-<div id="stats-container">
+<div>
+    <label for="province-select">Provincia:</label>
+    <select id="province-select" disabled>
+        <option value="">Seleccione una provincia</option>
+    </select>
+</div>
+
+<div>
+    <label for="commune-select">Comuna:</label>
+    <select id="commune-select" disabled>
+        <option value="">Seleccione una comuna</option>
+    </select>
+</div>
+
+<div id="statistics">
     <h2>Estadísticas</h2>
-    <canvas id="statsChart" style="width:100%; max-width:600px; height:400px;"></canvas>
+    <p>Selecciona una comuna para ver las estadísticas.</p>
 </div>
 
-<script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
 <script>
-    document.addEventListener('DOMContentLoaded', async function () {
-        const regionSelect = document.getElementById('region');
-        const provinciaSelect = document.getElementById('provincia');
-        const comunaSelect = document.getElementById('comuna');
-        const applyFilterButton = document.getElementById('apply-filter');
+    document.addEventListener('DOMContentLoaded', () => {
+        const regionSelect = document.getElementById('region-select');
+        const provinceSelect = document.getElementById('province-select');
+        const communeSelect = document.getElementById('commune-select');
+        const statisticsDiv = document.getElementById('statistics');
 
-        // Cargar regiones
-        const loadRegions = async () => {
-            const response = await fetch('/api/get_filter_values?filter=region');
-            const data = await response.json();
-            data.values.forEach(region => {
-                const option = document.createElement('option');
-                option.value = region;
-                option.textContent = region;
-                regionSelect.appendChild(option);
-            });
-        };
+        // Cargar regiones al cargar la página
+        fetchRegions();
 
-        // Cargar provincias
-        regionSelect.addEventListener('change', async function () {
-            provinciaSelect.innerHTML = '';
-            comunaSelect.innerHTML = '';
-            provinciaSelect.disabled = false;
+        // Función para obtener regiones
+        function fetchRegions() {
+            fetch('/get_regions/')
+                .then(response => response.json())
+                .then(data => {
+                    data.regions.forEach(region => {
+                        const option = document.createElement('option');
+                        option.value = region.id;
+                        option.textContent = region.name;
+                        regionSelect.appendChild(option);
+                    });
+                });
+        }
 
-            const region = regionSelect.value;
-            const response = await fetch(`/api/get_filter_values?filter=provincia&parent=${region}`);
-            const data = await response.json();
-            data.values.forEach(provincia => {
-                const option = document.createElement('option');
-                option.value = provincia;
-                option.textContent = provincia;
-                provinciaSelect.appendChild(option);
-            });
+        // Evento para cargar provincias al seleccionar una región
+        regionSelect.addEventListener('change', () => {
+            const regionId = regionSelect.value;
+            provinceSelect.innerHTML = '<option value="">Seleccione una provincia</option>';
+            communeSelect.innerHTML = '<option value="">Seleccione una comuna</option>';
+            provinceSelect.disabled = !regionId;
+            communeSelect.disabled = true;
+
+            if (regionId) {
+                fetch(`/get_provinces/?region_id=${regionId}`)
+                    .then(response => response.json())
+                    .then(data => {
+                        data.provinces.forEach(province => {
+                            const option = document.createElement('option');
+                            option.value = province.id;
+                            option.textContent = province.name;
+                            provinceSelect.appendChild(option);
+                        });
+                    });
+            }
         });
 
-        // Cargar comunas
-        provinciaSelect.addEventListener('change', async function () {
-            comunaSelect.innerHTML = '';
-            comunaSelect.disabled = false;
+        // Evento para cargar comunas al seleccionar una provincia
+        provinceSelect.addEventListener('change', () => {
+            const provinceId = provinceSelect.value;
+            communeSelect.innerHTML = '<option value="">Seleccione una comuna</option>';
+            communeSelect.disabled = !provinceId;
 
-            const provincia = provinciaSelect.value;
-            const response = await fetch(`/api/get_filter_values?filter=comuna&parent=${provincia}`);
-            const data = await response.json();
-            data.values.forEach(comuna => {
-                const option = document.createElement('option');
-                option.value = comuna;
-                option.textContent = comuna;
-                comunaSelect.appendChild(option);
-            });
+            if (provinceId) {
+                fetch(`/get_communes/?province_id=${provinceId}`)
+                    .then(response => response.json())
+                    .then(data => {
+                        data.communes.forEach(commune => {
+                            const option = document.createElement('option');
+                            option.value = commune.id;
+                            option.textContent = commune.name;
+                            communeSelect.appendChild(option);
+                        });
+                    });
+            }
         });
 
-        // Habilitar botón y cargar estadísticas
-        comunaSelect.addEventListener('change', () => {
-            applyFilterButton.disabled = false;
+        // Evento para cargar estadísticas al seleccionar una comuna
+        communeSelect.addEventListener('change', () => {
+            const communeId = communeSelect.value;
+
+            if (communeId) {
+                fetch(`/get_statistics/?commune_id=${communeId}`)
+                    .then(response => response.json())
+                    .then(data => {
+                        statisticsDiv.innerHTML = `
+                            <h2>Estadísticas para ${data.commune}</h2>
+                            <p>Total TCO2: ${data.tco2}</p>
+                            <p>Consumo: ${data.consumo}</p>
+                        `;
+                    });
+            } else {
+                statisticsDiv.innerHTML = `<h2>Estadísticas</h2><p>Selecciona una comuna para ver las estadísticas.</p>`;
+            }
         });
-
-        applyFilterButton.addEventListener('click', async function () {
-            const comuna = comunaSelect.value;
-            const response = await fetch(`/api/get_stats?comuna=${comuna}`);
-            const data = await response.json();
-
-            const ctx = document.getElementById('statsChart').getContext('2d');
-            new Chart(ctx, {
-                type: 'bar',
-                data: {
-                    labels: data.labels,
-                    datasets: [{
-                        label: 'TCO2 Calculado',
-                        data: data.values,
-                        backgroundColor: 'rgba(75, 192, 192, 0.2)',
-                        borderColor: 'rgba(75, 192, 192, 1)',
-                        borderWidth: 1
-                    }]
-                },
-                options: {
-                    scales: {
-                        y: { beginAtZero: true }
-                    }
-                }
-            });
-        });
-
-        // Inicializar regiones
-        await loadRegions();
     });
 </script>
 {% endblock %}
