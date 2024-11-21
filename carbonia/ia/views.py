@@ -827,7 +827,7 @@ def alcance3(request):
 
 
 #-- datos de dashboard -- #
-def alcance1_view(request):
+#def alcance1_view(request):
     from google.cloud import bigquery
     from django.shortcuts import render
 
@@ -849,7 +849,7 @@ def alcance1_view(request):
 
         # Extraer directamente la primera fila
         row = next(result)  # Accede directamente a la primera fila
-        total_tco2_calculado = row.total_tco2_calculado
+        total_tco2_calculado = row.total_tco2_calculadso
 
         # Crear el contexto para enviar al template
         context = {
