@@ -62,12 +62,14 @@ from google.cloud import storage
 import datetime
 from datetime import timedelta
 
-def upload_to_gcs_and_generate_signed_url(file, perfil_id, bucket_name):
-    """Sube un archivo a Google Cloud Storage y genera una URL firmada."""
-    # Crear cliente de Google Cloud Storage
+def upload_to_gcs_and_generate_signed_url(file, perfil_id, alcance, bucket_name):
+    """Sube un archivo a Google Cloud Storage y retorna la URL pública."""
     client = storage.Client()
     bucket = client.bucket(bucket_name)
-    blob = bucket.blob(file.name)
+
+    # Agrega el alcance al nombre del archivo para rastrearlo fácilmente en el storage
+    alcance_prefix = f"alcance_{alcance}_"
+    blob = bucket.blob(alcance_prefix + file.name)
 
     # Verifica si el archivo es un PDF y ajusta el tipo MIME
     mime_type = 'application/pdf' if file.name.endswith('.pdf') else 'application/octet-stream'
@@ -75,19 +77,20 @@ def upload_to_gcs_and_generate_signed_url(file, perfil_id, bucket_name):
     # Sube el archivo especificando el tipo MIME
     blob.upload_from_file(file, content_type=mime_type)
 
-    # Agrega metadatos al archivo, incluyendo el perfil_id como RUT
-    blob.metadata = {'perfil_id': perfil_id}
+    # Generar la URL pública directa
+    public_url = f"https://storage.googleapis.com/{bucket_name}/{blob.name}"
+
+    # Agrega metadatos al archivo, incluyendo el perfil_id como RUT, alcance, y la URL pública
+    blob.metadata = {
+        'perfil_id': perfil_id, 
+        'alcance': alcance,
+        'public_url': public_url  # Almacenar la URL pública como metadato
+    }
     blob.patch()  # Guarda los metadatos
 
-    # Generar la URL firmada (válida por 1 hora)
-    url_duration = timedelta(hours=1)
-    signed_url = blob.generate_signed_url(
-        expiration=url_duration,
-        method="GET"
-    )
+    return public_url
 
-    # Retorna la URL firmada
-    return signed_url
+
 
 def get_bucket_name(alcance):
     # Mapea el alcance a su bucket correspondiente
@@ -101,15 +104,16 @@ def index(request):
     if request.method == 'POST' and request.FILES.get('pdf_file'):
         uploaded_file = request.FILES['pdf_file']
         perfil_id = request.session.get('rut', 'No Disponible')  # Default value if RUT is not in session
-        alcance = request.POST.get('alcance', 'default')  
+        alcance = request.POST.get('alcance', 'default')
 
-        bucket_name = get_bucket_name(alcance)  
-        signed_file_url = upload_to_gcs_and_generate_signed_url(uploaded_file, perfil_id, bucket_name)  
+        bucket_name = get_bucket_name(alcance)
+        public_file_url = upload_to_gcs_and_generate_signed_url(uploaded_file, perfil_id, alcance, bucket_name)
         
-        request.session['file_url'] = signed_file_url  # Guarda la URL en la sesión
+        request.session['file_url'] = public_file_url  # Guarda la URL pública en la sesión
         return redirect('result')  # Redirecciona a la vista de resultado
     
     return render(request, 'index.html')  # Retorna el formulario de subida si no es POST
+
 
 
 # Vista para mostrar previsualización de informe

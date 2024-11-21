@@ -3,13 +3,77 @@
 {% block title %}Análisis de datos{% endblock %}
 
 {% block content %}
+<style>
+.loader-container {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  height: 200px;
+}
 
-  <h1>Resultados del Análisis</h1>
-  <h2>Vista previa del PDF:</h2>
-  <iframe src="{{ file_url }}" width="100%" height="600px" style="border: none;"></iframe>
-  
+.loader {
+  border: 16px solid #f3f3f3;
+  border-top: 16px solid #3498db;
+  border-radius: 50%;
+  width: 120px;
+  height: 120px;
+  animation: spin 2s linear infinite;
+}
+
+@keyframes spin {
+  0% { transform: rotate(0deg); }
+  100% { transform: rotate(360deg); }
+}
+
+.loader-text {
+  margin-top: 20px;
+  font-size: 18px;
+  color: #3498db;
+}
+
+.hidden {
+  display: none;
+}
+
+.upload-btn-container {
+  text-align: right;
+  padding-right: 20px;
+  padding-top: 20px;
+}
+
+table {
+  width: 100%;
+  border-collapse: collapse;
+}
+
+th, td {
+  border: 1px solid #ccc;
+  padding: 8px;
+  text-align: left;
+}
+
+th {
+  background-color: #f4f4f4;
+}
+</style>
+
+<div class="upload-btn-container">
+  <a class="file-upload-btn" href="{% url 'index' %}">Subir otra factura</a>
+</div>
+
+<h1 id="analysis-title">Procesando Archivo</h1>
+
+<div id="loader" class="loader-container">
+  <div class="loader"></div>
+  <div class="loader-text">Extrayendo datos...</div>
+</div>
+
+
+{% if extracted_info %}
+
+<div id="data-container" class="hidden">
   <h2>Información extraída del archivo:</h2>
-  {% if extracted_info %}
   <table>
     <thead>
       <tr>
@@ -34,18 +98,24 @@
       {% endfor %}
     </tbody>
   </table>
-  {% else %}
-  <p>No hay datos disponibles.</p>
-  {% endif %}
+  <h2>Vista previa del PDF:</h2>
+  <iframe src="{{ file_url }}" width="100%" height="600px" style="border: none;"></iframe>
+</div>
+{% else %}
+<p>No hay datos disponibles.</p>
+{% endif %}
 
-  <!-- Botón para revisar datos -->
-  <form action="{% url 'nombre_de_tu_url_a_result' %}" method="get">
-    <button type="submit" class="btn btn-primary">Revisar Datos</button>
-  </form>
-
-  <div> 
-    <p>Acá los datos</p>
-  </div>
-  <a class="file-upload-btn" href="{% url 'index' %}">Subir otra factura</a>
+<script>
+document.addEventListener("DOMContentLoaded", function() {
+  setTimeout(function() {
+    document.getElementById('loader').style.display = 'none';
+    var dataContainer = document.getElementById('data-container');
+    if (dataContainer) {
+      dataContainer.classList.remove('hidden');
+    }
+    document.getElementById('analysis-title').textContent = 'Datos insertados con éxito!';
+  }, 20000); // Espera 20 segundos
+});
+</script>
 
 {% endblock %}
