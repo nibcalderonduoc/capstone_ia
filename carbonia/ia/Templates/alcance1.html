@@ -1,12 +1,115 @@
 {% extends 'partials/base.html' %}
+{% load static %}
 
-{% block title %}Carga de documentos{% endblock %}
+{% block title %}Estadísticas por Sucursal{% endblock %}
 
 {% block content %}
-  <h1>Alcance 1: Emisiones y Remociones Directas</h1>
+<h1>Estadísticas por Región, Provincia y Comuna</h1>
 
+<div class="filter-section">
+    <label for="region">Región:</label>
+    <select id="region" name="region"></select>
 
+    <label for="provincia">Provincia:</label>
+    <select id="provincia" name="provincia" disabled></select>
 
-  
-              
+    <label for="comuna">Comuna:</label>
+    <select id="comuna" name="comuna" disabled></select>
+
+    <button id="apply-filter" disabled>Aplicar Filtro</button>
+</div>
+
+<div id="stats-container">
+    <h2>Estadísticas</h2>
+    <canvas id="statsChart" style="width:100%; max-width:600px; height:400px;"></canvas>
+</div>
+
+<script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+<script>
+    document.addEventListener('DOMContentLoaded', async function () {
+        const regionSelect = document.getElementById('region');
+        const provinciaSelect = document.getElementById('provincia');
+        const comunaSelect = document.getElementById('comuna');
+        const applyFilterButton = document.getElementById('apply-filter');
+
+        // Cargar regiones
+        const loadRegions = async () => {
+            const response = await fetch('/api/get_filter_values?filter=region');
+            const data = await response.json();
+            data.values.forEach(region => {
+                const option = document.createElement('option');
+                option.value = region;
+                option.textContent = region;
+                regionSelect.appendChild(option);
+            });
+        };
+
+        // Cargar provincias
+        regionSelect.addEventListener('change', async function () {
+            provinciaSelect.innerHTML = '';
+            comunaSelect.innerHTML = '';
+            provinciaSelect.disabled = false;
+
+            const region = regionSelect.value;
+            const response = await fetch(`/api/get_filter_values?filter=provincia&parent=${region}`);
+            const data = await response.json();
+            data.values.forEach(provincia => {
+                const option = document.createElement('option');
+                option.value = provincia;
+                option.textContent = provincia;
+                provinciaSelect.appendChild(option);
+            });
+        });
+
+        // Cargar comunas
+        provinciaSelect.addEventListener('change', async function () {
+            comunaSelect.innerHTML = '';
+            comunaSelect.disabled = false;
+
+            const provincia = provinciaSelect.value;
+            const response = await fetch(`/api/get_filter_values?filter=comuna&parent=${provincia}`);
+            const data = await response.json();
+            data.values.forEach(comuna => {
+                const option = document.createElement('option');
+                option.value = comuna;
+                option.textContent = comuna;
+                comunaSelect.appendChild(option);
+            });
+        });
+
+        // Habilitar botón y cargar estadísticas
+        comunaSelect.addEventListener('change', () => {
+            applyFilterButton.disabled = false;
+        });
+
+        applyFilterButton.addEventListener('click', async function () {
+            const comuna = comunaSelect.value;
+            const response = await fetch(`/api/get_stats?comuna=${comuna}`);
+            const data = await response.json();
+
+            const ctx = document.getElementById('statsChart').getContext('2d');
+            new Chart(ctx, {
+                type: 'bar',
+                data: {
+                    labels: data.labels,
+                    datasets: [{
+                        label: 'TCO2 Calculado',
+                        data: data.values,
+                        backgroundColor: 'rgba(75, 192, 192, 0.2)',
+                        borderColor: 'rgba(75, 192, 192, 1)',
+                        borderWidth: 1
+                    }]
+                },
+                options: {
+                    scales: {
+                        y: { beginAtZero: true }
+                    }
+                }
+            });
+        });
+
+        // Inicializar regiones
+        await loadRegions();
+    });
+</script>
 {% endblock %}
