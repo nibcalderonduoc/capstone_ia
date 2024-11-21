@@ -5,7 +5,8 @@ from .views import result
 urlpatterns = [
     path('index/', views.index, name='index'),  # Página principal para subir el documento
     path('dashboard/', views.dashboard, name='dashboard'),  # Página para mostrar el dashboard de BigQuery
-    path('result/', views.result, name='result'),  # Página mostrar resultados
+    #path('result/', views.result, name='result'),  # Página mostrar resultados
+    path('dashboard/', views.alcance1_view, name='dashboard'),
     path('base/', views.base, name='base'),  # Página mostrar header
     path('sidebar/', views.sidebar, name='sidebar'),  # Página mostrar sidebar
     path('content/', views.content, name='content'),  # Página mostrar content

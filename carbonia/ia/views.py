@@ -224,71 +224,131 @@ def infostoric(request):
     return render(request, 'infostoric.html', {'data': data})
 
 # Vista para obtener los datos de BigQuery y mostrarlos en el dashboard
+from google.cloud import bigquery
+from django.shortcuts import render
+from google.cloud import bigquery
+from django.shortcuts import render
+
 def dashboard(request):
     client = bigquery.Client()
+    
+    try:
+        # Consulta para obtener la suma total de TCO2 Calculado (Alcance 1)
+        tco2_total_query = """
+        SELECT
+            ROUND(SUM(TCO2_Calculado), 4) AS total_tco2_calculado
+        FROM
+            `proyectocarbonia.datacarbonia.huella_carbono`
+        WHERE Alcance = '1'
+        """
+        tco2_total_result = client.query(tco2_total_query).result()
+        total_tco2_calculado = next(tco2_total_result).total_tco2_calculado
 
-    # Consulta para consumo mensual
-    consumo_query = """
-    SELECT 
-      EXTRACT(YEAR FROM fec_ter) AS year,
-      EXTRACT(MONTH FROM fec_ter) AS month,
-      SUM(consumo) AS total_consumo
-    FROM `proyectocarbonia.alcance2.silver_parse_table`
-    GROUP BY year, month
-    ORDER BY year, month
-    """
-    consumo_results = client.query(consumo_query).result()
+        # Consulta para obtener la suma total de TCO2 Calculado (Alcance 2)
+        tco2_total_query2 = """
+        SELECT
+            ROUND(SUM(TCO2_Calculado), 4) AS total_tco2_calculado2
+        FROM
+            `proyectocarbonia.datacarbonia.huella_carbono`
+        WHERE Alcance = '2'
+        """
+        tco2_total_result2 = client.query(tco2_total_query2).result()
+        total_tco2_calculado2 = next(tco2_total_result2).total_tco2_calculado2
 
-    # Consulta para TCO2 mensual
-    tco2_query = """
-    SELECT 
-      EXTRACT(YEAR FROM fec_ter) AS year,
-      EXTRACT(MONTH FROM fec_ter) AS month,
-      SUM(TCO2) AS total_TCO2
-    FROM `proyectocarbonia.alcance2.silver_parse_table`
-    GROUP BY year, month
-    ORDER BY year, month
-    """
-    tco2_results = client.query(tco2_query).result()
+        # Consulta para obtener la suma total de TCO2 Calculado (Alcance 3)
+        tco2_total_query3 = """
+        SELECT
+            ROUND(SUM(TCO2_Calculado), 4) AS total_tco2_calculado3
+        FROM
+            `proyectocarbonia.datacarbonia.huella_carbono`
+        WHERE Alcance = '3'
+        """
+        tco2_total_result3 = client.query(tco2_total_query3).result()
+        total_tco2_calculado3 = next(tco2_total_result3).total_tco2_calculado3
 
-    # Consulta para consumo por distribuidora
-    distribuidora_query = """
-    SELECT 
-      nom_dist,
-      SUM(consumo) AS total_consumo
-    FROM `proyectocarbonia.alcance2.silver_parse_table`
-    GROUP BY nom_dist
-    ORDER BY total_consumo DESC
-    """
-    distribuidora_results = client.query(distribuidora_query).result()
+        # Consulta para obtener datos de TCO2 Calculado por mes para cada alcance
+        alcance1_query = """
+        SELECT 
+          EXTRACT(YEAR FROM Fecha_Inicio) AS year,
+          EXTRACT(MONTH FROM Fecha_Termino) AS month,
+          ROUND(SUM(TCO2_Calculado), 4) AS total_tco2_calculado
+        FROM `proyectocarbonia.datacarbonia.huella_carbono`
+        WHERE Alcance = '1'
+        GROUP BY year, month
+        ORDER BY year, month
+        """
+        alcance1_results = client.query(alcance1_query).result()
 
-    # Preparar datos para los gráficos
-    labels = []
-    consumo_data = []
-    tco2_data = []
+        alcance2_query = """
+        SELECT 
+          EXTRACT(YEAR FROM Fecha_Inicio) AS year,
+          EXTRACT(MONTH FROM Fecha_Termino) AS month,
+          ROUND(SUM(TCO2_Calculado), 4) AS total_tco2_calculado2
+        FROM `proyectocarbonia.datacarbonia.huella_carbono`
+        WHERE Alcance = '2'
+        GROUP BY year, month
+        ORDER BY year, month
+        """
+        alcance2_results = client.query(alcance2_query).result()
 
-    for row in consumo_results:
-        labels.append(f"{int(row['year'])}-{int(row['month']):02d}")
-        consumo_data.append(row['total_consumo'])
+        alcance3_query = """
+        SELECT 
+          EXTRACT(YEAR FROM Fecha_Inicio) AS year,
+          EXTRACT(MONTH FROM Fecha_Termino) AS month,
+          ROUND(SUM(TCO2_Calculado), 4) AS total_tco2_calculado3
+        FROM `proyectocarbonia.datacarbonia.huella_carbono`
+        WHERE Alcance = '3'
+        GROUP BY year, month
+        ORDER BY year, month
+        """
+        alcance3_results = client.query(alcance3_query).result()
 
-    for row in tco2_results:
-        tco2_data.append(row['total_TCO2'])
+        # Preparar datos para los gráficos
+        alcance1_labels = []
+        alcance1_data = []
+        for row in alcance1_results:
+            alcance1_labels.append(f"{int(row.year)}-{int(row.month):02d}")
+            alcance1_data.append(row.total_tco2_calculado)
 
-    distribuidora_labels = []
-    distribuidora_data = []
-    for row in distribuidora_results:
-        distribuidora_labels.append(row['nom_dist'])
-        distribuidora_data.append(row['total_consumo'])
+        alcance2_labels = []
+        alcance2_data = []
+        for row in alcance2_results:
+            alcance2_labels.append(f"{int(row.year)}-{int(row.month):02d}")
+            alcance2_data.append(row.total_tco2_calculado2)
 
-    context = {
-        'labels': labels,
-        'consumo_data': consumo_data,
-        'tco2_data': tco2_data,
-        'distribuidora_labels': distribuidora_labels,
-        'distribuidora_data': distribuidora_data
-    }
+        alcance3_labels = []
+        alcance3_data = []
+        for row in alcance3_results:
+            alcance3_labels.append(f"{int(row.year)}-{int(row.month):02d}")
+            alcance3_data.append(row.total_tco2_calculado3)
 
+        # Contexto con todos los datos
+        context = {
+            'total_tco2_calculado': total_tco2_calculado,
+            'total_tco2_calculado2': total_tco2_calculado2,
+            'total_tco2_calculado3': total_tco2_calculado3,
+            'alcance1_labels': alcance1_labels,
+            'alcance1_data': alcance1_data,
+            'alcance2_labels': alcance2_labels,
+            'alcance2_data': alcance2_data,
+            'alcance3_labels': alcance3_labels,
+            'alcance3_data': alcance3_data,
+        }
+
+    except Exception as e:
+        print(f"Error ejecutando las consultas: {e}")
+        context = {
+            'alcance1_labels': [],
+            'alcance1_data': [],
+            'alcance2_labels': [],
+            'alcance2_data': [],
+            'alcance3_labels': [],
+            'alcance3_data': [],
+        }
+
+    # Renderizar la página con el contexto
     return render(request, 'dashboard.html', context)
+
 
 ## ver graficos en combobox y recomendaciones
 def recomendaciones(request):
@@ -764,11 +824,13 @@ def alcance3(request):
     }
 
     return render(request, 'alcance3.html', context)
-#-- datos de dashboard -- #
-from google.cloud import bigquery
-from django.shortcuts import render
 
+
+#-- datos de dashboard -- #
 def alcance1_view(request):
+    from google.cloud import bigquery
+    from django.shortcuts import render
+
     # Configurar el cliente de BigQuery
     client = bigquery.Client()
 
@@ -780,18 +842,25 @@ def alcance1_view(request):
         `proyectocarbonia.datacarbonia.huella_carbono`
     WHERE Alcance = '1'
     """
-    # Ejecutar la consulta
-    query_job = client.query(query)
-    results = query_job.result()
+    try:
+        # Ejecutar la consulta
+        query_job = client.query(query)
+        result = query_job.result()  # Obtener los resultados
 
-    # Extraer la suma total del resultado
-    total_tco2_calculado = 0
-    for row in results:
+        # Extraer directamente la primera fila
+        row = next(result)  # Accede directamente a la primera fila
         total_tco2_calculado = row.total_tco2_calculado
 
-    # Pasar el dato al template
-    context = {
-        'total_tco2_calculado': total_tco2_calculado,
-    }
-    return render(request, 'dashboard.html', context)
+        # Crear el contexto para enviar al template
+        context = {
+            'total_tco2_calculado': total_tco2_calculado,
+        }
+    except Exception as e:
+        # Manejar errores si ocurren
+        context = {
+            'total_tco2_calculado': 'Error al obtener datos',
+        }
+        print(f"Error ejecutando la consulta: {e}")
 
+    # Renderizar la página con el contexto
+    return render(request, 'dashboard.html', context)

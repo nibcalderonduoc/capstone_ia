@@ -4,62 +4,141 @@
 {% block title %}Dashboard{% endblock %}
 
 {% block content %}
-    <h1>Gráficos de Consumo, TCO2 por Distribuidora</h1>
+    <h1>Dashboard de Alcances de Huella de Carbono</h1>
+
     <div class="charts">
-        <!-- Gráfico de Consumo Mensual -->
+        <!-- Gráfico de Alcance 1 -->
         <div class="chart">
-            <a href="{% url 'alcance1' %}">
-                <canvas id="consumoChart" style="width:100%; max-width:600px; height:400px;"></canvas>
-                <button onclick="handleConsumo()">Ver detalles de Consumo</button>
+            <h2>Alcance1 - Directas</h2>
+            <h1>{{ total_tco2_calculado }}</h1>
+            <h2>tCO2</h2>
+            <a href="{% url 'alcance1' %}">             
+                <canvas id="alcance1Chart" style="width:100%; max-width:600px; height:400px;"></canvas>
             </a>
-        </div>
+        </div> <!-- Cierra correctamente el div del gráfico de Alcance 1 -->
 
-        <!-- Gráfico de TCO2 Mensual -->
+        <!-- Gráfico de Alcance 2 -->
         <div class="chart">
+            <h2>Alcance 2 - Indirectas</h2>
+            <h1>{{ total_tco2_calculado2 }}</h1>
+            <h2>tCO2</h2>
             <a href="{% url 'alcance2' %}">
-                <canvas id="TCO2Chart" style="width:100%; max-width:600px; height:400px;"></canvas>
-                <button onclick="handleTCO2()">Ver detalles de TCO2</button>
+                <canvas id="alcance2Chart" style="width:100%; max-width:600px; height:400px;"></canvas>
             </a>
-        </div>
+        </div> <!-- Cierra correctamente el div del gráfico de Alcance 2 -->
 
-        <!-- Gráfico de Consumo por Distribuidora -->
+        <!-- Gráfico de Alcance 3 -->
         <div class="chart">
+            <h2>Alcance 3 - Otras Indirectas</h2>
+            <h1>{{ total_tco2_calculado3 }}</h1>
+            <h2>tCO2</h2>
             <a href="{% url 'alcance3' %}">
-                <canvas id="distribuidoraChart" style="width:100%; max-width:600px; height:400px;"></canvas>
-                <button onclick="handleDistribuidora()">Ver detalles de Distribuidora</button>
+                <canvas id="alcance3Chart" style="width:100%; max-width:600px; height:400px;"></canvas>
             </a>
-        </div>
+        </div> <!-- Cierra correctamente el div del gráfico de Alcance 3 -->
     </div>
 
     <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
     <script>
-        // Datos proporcionados desde views.py
-        var labels = {{ labels|safe }};
-        var consumoData = {{ consumo_data|safe }};
-        var tco2Data = {{ tco2_data|safe }};
-        var distribuidoraLabels = {{ distribuidora_labels|safe }};
-        var distribuidoraData = {{ distribuidora_data|safe }};
-
-        // Renderizar gráfico de Consumo Mensual
-        document.addEventListener("DOMContentLoaded", function () {
-            const consumoCtx = document.getElementById("consumoChart").getContext("2d");
-            new Chart(consumoCtx, {
-                type: 'bar',
+        document.addEventListener('DOMContentLoaded', function() {
+            // Gráfico de Alcance 1
+            var ctx1 = document.getElementById('alcance1Chart').getContext('2d');
+            new Chart(ctx1, {
+                type: 'line',
                 data: {
-                    labels: labels,
-                    datasets: [{
-                        label: 'TCO2 Calculado por Alcance',
-                        data: consumoData,
-                        backgroundColor: 'rgba(75, 192, 192, 0.2)',
+                    labels: {{ alcance1_labels|safe }},
+                    datasets: [{                        
+                        data: {{ alcance1_data|safe }},
                         borderColor: 'rgba(75, 192, 192, 1)',
-                        borderWidth: 1
+                        borderWidth: 3,
+                        backgroundColor: 'rgba(75, 192, 192, 0.1)',
+                        tension: 0.4,
+                        pointBackgroundColor: 'rgba(75, 192, 192, 1)',
+                        pointBorderColor: 'white',
+                        pointBorderWidth: 2
                     }]
                 },
                 options: {
-                    scales: {
-                        y: {
-                            beginAtZero: true
+                    responsive: true,
+                    plugins: {
+                        title: {
+                            display: false,
+                        },
+                        legend: {
+                            display: false,
                         }
+                    },
+                    scales: {
+                        x: { ticks: { font: { size: 0 } } },
+                        y: { beginAtZero: true, ticks: { font: { size: 0 } } }
+                    }
+                }
+            });
+
+            // Gráfico de Alcance 2
+            var ctx2 = document.getElementById('alcance2Chart').getContext('2d');
+            new Chart(ctx2, {
+                type: 'line',
+                data: {
+                    labels: {{ alcance2_labels|safe }},
+                    datasets: [{                        
+                        data: {{ alcance2_data|safe }},
+                        borderColor: 'rgba(75, 192, 192, 1)',
+                        borderWidth: 3,
+                        backgroundColor: 'rgba(75, 192, 192, 0.1)',
+                        tension: 0.4,
+                        pointBackgroundColor: 'rgba(75, 192, 192, 1)',
+                        pointBorderColor: 'white',
+                        pointBorderWidth: 2
+                    }]
+                },
+                options: {
+                    responsive: true,
+                    plugins: {
+                        title: {
+                            display: false,
+                        },
+                        legend: {
+                            display: false,
+                        }
+                    },
+                    scales: {
+                        x: { ticks: { font: { size: 0 } } },
+                        y: { beginAtZero: true, ticks: { font: { size: 0 } } }
+                    }
+                }
+            });
+
+            // Gráfico de Alcance 3
+            var ctx3 = document.getElementById('alcance3Chart').getContext('2d');
+            new Chart(ctx3, {
+                type: 'line',
+                data: {
+                    labels: {{ alcance3_labels|safe }},
+                    datasets: [{                        
+                        data: {{ alcance3_data|safe }},
+                        borderColor: 'rgba(54, 162, 235, 1)',
+                        borderWidth: 3,
+                        backgroundColor: 'rgba(54, 162, 235, 0.1)',
+                        tension: 0.4,
+                        pointBackgroundColor: 'rgba(54, 162, 235, 1)',
+                        pointBorderColor: 'white',
+                        pointBorderWidth: 2
+                    }]
+                },
+                options: {
+                    responsive: true,
+                    plugins: {
+                        title: {
+                            display: false,
+                        },
+                        legend: {
+                            display: false,
+                        }
+                    },
+                    scales: {
+                        x: { ticks: { font: { size: 0 } } },
+                        y: { beginAtZero: true, ticks: { font: { size: 0 } } }
                     }
                 }
             });
