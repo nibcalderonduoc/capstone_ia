@@ -122,6 +122,7 @@ body {
   font-weight: 600;
 }
 
+/* LOGIN */
 /* Contenedor del switch */
 .switch {
   display: inline-block;
@@ -189,7 +190,7 @@ input:checked + .slider:before {
   line-height: 24px; /* Alineación vertical con el toggle */
 }
 
-
+/* Base */
 /* Contenedor Principal */
 
 .file-upload {
@@ -214,6 +215,7 @@ input:checked + .slider:before {
   padding: 0;
   align-content: flex-start;
 }
+
 
 /* Sidebar */
 #sidebar {
@@ -347,6 +349,8 @@ input:checked + .slider:before {
 }
 
 
+/* Boton volver atras */
+
 .back-button {
   margin: 0;
   padding: 10px 20px;
@@ -377,7 +381,7 @@ input:checked + .slider:before {
 }
 
 
-/* Encabezado */
+/* Contenido contenedor */
 
 .button-form-container {
   display: flex;
@@ -499,6 +503,7 @@ button {
   cursor: pointer;
 }
 
+
 /* Botones y Subida de Archivos */
 
 .file-upload-btn {
@@ -569,7 +574,6 @@ button {
 
 
 /* Contenido */
-
 .file-upload h1 {
   padding: 0px;
   padding-bottom: 10px;
@@ -864,7 +868,7 @@ button {
     }
 
 
-    /* Encapsulando los estilos de la página de login */
+/* Encapsulando los estilos de la página de login */
 .login-page {
   display: flex;
   justify-content: center;
@@ -904,7 +908,7 @@ button {
 }
 
 .login-page .form-subtitle {
-  color: #666666;
+  color: #fff;
   margin-bottom: 20px;
 }
 
@@ -989,4 +993,60 @@ button {
 .downsidebar {
   align-items: end;
 
+}
+
+
+/* Estilos sitio resultados */
+
+.loader-container {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  height: 200px;
+}
+
+.loader {
+  border: 16px solid #f3f3f3;
+  border-top: 16px solid #3498db;
+  border-radius: 50%;
+  width: 120px;
+  height: 120px;
+  animation: spin 2s linear infinite;
+}
+
+@keyframes spin {
+  0% { transform: rotate(0deg); }
+  100% { transform: rotate(360deg); }
+}
+
+.loader-text {
+  margin-top: 20px;
+  font-size: 18px;
+  color: #3498db;
+}
+
+.hidden {
+  display: none;
+}
+
+.upload-btn-container {
+  text-align: right;
+  padding-right: 20px;
+  padding-top: 20px;
+}
+
+table {
+  width: 100%;
+  border-collapse: collapse;
+}
+
+th, td {
+  border: 1px solid #ccc;
+  padding: 8px;
+  text-align: left;
+}
+
+th {
+  background-color: #f4f4f4;
 }
