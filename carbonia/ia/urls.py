@@ -34,6 +34,7 @@ urlpatterns = [
     path('get_provinces/', views.get_provinces, name='get_provinces'),
     path('get_communes/', views.get_communes, name='get_communes'),
     path('get_statistics/', views.get_statistics, name='get_statistics'),
+    #insertar
     
 
    

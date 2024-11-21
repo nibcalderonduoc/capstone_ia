@@ -197,3 +197,5 @@ function handleTCO2() {
 function handleDistribuidora() {
     window.location.href = distribuidoraUrl;
 }
+
+
