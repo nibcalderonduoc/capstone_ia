@@ -764,3 +764,34 @@ def alcance3(request):
     }
 
     return render(request, 'alcance3.html', context)
+#-- datos de dashboard -- #
+from google.cloud import bigquery
+from django.shortcuts import render
+
+def alcance1_view(request):
+    # Configurar el cliente de BigQuery
+    client = bigquery.Client()
+
+    # Definir la consulta para obtener la suma total
+    query = """
+    SELECT
+        ROUND(SUM(TCO2_Calculado), 4) AS total_tco2_calculado
+    FROM
+        `proyectocarbonia.datacarbonia.huella_carbono`
+    WHERE Alcance = '1'
+    """
+    # Ejecutar la consulta
+    query_job = client.query(query)
+    results = query_job.result()
+
+    # Extraer la suma total del resultado
+    total_tco2_calculado = 0
+    for row in results:
+        total_tco2_calculado = row.total_tco2_calculado
+
+    # Pasar el dato al template
+    context = {
+        'total_tco2_calculado': total_tco2_calculado,
+    }
+    return render(request, 'dashboard.html', context)
+

@@ -30,11 +30,25 @@
                 <label for="password">Contraseña</label>
                 <input type="password" id="password" name="password" required>
             </div>
+
+            <!-- Toggle para seleccionar el tipo de usuario -->
+        <div class="input-group">
+            <label class="switch-label" style="display: flex; align-items: center; justify-content: space-between;">
+                <p>Iniciar sesión como administrador</p>
+                <!-- Toggle switch -->
+                <label class="switch">
+                    <input type="checkbox" id="is_admin" name="is_admin">
+                    <span class="slider round"></span>
+                </label>
+            </label>
+        </div>
+
             <button type="submit" class="submit-btn">Ingresar</button>
         </form>
+        
         <div class="link">
             ¿No tienes cuenta? <a href="{% url 'registro' %}">Solicitala aquí</a>
         </div>
     </div>
 </div>
-{% endblock %}
+{% endblock %}

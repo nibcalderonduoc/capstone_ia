@@ -8,42 +8,61 @@
     <div class="charts">
         <!-- Gráfico de Consumo Mensual -->
         <div class="chart">
-            <a href="{% url 'alcance1' %}"> 
-            <canvas id="consumoChart" style="width:100%; max-width:600px; height:400px;"></canvas>
-            <button onclick="handleConsumo()">Ver detalles de Consumo</button>
+            <a href="{% url 'alcance1' %}">
+                <canvas id="consumoChart" style="width:100%; max-width:600px; height:400px;"></canvas>
+                <button onclick="handleConsumo()">Ver detalles de Consumo</button>
             </a>
         </div>
 
-        <!-- Gráfico de TCO2 Mensual -->    
+        <!-- Gráfico de TCO2 Mensual -->
         <div class="chart">
-            <a href="{% url 'alcance2' %}"> 
-            <canvas id="TCO2Chart" style="width:100%; max-width:600px; height:400px;"></canvas>
-            <button onclick="handleTCO2()">Ver detalles de TCO2</button>
+            <a href="{% url 'alcance2' %}">
+                <canvas id="TCO2Chart" style="width:100%; max-width:600px; height:400px;"></canvas>
+                <button onclick="handleTCO2()">Ver detalles de TCO2</button>
             </a>
         </div>
 
         <!-- Gráfico de Consumo por Distribuidora -->
         <div class="chart">
-            <a href="{% url 'alcance3' %}"> 
-            <canvas id="distribuidoraChart" style="width:100%; max-width:600px; height:400px;"></canvas>
-            <button onclick="handleDistribuidora()">Ver detalles de Distribuidora</button>
+            <a href="{% url 'alcance3' %}">
+                <canvas id="distribuidoraChart" style="width:100%; max-width:600px; height:400px;"></canvas>
+                <button onclick="handleDistribuidora()">Ver detalles de Distribuidora</button>
             </a>
         </div>
     </div>
 
     <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
-    <!-- Cargar Chart.js y tu archivo script.js -->
-    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
     <script>
-        var consumoUrl = "{% url 'alcance1' %}";
-        var tco2Url = "{% url 'alcance2' %}";
-        var distribuidoraUrl = "{% url 'alcance3' %}";
-
+        // Datos proporcionados desde views.py
         var labels = {{ labels|safe }};
         var consumoData = {{ consumo_data|safe }};
         var tco2Data = {{ tco2_data|safe }};
         var distribuidoraLabels = {{ distribuidora_labels|safe }};
         var distribuidoraData = {{ distribuidora_data|safe }};
+
+        // Renderizar gráfico de Consumo Mensual
+        document.addEventListener("DOMContentLoaded", function () {
+            const consumoCtx = document.getElementById("consumoChart").getContext("2d");
+            new Chart(consumoCtx, {
+                type: 'bar',
+                data: {
+                    labels: labels,
+                    datasets: [{
+                        label: 'TCO2 Calculado por Alcance',
+                        data: consumoData,
+                        backgroundColor: 'rgba(75, 192, 192, 0.2)',
+                        borderColor: 'rgba(75, 192, 192, 1)',
+                        borderWidth: 1
+                    }]
+                },
+                options: {
+                    scales: {
+                        y: {
+                            beginAtZero: true
+                        }
+                    }
+                }
+            });
+        });
     </script>
-    <script src="{% static 'js/script.js' %}"></script>
 {% endblock %}

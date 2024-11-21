@@ -1,11 +1,11 @@
+
 {% extends 'partials/base-admin.html' %}
 {% load static %}
 {% block title %}Registro - Carbonia{% endblock %}
 
 {% block content %}
+<h1>Registro de Empresas</h1>
 <div class="login-page">
-    <div class="login-container">
-        <div class="form-title">REGISTRO</div>
         <form id="registroForm" action="{% url 'registro' %}" method="post">
             {% csrf_token %}
             <div class="input-group">
@@ -55,12 +55,8 @@
                 <input type="checkbox" id="terms" name="terms" required>
                 <label for="terms">Acepto términos & condiciones</label>
             </div>
-            <button type="submit" class="submit-btn">REGISTER</button>
+            <button type="submit" class="submit-btn">Registrar</button>
         </form>
-        <div class="link">
-            ¿Ya tienes una cuenta? <a href="{% url 'login' %}">Inicia sesión aquí</a>
-        </div>
-    </div>
 </div>
 
 <!-- Incluye jQuery desde un CDN -->
@@ -137,4 +133,4 @@
     }
 </script>
 
-{% endblock %}
+{% endblock %}

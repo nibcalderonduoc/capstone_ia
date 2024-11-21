@@ -11,10 +11,8 @@
     {% load static %}
     <link rel="icon" type="image/x-icon" href="https://firebasestorage.googleapis.com/v0/b/unify-v3-copy.appspot.com/o/noflxksrkig-4%3A77?alt=media&token=fde79ac1-99f6-40c9-ad56-22c825ce3670" />
     <link rel="stylesheet" type="text/css" href="{% static 'css/style.css' %}" />
-    <head>
-      <!-- Asegúrate de incluir este script en el head de tu archivo -->
-      <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
-    </head>
+    <!-- Asegúrate de incluir este script en el head de tu archivo -->
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
   </head>
   <body>
     <div id="viewport">
@@ -22,7 +20,6 @@
       <!-- Sidebar -->
       {% include 'partials/sidebar-admin.html' %}
       
-
       <!-- Content -->
       <div id="content">
         <div class="button-form-container">
@@ -42,12 +39,14 @@
           </div>
         </div>
       </div>
+
     </div>
+
     <!-- Script volver atras -->
     <script>
       function goBack() {
         window.history.back()
       }
     </script>
-  </body>
+  </body>
 </html>

@@ -1,3 +1,4 @@
+
 {% extends 'partials/base-sinsidebar.html' %}
 {% load static %}
 {% block title %}Login - Carbonia{% endblock %}
@@ -27,12 +28,14 @@
 
             <!-- Toggle para seleccionar el tipo de usuario -->
             <div class="input-group">
-                <label for="is_admin" class="switch-label" style="display: flex; align-items: center;">
+                <label class="switch-label" style="display: flex; align-items: center;">
+                    <!-- Etiqueta del toggle -->
+                    <p>Iniciar sesión como administrador</p>
+                    <!-- Toggle switch -->
                     <label class="switch">
                         <input type="checkbox" id="is_admin" name="is_admin">
                         <span class="slider round"></span>
-                      </label>
-                    <span style="margin-right: 10px;">Iniciar sesión como administrador</span>
+                    </label>
                 </label>
             </div>
 
@@ -43,4 +46,4 @@
         </div>
     </div>
 </div>
-{% endblock %}
+{% endblock %}
