@@ -6,23 +6,33 @@
 {% block content %}
 <h1>Estadísticas por Región, Provincia y Comuna</h1>
 
-<div class="filter-section">
-    <label for="region">Región:</label>
-    <select id="region" name="region"></select>
 
-    <label for="provincia">Provincia:</label>
-    <select id="provincia" name="provincia" disabled></select>
+<div class="charts">
 
-    <label for="comuna">Comuna:</label>
-    <select id="comuna" name="comuna" disabled></select>
+  <div class="chart"> 
+    <div class="filter-section">
+      <label for="region">Región:</label>
+      <select id="region" name="region"></select>
+  
+      <label for="provincia">Provincia:</label>
+      <select id="provincia" name="provincia" disabled></select>
+  
+      <label for="comuna">Comuna:</label>
+      <select id="comuna" name="comuna" disabled></select>
+  
+      <button id="apply-filter" disabled>Aplicar Filtro</button>
+  </div>
+  </div>
 
-    <button id="apply-filter" disabled>Aplicar Filtro</button>
+  <div class="chart">
+    <div id="stats-container">
+      <h2>Estadísticas</h2>
+      <canvas id="statsChart" style="width:100%; max-width:600px; height:400px;"></canvas>
+  </div>
+  </div>
 </div>
 
-<div id="stats-container">
-    <h2>Estadísticas</h2>
-    <canvas id="statsChart" style="width:100%; max-width:600px; height:400px;"></canvas>
-</div>
+
 
 <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
 <script>
