@@ -4,31 +4,48 @@
 {% block content %}
 <h1>Filtrar Estadísticas por Ubicación</h1>
 
-<div>
-    <label for="region-select">Región:</label>
-    <select id="region-select">
-        <option value="">Seleccione una región</option>
-    </select>
+<div class="charts">
+    <!--Primer selector-->
+    <div class="chart">
+        <div>
+            <label for="region-select">Región:</label>
+            <select id="region-select">
+                <option value="">Seleccione una región</option>
+            </select>
+        </div>
+    </div>
+
+    <!--Segundo selector-->
+    <div class="chart">
+        <div>
+            <label for="province-select">Provincia:</label>
+            <select id="province-select" disabled>
+                <option value="">Seleccione una provincia</option>
+            </select>
+        </div>
+    </div>
+
+    <!--Tercer selector-->
+    <div class="chart">
+        <div>
+            <label for="commune-select">Comuna:</label>
+            <select id="commune-select" disabled>
+                <option value="">Seleccione una comuna</option>
+            </select>
+        </div>
+    </div>
 </div>
 
-<div>
-    <label for="province-select">Provincia:</label>
-    <select id="province-select" disabled>
-        <option value="">Seleccione una provincia</option>
-    </select>
+<!-- Resultado -->
+<div class="charts"> 
+    <div class="chart">
+        <div id="statistics">
+            <h2>Estadísticas</h2>
+            <p>Selecciona una comuna para ver las estadísticas.</p>
+        </div>
+    </div>
 </div>
 
-<div>
-    <label for="commune-select">Comuna:</label>
-    <select id="commune-select" disabled>
-        <option value="">Seleccione una comuna</option>
-    </select>
-</div>
-
-<div id="statistics">
-    <h2>Estadísticas</h2>
-    <p>Selecciona una comuna para ver las estadísticas.</p>
-</div>
 
 <script>
     document.addEventListener('DOMContentLoaded', () => {
