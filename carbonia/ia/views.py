@@ -877,3 +877,63 @@ def get_statistics(request):
         return JsonResponse(data)
 
     return JsonResponse({'error': 'No se encontraron estadísticas para esta comuna.'}, status=404)
+
+from django.http import JsonResponse, HttpResponse
+from django.views.decorators.csrf import csrf_exempt
+from google.cloud import bigquery
+import json
+
+@csrf_exempt
+def registrar_empresa(request):
+    """Registra una empresa y su sucursal en BigQuery."""
+    if request.method == 'POST':
+        try:
+            # Parsear datos del formulario
+            data = json.loads(request.body)
+            rut = data.get('rut')
+            nombre_cliente = data.get('nomcliente')
+            direccion = data.get('dircliente', '')
+            id_region = data.get('region')
+            id_provincia = data.get('provincia')
+            id_comuna = data.get('comuna')
+            sucursal = data.get('sucursal')
+            email_cliente = data.get('emailcliente')
+
+            if not all([rut, nombre_cliente, id_region, id_provincia, id_comuna, sucursal, email_cliente]):
+                return JsonResponse({'error': 'Todos los campos obligatorios deben ser completados.'}, status=400)
+
+            client = bigquery.Client()
+
+            # Insertar empresa en la tabla `empresa`
+            empresa_table = 'proyectocarbonia.datacarbonia.empresa'
+            empresa_row = {
+                'rut': rut,
+                'nombre_cliente': nombre_cliente,
+                'direccion': direccion,
+                'email_cliente': email_cliente
+            }
+
+            errors = client.insert_rows_json(empresa_table, [empresa_row])
+            if errors:
+                return JsonResponse({'error': f'Error al insertar la empresa: {errors}'}, status=500)
+
+            # Insertar sucursal en la tabla `sucursal`
+            sucursal_table = 'proyectocarbonia.datacarbonia.sucursal'
+            sucursal_row = {
+                'rut_empresa': rut,
+                'nombre_sucursal': sucursal,
+                'id_region': int(id_region),
+                'id_provincia': int(id_provincia),
+                'id_comuna': int(id_comuna)
+            }
+
+            errors = client.insert_rows_json(sucursal_table, [sucursal_row])
+            if errors:
+                return JsonResponse({'error': f'Error al insertar la sucursal: {errors}'}, status=500)
+
+            return JsonResponse({'message': 'Empresa y sucursal registradas exitosamente.'}, status=200)
+
+        except Exception as e:
+            return JsonResponse({'error': f'Error interno del servidor: {str(e)}'}, status=500)
+    return JsonResponse({'error': 'Método no permitido.'}, status=405)
+
