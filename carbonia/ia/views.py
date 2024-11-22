@@ -17,45 +17,9 @@ import os
 import re
 import json
 from datetime import datetime
-
+from google.cloud import bigquery
 # Vista para subir un archivo y procesarlo
-#def index(request):
-#    if request.method == 'POST' and request.FILES.get('pdf_file'):
-#        # Obtener el archivo subido
-#        uploaded_file = request.FILES['pdf_file']
-        
-#        # Obtener el RUT del cliente desde la sesión o contexto
-#        perfil_id = request.session.get('rut', 'No Disponible')  # Usa 'No Disponible' como valor predeterminado si no hay RUT
 
-#        # Subir el archivo a Google Cloud Storage con el RUT como perfil_id
-#        uploaded_file_url = upload_to_gcs(uploaded_file, perfil_id)
-        
-#        # Pasar la URL del archivo al contexto para mostrarlo en la plantilla
-#        context = {'file_url': uploaded_file_url}
-#        return render(request, 'result.html', context)
-
-#    return render(request, 'index.html')
-
-# Función para subir el archivo a Google Cloud Storage
-#def upload_to_gcs(file, perfil_id):
-#    """Sube el archivo a Google Cloud Storage y retorna la URL pública"""
-#    storage_client = storage.Client()
-#    bucket_name = settings.GS_BUCKET_NAME  # El nombre del bucket debe estar en settings.py
-#    bucket = storage_client.bucket(bucket_name)
-#    blob = bucket.blob(file.name)
-
-#    # Verifica si el archivo es un PDF y ajusta el tipo MIME
-#    mime_type = 'application/pdf' if file.name.endswith('.pdf') else 'application/octet-stream'
-
-#    # Sube el archivo especificando el tipo MIME
-#    blob.upload_from_file(file, content_type=mime_type)
-
-    # Agrega metadatos al archivo, incluyendo el perfil_id como RUT
-#    blob.metadata = {'perfil_id': perfil_id}  # Aquí, perfil_id ahora está definido correctamente
-#    blob.patch()  # Guarda los metadatos
-
-    # Retorna la URL pública del archivo
-#    return f"https://storage.googleapis.com/{bucket_name}/{file.name}"
 from django.shortcuts import render
 from django.conf import settings
 from google.cloud import storage
@@ -766,7 +730,7 @@ def initialize_profile(request):
 from django.shortcuts import render
 from google.cloud import bigquery
 import json
-
+from google.cloud import bigquery
 def alcance3(request):
     # Inicializa el cliente de BigQuery
     client = bigquery.Client()
@@ -824,46 +788,7 @@ def alcance3(request):
     }
 
     return render(request, 'alcance3.html', context)
-
-
-#-- datos de dashboard -- #
-#def alcance1_view(request):
-    from google.cloud import bigquery
-    from django.shortcuts import render
-
-    # Configurar el cliente de BigQuery
-    client = bigquery.Client()
-
-    # Definir la consulta para obtener la suma total
-    query = """
-    SELECT
-        ROUND(SUM(TCO2_Calculado), 4) AS total_tco2_calculado
-    FROM
-        `proyectocarbonia.datacarbonia.huella_carbono`
-    WHERE Alcance = '1'
-    """
-    try:
-        # Ejecutar la consulta
-        query_job = client.query(query)
-        result = query_job.result()  # Obtener los resultados
-
-        # Extraer directamente la primera fila
-        row = next(result)  # Accede directamente a la primera fila
-        total_tco2_calculado = row.total_tco2_calculadso
-
-        # Crear el contexto para enviar al template
-        context = {
-            'total_tco2_calculado': total_tco2_calculado,
-        }
-    except Exception as e:
-        # Manejar errores si ocurren
-        context = {
-            'total_tco2_calculado': 'Error al obtener datos',
-        }
-        print(f"Error ejecutando la consulta: {e}")
-
-    # Renderizar la página con el contexto
-    return render(request, 'dashboard.html', context)
+    
 
 
 from django.http import JsonResponse
