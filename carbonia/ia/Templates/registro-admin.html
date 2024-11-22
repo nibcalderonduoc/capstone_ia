@@ -8,16 +8,16 @@
     <form id="registroForm" action="{% url 'registro' %}" method="post" novalidate>
         {% csrf_token %}
         <div class="input-group">
-            <label for="rut">RUT</label>
+            <label for="rut">RUT Empresa</label>
             <input type="text" id="rut" name="rut" required pattern="\d{1,8}-[0-9Kk]" aria-describedby="rutError">
             <small id="rutError" class="error-text"></small>
         </div>
         <div class="input-group">
-            <label for="nomcliente">Nombre del Cliente</label>
+            <label for="nomcliente">Nombre Empresa</label>
             <input type="text" id="nomcliente" name="nomcliente" required>
         </div>
         <div class="input-group">
-            <label for="dircliente">Dirección</label>
+            <label for="dircliente">Dirección Empresa</label>
             <input type="text" id="dircliente" name="dircliente">
         </div>
         <div class="input-group">
