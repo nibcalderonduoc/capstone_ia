@@ -1,180 +1,32 @@
 {% extends 'partials/base-admin.html' %}
 {% load static %}
-{% block title %}Registro Admin - Carbonia{% endblock %}
+{% block title %}Registro de Usuarios - Carbonia{% endblock %}
 
 {% block content %}
-<h1>Registro de Empresas</h1>
+<h1>Registro de Usuarios</h1>
 <div class="login-page">
-    <form id="registroForm" action="{% url 'registro' %}" method="post" novalidate>
+    <form id="registroAdminForm" action="{% url 'registro' %}" method="post" novalidate>
         {% csrf_token %}
         <div class="input-group">
-            <label for="rut">RUT Empresa</label>
-            <input type="text" id="rut" name="rut" required pattern="\d{1,8}-[0-9Kk]" aria-describedby="rutError">
-            <small id="rutError" class="error-text"></small>
+            <label for="username">Nombre de Usuario</label>
+            <input type="text" id="username" name="username" required>
         </div>
         <div class="input-group">
-            <label for="nomcliente">Nombre Empresa</label>
-            <input type="text" id="nomcliente" name="nomcliente" required>
+            <label for="email">Correo Electrónico</label>
+            <input type="email" id="email" name="email" required>
         </div>
         <div class="input-group">
-            <label for="dircliente">Dirección Casa Matriz</label>
-            <input type="text" id="dircliente" name="dircliente">
+            <label for="password">Contraseña</label>
+            <input type="password" id="password" name="password" required>
         </div>
         <div class="input-group">
-            <label for="region">Región</label>
-            <select id="region" name="region" required>
-                <option value="">Seleccione una región</option>
+            <label for="role">Rol</label>
+            <select id="role" name="role" required>
+                <option value="admin">Administrador</option>
+                <option value="user">Usuario Regular</option>
             </select>
         </div>
-        <div class="input-group">
-            <label for="provincia">Provincia (Ciudad)</label>
-            <select id="provincia" name="provincia" required>
-                <option value="">Seleccione una provincia</option>
-            </select>
-        </div>
-        <div class="input-group">
-            <label for="comuna">Comuna</label>
-            <select id="comuna" name="comuna" required>
-                <option value="">Seleccione una comuna</option>
-            </select>
-        </div>
-        
-        <div class="input-group">
-            <label for="emailcliente">Correo Electrónico</label>
-            <input type="email" id="emailcliente" name="emailcliente" required aria-describedby="emailError">
-            <small id="emailError" class="error-text"></small>
-        </div>
-        <button type="submit" class="submit-btn">Registrar</button>
+        <button type="submit" class="submit-btn">Registrar Usuario</button>
     </form>
 </div>
-
-
-<script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
-<script>
-    document.addEventListener("DOMContentLoaded", function () {
-        const regionSelect = document.getElementById("region");
-        const provinceSelect = document.getElementById("provincia");
-        const communeSelect = document.getElementById("comuna");
-        const rutInput = document.getElementById("rut");
-        const emailInput = document.getElementById("emailcliente");
-        const rutError = document.getElementById("rutError");
-
-        // Cargar regiones al cargar la página
-        fetch("{% url 'get_regions' %}")
-            .then(response => response.json())
-            .then(data => {
-                data.regions.forEach(region => {
-                    const option = document.createElement("option");
-                    option.value = region.id;
-                    option.textContent = region.name;
-                    regionSelect.appendChild(option);
-                });
-            });
-
-        // Cargar provincias cuando se selecciona una región
-        regionSelect.addEventListener("change", function () {
-            provinceSelect.innerHTML = '<option value="">Seleccione una provincia</option>';
-            communeSelect.innerHTML = '<option value="">Seleccione una comuna</option>';
-            if (this.value) {
-                fetch(`{% url 'get_provinces' %}?region_id=${this.value}`)
-                    .then(response => response.json())
-                    .then(data => {
-                        data.provinces.forEach(province => {
-                            const option = document.createElement("option");
-                            option.value = province.id;
-                            option.textContent = province.name;
-                            provinceSelect.appendChild(option);
-                        });
-                    });
-            }
-        });
-
-        // Cargar comunas cuando se selecciona una provincia
-        provinceSelect.addEventListener("change", function () {
-            communeSelect.innerHTML = '<option value="">Seleccione una comuna</option>';
-            if (this.value) {
-                fetch(`{% url 'get_communes' %}?province_id=${this.value}`)
-                    .then(response => response.json())
-                    .then(data => {
-                        data.communes.forEach(commune => {
-                            const option = document.createElement("option");
-                            option.value = commune.id;
-                            option.textContent = commune.name;
-                            communeSelect.appendChild(option);
-                        });
-                    });
-            }
-        });
-
-        // Validación y limpieza de RUT en tiempo real
-        rutInput.addEventListener("input", function () {
-            let value = this.value.toUpperCase().replace(/[^0-9K]/g, ""); // Solo números y 'K'
-
-            // Dividir cuerpo y dígito verificador
-            const body = value.slice(0, -1); // Todo menos el último carácter
-            const dv = value.slice(-1); // Último carácter como DV
-
-            // Si hay múltiples 'K's o caracteres no permitidos en el DV, limpiar
-            if (body.includes("K")) {
-                this.value = body.replace(/K/g, "") + (dv ? "-" + dv : ""); // Remover cualquier K en el cuerpo
-            } else {
-                // Formatear automáticamente con guion
-                this.value = body + (dv ? "-" + dv : "");
-            }
-
-            // Ocultar mensaje de error mientras se escribe
-            rutError.textContent = "";
-        });
-
-        // Validar el RUT al perder el foco
-        rutInput.addEventListener("blur", function () {
-            const value = this.value;
-            if (value && !validarRUT(value)) {
-                rutError.textContent = "El RUT ingresado no es válido.";
-            } else {
-                rutError.textContent = "";
-            }
-        });
-
-        // Validación de correo electrónico
-        emailInput.addEventListener("input", function () {
-            const emailError = document.getElementById("emailError");
-            if (!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(this.value)) {
-                emailError.textContent = "El correo electrónico no es válido.";
-            } else {
-                emailError.textContent = "";
-            }
-        });
-
-        // Función para validar RUT chileno
-        function validarRUT(rut) {
-            const rutClean = rut.replace(/\./g, "").replace(/-/g, "");
-            if (rutClean.length < 8 || rutClean.length > 9) return false;
-
-            const body = rutClean.slice(0, -1);
-            const dv = rutClean.slice(-1).toUpperCase();
-
-            // Validar que el cuerpo tenga solo números y que el DV sea un número o 'K'
-            if (!/^\d+$/.test(body) || !/^[0-9K]$/.test(dv)) return false;
-
-            let sum = 0;
-            let multiplier = 2;
-            for (let i = body.length - 1; i >= 0; i--) {
-                sum += body[i] * multiplier;
-                multiplier = multiplier === 7 ? 2 : multiplier + 1;
-            }
-            const dvExpected = 11 - (sum % 11);
-            const dvFinal = dvExpected === 11 ? "0" : dvExpected === 10 ? "K" : dvExpected.toString();
-            return dv === dvFinal;
-        }
-
-        // Ocultar mensaje de error al interactuar con el campo
-        rutInput.addEventListener("focus", function () {
-            rutError.textContent = "";
-        });
-    });
-</script>
-
-
 {% endblock %}
-

@@ -27,14 +27,20 @@ urlpatterns = [
     path('registro-admin/', views.registro_admin, name='registro_admin'),
     path('dashboard-admin/', views.dashboard_admin, name='dashboard_admin'),
     path('login-admin/', views.login_admin, name='login_admin'),
-    path('empresas-registradas/', views.empresas_registradas, name='empresas_registradas'),
+    #path('empresas-registradas/', views.empresas_registradas, name='empresas_registradas'),
     path('sidebar-admin/', views.sidebar_admin, name='sidebar_admin'),
     path('revisar/', result, name='nombre_de_tu_url_a_result'),
     path('get_regions/', views.get_regions, name='get_regions'),
     path('get_provinces/', views.get_provinces, name='get_provinces'),
     path('get_communes/', views.get_communes, name='get_communes'),
     path('get_statistics/', views.get_statistics, name='get_statistics'),
-    
+     # Página principal para listar empresas registradas
+    path('empresas-registradas/', views.empresas_registradas, name='empresas_registradas'),       
+    path('sucursales-registradas/<str:rut_empresa>/', views.sucursales_registradas, name='sucursales_registradas'),
+    # Registrar una nueva empresa
+    path('registro-empresa/', views.registro_empresa, name='registro_empresa'),
+    # Registrar una nueva sucursal para una empresa
+    path('registro-sucursal/<str:rut_empresa>/', views.registro_sucursal, name='registro_sucursal'),    
     #insertar
     
 

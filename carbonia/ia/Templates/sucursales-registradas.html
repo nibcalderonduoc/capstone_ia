@@ -1,0 +1,32 @@
+{% extends 'partials/base-admin.html' %}
+{% load static %}
+{% block title %}Sucursales - Carbonia{% endblock %}
+
+{% block content %}
+<h1>Sucursales de {{ empresa.nombre_cliente }}</h1>
+<div class="sucursal-lista">
+    <table>
+        <thead>
+            <tr>
+                <th>Nombre Sucursal</th>
+                <th>Dirección</th>
+                <th>Región</th>
+                <th>Provincia</th>
+                <th>Comuna</th>
+            </tr>
+        </thead>
+        <tbody>
+            {% for sucursal in sucursales %}
+            <tr>
+                <td>{{ sucursal.nombre_sucursal }}</td>
+                <td>{{ sucursal.direccion_sucursal }}</td>
+                <td>{{ sucursal.region }}</td>
+                <td>{{ sucursal.provincia }}</td>
+                <td>{{ sucursal.comuna }}</td>
+            </tr>
+            {% endfor %}
+        </tbody>
+    </table>
+    <a href="{% url 'registrar_sucursal' empresa.rut %}" class="btn btn-primary">Agregar Sucursal</a>
+</div>
+{% endblock %}

@@ -121,7 +121,7 @@ def result(request):
 
 
 # Vista para mostrar empresas-registradas
-def empresas_registradas(request):  
+#def empresas_registradas(request):  
     return render(request, 'empresas-registradas.html')
 
 # Vista para mostrar Header
@@ -877,63 +877,176 @@ def get_statistics(request):
         return JsonResponse(data)
 
     return JsonResponse({'error': 'No se encontraron estadísticas para esta comuna.'}, status=404)
-
-from django.http import JsonResponse, HttpResponse
-from django.views.decorators.csrf import csrf_exempt
+from django.shortcuts import render, redirect
+from django.http import JsonResponse
 from google.cloud import bigquery
+import uuid
 import json
 
-@csrf_exempt
-def registrar_empresa(request):
-    """Registra una empresa y su sucursal en BigQuery."""
+# Listar empresas registradas
+def empresas_registradas(request):
+    """Lista todas las empresas y cuenta sus sucursales."""
+    client = bigquery.Client()
+
+    # Query para obtener empresas y contar sucursales
+    query = """
+    SELECT 
+        e.rut, 
+        e.nombre_cliente, 
+        e.email_cliente, 
+        e.direccion, 
+        r.nombre_region AS region, 
+        COUNT(s.id_sucursal) AS sucursal_count
+    FROM `proyectocarbonia.datacarbonia.empresa` e
+    LEFT JOIN `proyectocarbonia.datacarbonia.sucursal` s ON e.rut = s.rut_empresa
+    LEFT JOIN `proyectocarbonia.datacarbonia.region` r ON e.id_region = r.id_region
+    GROUP BY e.rut, e.nombre_cliente, e.email_cliente, e.direccion, region
+    ORDER BY e.nombre_cliente
+    """
+    query_job = client.query(query)
+    empresas = query_job.result()
+
+    # Preparar datos para el template
+    empresas_data = [
+        {
+            "rut": row.rut,
+            "nombre_cliente": row.nombre_cliente,
+            "email_cliente": row.email_cliente,
+            "direccion": row.direccion,
+            "region": row.region,
+            "sucursal_count": row.sucursal_count,
+        }
+        for row in empresas
+    ]
+
+    return render(request, 'empresas-registradas.html', {'empresas': empresas_data})
+
+
+# Ver sucursales de una empresa específica
+def sucursales_registradas(request, rut_empresa):
+    """Muestra las sucursales de una empresa específica."""
+    client = bigquery.Client()
+
+    # Query para obtener sucursales de la empresa
+    query = f"""
+    SELECT 
+        s.nombre_sucursal, 
+        s.direccion_sucursal, 
+        r.nombre_region AS region, 
+        p.nombre_provincia AS provincia, 
+        c.nombre_comuna AS comuna
+    FROM `proyectocarbonia.datacarbonia.sucursal` s
+    LEFT JOIN `proyectocarbonia.datacarbonia.region` r ON s.id_region = r.id_region
+    LEFT JOIN `proyectocarbonia.datacarbonia.provincia` p ON s.id_provincia = p.id_provincia
+    LEFT JOIN `proyectocarbonia.datacarbonia.comuna` c ON s.id_comuna = c.id_comuna
+    WHERE s.rut_empresa = '{rut_empresa}'
+    ORDER BY s.nombre_sucursal
+    """
+    query_job = client.query(query)
+    sucursales = query_job.result()
+
+    sucursales_data = [
+        {
+            "nombre_sucursal": row.nombre_sucursal,
+            "direccion_sucursal": row.direccion_sucursal,
+            "region": row.region,
+            "provincia": row.provincia,
+            "comuna": row.comuna,
+        }
+        for row in sucursales
+    ]
+
+    # Obtener información de la empresa
+    empresa_query = f"""
+    SELECT nombre_cliente
+    FROM `proyectocarbonia.datacarbonia.empresa`
+    WHERE rut = '{rut_empresa}'
+    """
+    empresa_job = client.query(empresa_query)
+    empresa = empresa_job.result().to_dataframe().iloc[0]
+
+    return render(request, 'sucursales-registradas.html', {'sucursales': sucursales_data, 'empresa': empresa})
+
+
+# Registrar una nueva empresa
+def registro_empresa(request):
+    """Registra una empresa nueva."""
     if request.method == 'POST':
         try:
-            # Parsear datos del formulario
             data = json.loads(request.body)
             rut = data.get('rut')
             nombre_cliente = data.get('nomcliente')
-            direccion = data.get('dircliente', '')
+            direccion = data.get('dircliente')
             id_region = data.get('region')
             id_provincia = data.get('provincia')
             id_comuna = data.get('comuna')
-            sucursal = data.get('sucursal')
             email_cliente = data.get('emailcliente')
 
-            if not all([rut, nombre_cliente, id_region, id_provincia, id_comuna, sucursal, email_cliente]):
-                return JsonResponse({'error': 'Todos los campos obligatorios deben ser completados.'}, status=400)
+            if not all([rut, nombre_cliente, direccion, id_region, id_provincia, id_comuna, email_cliente]):
+                return JsonResponse({'error': 'Todos los campos son obligatorios.'}, status=400)
 
             client = bigquery.Client()
 
-            # Insertar empresa en la tabla `empresa`
+            # Insertar empresa
             empresa_table = 'proyectocarbonia.datacarbonia.empresa'
             empresa_row = {
                 'rut': rut,
                 'nombre_cliente': nombre_cliente,
                 'direccion': direccion,
-                'email_cliente': email_cliente
-            }
-
-            errors = client.insert_rows_json(empresa_table, [empresa_row])
-            if errors:
-                return JsonResponse({'error': f'Error al insertar la empresa: {errors}'}, status=500)
-
-            # Insertar sucursal en la tabla `sucursal`
-            sucursal_table = 'proyectocarbonia.datacarbonia.sucursal'
-            sucursal_row = {
-                'rut_empresa': rut,
-                'nombre_sucursal': sucursal,
                 'id_region': int(id_region),
                 'id_provincia': int(id_provincia),
-                'id_comuna': int(id_comuna)
+                'id_comuna': int(id_comuna),
+                'email_cliente': email_cliente,
             }
+            errors = client.insert_rows_json(empresa_table, [empresa_row])
 
-            errors = client.insert_rows_json(sucursal_table, [sucursal_row])
             if errors:
-                return JsonResponse({'error': f'Error al insertar la sucursal: {errors}'}, status=500)
+                return JsonResponse({'error': f'Error al registrar la empresa: {errors}'}, status=500)
 
-            return JsonResponse({'message': 'Empresa y sucursal registradas exitosamente.'}, status=200)
+            return JsonResponse({'message': 'Empresa registrada exitosamente.'}, status=200)
 
         except Exception as e:
-            return JsonResponse({'error': f'Error interno del servidor: {str(e)}'}, status=500)
-    return JsonResponse({'error': 'Método no permitido.'}, status=405)
+            return JsonResponse({'error': f'Error interno: {str(e)}'}, status=500)
 
+    return render(request, 'registro-empresa.html')
+
+
+# Registrar una sucursal para una empresa
+def registro_sucursal(request, rut_empresa):
+    """Registra una nueva sucursal para una empresa existente."""
+    if request.method == 'POST':
+        try:
+            data = json.loads(request.body)
+            nombre_sucursal = data.get('nomsucursal')
+            direccion_sucursal = data.get('dirsucursal')
+            id_region = data.get('regionsucursal')
+            id_provincia = data.get('provinciasucursal')
+            id_comuna = data.get('comunasucursal')
+
+            if not all([nombre_sucursal, direccion_sucursal, id_region, id_provincia, id_comuna]):
+                return JsonResponse({'error': 'Todos los campos de la sucursal son obligatorios.'}, status=400)
+
+            client = bigquery.Client()
+
+            # Insertar sucursal
+            sucursal_table = 'proyectocarbonia.datacarbonia.sucursal'
+            sucursal_row = {
+                'id_sucursal': str(uuid.uuid4()),  # ID único para la sucursal
+                'rut_empresa': rut_empresa,
+                'nombre_sucursal': nombre_sucursal,
+                'direccion_sucursal': direccion_sucursal,
+                'id_region': int(id_region),
+                'id_provincia': int(id_provincia),
+                'id_comuna': int(id_comuna),
+            }
+            errors = client.insert_rows_json(sucursal_table, [sucursal_row])
+
+            if errors:
+                return JsonResponse({'error': f'Error al registrar la sucursal: {errors}'}, status=500)
+
+            return JsonResponse({'message': 'Sucursal registrada exitosamente.'}, status=200)
+
+        except Exception as e:
+            return JsonResponse({'error': f'Error interno: {str(e)}'}, status=500)
+
+    return render(request, 'registrar-sucursal.html', {'rut_empresa': rut_empresa})

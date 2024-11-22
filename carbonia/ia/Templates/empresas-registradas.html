@@ -1,8 +1,38 @@
 {% extends 'partials/base-admin.html' %}
-
-{% block title %}Carga de documentos{% endblock %}
+{% load static %}
+{% block title %}Empresas Registradas - Carbonia{% endblock %}
 
 {% block content %}
-  <h1>Empresas reguistradas</h1>
-              
-{% endblock %}
+<h1>Empresas Registradas</h1>
+<div class="empresa-lista">
+    <table>
+        <thead>
+            <tr>
+                <th>RUT</th>
+                <th>Nombre Empresa</th>
+                <th>Correo</th>
+                <th>Dirección</th>
+                <th>Región</th>
+                <th>Sucursales</th>
+                <th>Acciones</th>
+            </tr>
+        </thead>
+        <tbody>
+            {% for empresa in empresas %}
+            <tr>
+                <td>{{ empresa.rut }}</td>
+                <td>{{ empresa.nombre_cliente }}</td>
+                <td>{{ empresa.email_cliente }}</td>
+                <td>{{ empresa.direccion }}</td>
+                <td>{{ empresa.region }}</td>
+                <td>{{ empresa.sucursal_count }}</td>
+                <td>
+                    <a href="{% url 'ver_sucursales' empresa.rut %}" class="btn btn-info">Ver Sucursales</a>
+                    <a href="{% url 'registrar_sucursal' empresa.rut %}" class="btn btn-primary">Agregar Sucursal</a>
+                </td>
+            </tr>
+            {% endfor %}
+        </tbody>
+    </table>
+</div>
+{% endblock %}
