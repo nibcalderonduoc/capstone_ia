@@ -21,4 +21,5 @@ from django.urls import path, include
 urlpatterns = [
     path('admin/', admin.site.urls),
     path('', include('ia.urls')),  # Añadir la URL de la aplicación
+    
 ]

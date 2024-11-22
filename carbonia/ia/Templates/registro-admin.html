@@ -1,4 +1,3 @@
-
 {% extends 'partials/base-admin.html' %}
 {% load static %}
 {% block title %}Registro Admin - Carbonia{% endblock %}
@@ -6,131 +5,175 @@
 {% block content %}
 <h1>Registro de Empresas</h1>
 <div class="login-page">
-        <form id="registroForm" action="{% url 'registro' %}" method="post">
-            {% csrf_token %}
-            <div class="input-group">
-                <label for="rut">RUT</label>
-                <input type="text" id="rut" name="rut" required aria-describedby="rutError">
-                <small id="rutError" class="error-text"></small>
-            </div>
-            <div class="input-group">
-                <label for="nomcliente">Nombre del Cliente</label>
-                <input type="text" id="nomcliente" name="nomcliente" required>
-            </div>
-            <div class="input-group">
-                <label for="dircliente">Dirección</label>
-                <input type="text" id="dircliente" name="dircliente">
-            </div>
-            <div class="input-group">
-                <label for="encargado">Encargado</label>
-                <input type="text" id="encargado" name="encargado">
-            </div>
-            <div class="input-group">
-                <label for="emailcliente">Correo Electrónico</label>
-                <input type="email" id="emailcliente" name="emailcliente" required aria-describedby="emailError">
-                <small id="emailError" class="error-text"></small>
-            </div>
-            <div class="input-group password-group">
-                <label for="psscliente">Contraseña</label>
-                <input type="password" id="psscliente" name="psscliente" required aria-describedby="passwordError">
-                <span class="toggle-password" 
-                      onmousedown="togglePassword('psscliente', true)" 
-                      onmouseup="togglePassword('psscliente', false)"
-                      onmouseleave="togglePassword('psscliente', false)">
-                    &#128065;
-                </span>
-                <small id="passwordError" class="error-text"></small>
-            </div>
-            <div class="input-group password-group">
-                <label for="psscliente2">Repetir Contraseña</label>
-                <input type="password" id="psscliente2" name="psscliente2" required>
-                <span class="toggle-password" 
-                      onmousedown="togglePassword('psscliente2', true)" 
-                      onmouseup="togglePassword('psscliente2', false)"
-                      onmouseleave="togglePassword('psscliente2', false)">
-                    &#128065;
-                </span>
-            </div>
-            <div class="checkbox-group">
-                <input type="checkbox" id="terms" name="terms" required>
-                <label for="terms">Acepto términos & condiciones</label>
-            </div>
-            <button type="submit" class="submit-btn">Registrar</button>
-        </form>
+    <form id="registroForm" action="{% url 'registro' %}" method="post" novalidate>
+        {% csrf_token %}
+        <div class="input-group">
+            <label for="rut">RUT</label>
+            <input type="text" id="rut" name="rut" required pattern="\d{1,8}-[0-9Kk]" aria-describedby="rutError">
+            <small id="rutError" class="error-text"></small>
+        </div>
+        <div class="input-group">
+            <label for="nomcliente">Nombre del Cliente</label>
+            <input type="text" id="nomcliente" name="nomcliente" required>
+        </div>
+        <div class="input-group">
+            <label for="dircliente">Dirección</label>
+            <input type="text" id="dircliente" name="dircliente">
+        </div>
+        <div class="input-group">
+            <label for="region">Región</label>
+            <select id="region" name="region" required>
+                <option value="">Seleccione una región</option>
+            </select>
+        </div>
+        <div class="input-group">
+            <label for="provincia">Provincia (Ciudad)</label>
+            <select id="provincia" name="provincia" required>
+                <option value="">Seleccione una provincia</option>
+            </select>
+        </div>
+        <div class="input-group">
+            <label for="comuna">Comuna</label>
+            <select id="comuna" name="comuna" required>
+                <option value="">Seleccione una comuna</option>
+            </select>
+        </div>
+        <div class="input-group">
+            <label for="emailcliente">Correo Electrónico</label>
+            <input type="email" id="emailcliente" name="emailcliente" required aria-describedby="emailError">
+            <small id="emailError" class="error-text"></small>
+        </div>
+        <button type="submit" class="submit-btn">Registrar</button>
+    </form>
 </div>
 
-<!-- Incluye jQuery desde un CDN -->
+
 <script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
-
 <script>
-    $(document).ready(function() {
-        $('#registroForm').on('submit', function(event) {
-            event.preventDefault(); // Evita el envío tradicional del formulario
+    document.addEventListener("DOMContentLoaded", function () {
+        const regionSelect = document.getElementById("region");
+        const provinceSelect = document.getElementById("provincia");
+        const communeSelect = document.getElementById("comuna");
+        const rutInput = document.getElementById("rut");
+        const emailInput = document.getElementById("emailcliente");
+        const rutError = document.getElementById("rutError");
 
-            // Serializa los datos del formulario
-            var formData = $(this).serialize();
-
-            $.ajax({
-                type: 'POST',
-                url: $(this).attr('action'),
-                data: formData,
-                success: function(response) {
-                    if (response.status === 'success') {
-                        alert(response.message); // Muestra mensaje de éxito
-                        $('#registroForm')[0].reset(); // Opcional: reinicia el formulario
-                    } else if (response.status === 'error') {
-                        alert(response.message); // Muestra mensaje de error
-                    }
-                },
-                error: function(xhr, status, error) {
-                    alert('Ha ocurrido un error. Por favor, inténtelo nuevamente.');
-                }
+        // Cargar regiones al cargar la página
+        fetch("{% url 'get_regions' %}")
+            .then(response => response.json())
+            .then(data => {
+                data.regions.forEach(region => {
+                    const option = document.createElement("option");
+                    option.value = region.id;
+                    option.textContent = region.name;
+                    regionSelect.appendChild(option);
+                });
             });
+
+        // Cargar provincias cuando se selecciona una región
+        regionSelect.addEventListener("change", function () {
+            provinceSelect.innerHTML = '<option value="">Seleccione una provincia</option>';
+            communeSelect.innerHTML = '<option value="">Seleccione una comuna</option>';
+            if (this.value) {
+                fetch(`{% url 'get_provinces' %}?region_id=${this.value}`)
+                    .then(response => response.json())
+                    .then(data => {
+                        data.provinces.forEach(province => {
+                            const option = document.createElement("option");
+                            option.value = province.id;
+                            option.textContent = province.name;
+                            provinceSelect.appendChild(option);
+                        });
+                    });
+            }
+        });
+
+        // Cargar comunas cuando se selecciona una provincia
+        provinceSelect.addEventListener("change", function () {
+            communeSelect.innerHTML = '<option value="">Seleccione una comuna</option>';
+            if (this.value) {
+                fetch(`{% url 'get_communes' %}?province_id=${this.value}`)
+                    .then(response => response.json())
+                    .then(data => {
+                        data.communes.forEach(commune => {
+                            const option = document.createElement("option");
+                            option.value = commune.id;
+                            option.textContent = commune.name;
+                            communeSelect.appendChild(option);
+                        });
+                    });
+            }
+        });
+
+        // Validación y limpieza de RUT en tiempo real
+        rutInput.addEventListener("input", function () {
+            let value = this.value.toUpperCase().replace(/[^0-9K]/g, ""); // Solo números y 'K'
+
+            // Dividir cuerpo y dígito verificador
+            const body = value.slice(0, -1); // Todo menos el último carácter
+            const dv = value.slice(-1); // Último carácter como DV
+
+            // Si hay múltiples 'K's o caracteres no permitidos en el DV, limpiar
+            if (body.includes("K")) {
+                this.value = body.replace(/K/g, "") + (dv ? "-" + dv : ""); // Remover cualquier K en el cuerpo
+            } else {
+                // Formatear automáticamente con guion
+                this.value = body + (dv ? "-" + dv : "");
+            }
+
+            // Ocultar mensaje de error mientras se escribe
+            rutError.textContent = "";
+        });
+
+        // Validar el RUT al perder el foco
+        rutInput.addEventListener("blur", function () {
+            const value = this.value;
+            if (value && !validarRUT(value)) {
+                rutError.textContent = "El RUT ingresado no es válido.";
+            } else {
+                rutError.textContent = "";
+            }
+        });
+
+        // Validación de correo electrónico
+        emailInput.addEventListener("input", function () {
+            const emailError = document.getElementById("emailError");
+            if (!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(this.value)) {
+                emailError.textContent = "El correo electrónico no es válido.";
+            } else {
+                emailError.textContent = "";
+            }
+        });
+
+        // Función para validar RUT chileno
+        function validarRUT(rut) {
+            const rutClean = rut.replace(/\./g, "").replace(/-/g, "");
+            if (rutClean.length < 8 || rutClean.length > 9) return false;
+
+            const body = rutClean.slice(0, -1);
+            const dv = rutClean.slice(-1).toUpperCase();
+
+            // Validar que el cuerpo tenga solo números y que el DV sea un número o 'K'
+            if (!/^\d+$/.test(body) || !/^[0-9K]$/.test(dv)) return false;
+
+            let sum = 0;
+            let multiplier = 2;
+            for (let i = body.length - 1; i >= 0; i--) {
+                sum += body[i] * multiplier;
+                multiplier = multiplier === 7 ? 2 : multiplier + 1;
+            }
+            const dvExpected = 11 - (sum % 11);
+            const dvFinal = dvExpected === 11 ? "0" : dvExpected === 10 ? "K" : dvExpected.toString();
+            return dv === dvFinal;
+        }
+
+        // Ocultar mensaje de error al interactuar con el campo
+        rutInput.addEventListener("focus", function () {
+            rutError.textContent = "";
         });
     });
-
-    function togglePassword(fieldId, show) {
-        var field = document.getElementById(fieldId);
-        field.setAttribute('type', show ? 'text' : 'password');
-    }
-
-    function validarRUT(rut) {
-        var rutPattern = /^[0-9]+[-|‐]{1}[0-9kK]{1}$/;
-        if (!rutPattern.test(rut)) {
-            return false;
-        }
-        
-        var tmp = rut.split('-');
-        var rutBody = parseInt(tmp[0], 10);
-        var digv = tmp[1].toLowerCase();
-
-        function dv(T) {
-            var M = 0, S = 1;
-            for (; T; T = Math.floor(T / 10)) {
-                S = (S + T % 10 * (9 - M++ % 6)) % 11;
-            }
-            return S ? S - 1 : 'k';
-        }
-
-        var calculatedDv = dv(rutBody);
-        return (calculatedDv == digv);
-    }
-
-    document.getElementById("rut").addEventListener("input", function(event) {
-        var rutInput = event.target;
-        var formattedRUT = formatRUT(rutInput.value);
-        rutInput.value = formattedRUT;
-    });
-
-    function formatRUT(rut) {
-        rut = rut.replace(/^0+/, '').replace(/[^\dkK]+/g, '');
-        if (rut.length > 1) {
-            var cuerpo = rut.slice(0, -1);
-            var dv = rut.slice(-1);
-            return cuerpo + '-' + dv;
-        }
-        return rut;
-    }
 </script>
 
-{% endblock %}
+
+{% endblock %}
+
