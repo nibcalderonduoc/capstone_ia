@@ -16,14 +16,13 @@ from langchain.chains import LLMChain
 import os
 import re
 import json
-from datetime import datetime
+from datetime import date
 from google.cloud import bigquery
 # Vista para subir un archivo y procesarlo
 
 from django.shortcuts import render
 from django.conf import settings
 from google.cloud import storage
-import datetime
 from datetime import timedelta
 
 def upload_to_gcs_and_generate_signed_url(file, perfil_id, alcance, bucket_name):
@@ -87,21 +86,18 @@ def result(request):
     client = bigquery.Client()
     query = """
     SELECT
-        num_cli AS numero_cliente,
-        num_bol AS numero_boleta,
-        com_cli AS comuna,
-        consumo,
-        CASE 
-            WHEN LOWER(class_bol) LIKE '%gas natural%' OR LOWER(class_bol) LIKE '%gas cañería%' THEN 'm3'
-            ELSE 'lt'
-        END AS unidad,
-        class_bol AS elemento,
-        updated
-    FROM
-        `proyectocarbonia.alcance_1.parse_table`
-    ORDER BY
-        updated DESC
-    LIMIT 1;
+    num_cli AS numero_cliente,
+    Numero_Boleta AS numero_boleta,
+    (SELECT nombre_comuna FROM `proyectocarbonia.datacarbonia.comuna` WHERE id_comuna = hc.id_comuna) AS comuna,
+    consumo,
+    unidad,
+    (SELECT nombre FROM `proyectocarbonia.datacarbonia.elemento` WHERE id_elemento = hc.id_elemento) AS elemento,
+    fecha_registro AS updated
+FROM
+    `proyectocarbonia.datacarbonia.huella_carbono` AS hc
+ORDER BY
+    updated DESC
+LIMIT 1;
     """
     query_job = client.query(query)
     results = query_job.result()
@@ -271,19 +267,25 @@ def dashboard(request):
         alcance1_labels = []
         alcance1_data = []
         for row in alcance1_results:
-            alcance1_labels.append(f"{int(row.year)}-{int(row.month):02d}")
+            year = int(row.year) if row.year is not None else 0
+            month = int(row.month) if row.month is not None else 0
+            alcance1_labels.append(f"{year}-{month:02d}")
             alcance1_data.append(row.total_tco2_calculado)
 
         alcance2_labels = []
         alcance2_data = []
         for row in alcance2_results:
-            alcance2_labels.append(f"{int(row.year)}-{int(row.month):02d}")
+            year = int(row.year) if row.year is not None else 0
+            month = int(row.month) if row.month is not None else 0
+            alcance2_labels.append(f"{year}-{month:02d}")
             alcance2_data.append(row.total_tco2_calculado2)
 
         alcance3_labels = []
         alcance3_data = []
         for row in alcance3_results:
-            alcance3_labels.append(f"{int(row.year)}-{int(row.month):02d}")
+            year = int(row.year) if row.year is not None else 0
+            month = int(row.month) if row.month is not None else 0
+            alcance3_labels.append(f"{year}-{month:02d}")
             alcance3_data.append(row.total_tco2_calculado3)
 
         # Contexto con todos los datos
@@ -302,6 +304,9 @@ def dashboard(request):
     except Exception as e:
         print(f"Error ejecutando las consultas: {e}")
         context = {
+            'total_tco2_calculado': 0,
+            'total_tco2_calculado2': 0,
+            'total_tco2_calculado3': 0,
             'alcance1_labels': [],
             'alcance1_data': [],
             'alcance2_labels': [],
@@ -312,6 +317,7 @@ def dashboard(request):
 
     # Renderizar la página con el contexto
     return render(request, 'dashboard.html', context)
+
 
 
 ## ver graficos en combobox y recomendaciones
@@ -424,8 +430,13 @@ def get_recommendation(request):
 
 
 
-def alcance1(request):
-    return render(request, 'alcance1.html')
+from google.cloud import bigquery
+from django.shortcuts import render
+from django.http import JsonResponse
+
+#def alcance1(request):
+ #    return render(request, 'alcance1.html')
+
 
 def alcance2(request):
     return render(request, 'alcance2.html')
@@ -580,6 +591,7 @@ def login(request):
     return render(request, 'login.html')
 
 
+
 # Vista para mostrar la página de registro
 def registro(request):
     if request.method == 'POST':
@@ -603,7 +615,7 @@ def registro(request):
         hashed_password = make_password(password)
 
         # Formatea la fecha actual
-        fecha_registro = datetime.date.today().isoformat()
+        fecha_registro = date.today().isoformat()
 
         # Configura el cliente de BigQuery
         client = bigquery.Client()
@@ -850,33 +862,46 @@ def get_communes(request):
 
 
 def get_statistics(request):
-    """Obtiene estadísticas basadas en la comuna seleccionada."""
+    """Obtiene estadísticas y lista todas las direcciones únicas con TCO2 calculado para la comuna seleccionada."""
     commune_id = request.GET.get('commune_id')
     if not commune_id:
         return JsonResponse({'error': 'commune_id es requerido'}, status=400)
 
     client = bigquery.Client()
+    # Suponiendo que puedas obtener el nombre de la comuna en una consulta separada o mediante un JOIN
     query = f"""
     SELECT 
-        SUM(consumo) AS total_consumo,
-        SUM(TCO2) AS total_tco2
-    FROM `proyectocarbonia.datacarbonia.sucursales`
-    WHERE id_comuna = {commune_id}
-    GROUP BY id_comuna
+        c.nombre_comuna,
+        d.Direccion_Cliente,
+        SUM(d.TCO2_Calculado) AS total_tco2
+    FROM `proyectocarbonia.datacarbonia.huella_carbono` d
+    JOIN `proyectocarbonia.datacarbonia.comuna` c ON d.id_comuna = c.id_comuna
+    WHERE d.id_comuna = {commune_id}
+    GROUP BY c.nombre_comuna, d.Direccion_Cliente
     """
     query_job = client.query(query)
-    result = query_job.result()
+    results = query_job.result()
 
-    # Extraer datos de la consulta
-    for row in result:
-        data = {
-            'commune': commune_id,
-            'tco2': row.total_tco2,
-            'consumo': row.total_consumo
-        }
-        return JsonResponse(data)
+    direcciones = []
+    nombre_comuna = ""
+    for row in results:
+        if not nombre_comuna:  # Asignar el nombre de la comuna desde la primera fila
+            nombre_comuna = row.nombre_comuna
+        direcciones.append({
+            'direccion': row.Direccion_Cliente,
+            'tco2_calculado': row.total_tco2
+        })
 
-    return JsonResponse({'error': 'No se encontraron estadísticas para esta comuna.'}, status=404)
+    data = {
+        'commune_name': nombre_comuna,  # Usar el nombre de la comuna en lugar del ID
+        'direcciones': direcciones
+    }
+
+    return JsonResponse(data)
+
+
+
+
 from django.shortcuts import render, redirect
 from django.http import JsonResponse
 from google.cloud import bigquery
@@ -1050,3 +1075,230 @@ def registro_sucursal(request, rut_empresa):
             return JsonResponse({'error': f'Error interno: {str(e)}'}, status=500)
 
     return render(request, 'registrar-sucursal.html', {'rut_empresa': rut_empresa})
+
+from django.http import JsonResponse
+from google.cloud import bigquery
+
+def get_locations_with_data(request):
+    """Devuelve regiones, provincias y comunas con datos disponibles."""
+    client = bigquery.Client()
+
+    try:
+        # Consulta para obtener las ubicaciones con datos
+        query = """
+        SELECT
+            r.nombre_region AS region,
+            p.nombre_provincia AS provincia,
+            c.nombre_comuna AS comuna,
+            d.Direccion_Cliente AS direccion
+        FROM `proyectocarbonia.datacarbonia.huella_carbono` h
+        JOIN `proyectocarbonia.datacarbonia.region` r ON h.id_region = r.id_region
+        JOIN `proyectocarbonia.datacarbonia.provincia` p ON h.id_provincia = p.id_provincia
+        JOIN `proyectocarbonia.datacarbonia.comuna` c ON h.id_comuna = c.id_comuna
+        LEFT JOIN `proyectocarbonia.datacarbonia.direcciones` d ON h.id_comuna = d.id_comuna
+        GROUP BY region, provincia, comuna, direccion
+        """
+        query_job = client.query(query)
+        results = query_job.result()
+
+        # Organizar los resultados en un formato estructurado
+        data = {}
+        for row in results:
+            region = row.region
+            provincia = row.provincia
+            comuna = row.comuna
+            direccion = row.direccion
+
+            if region not in data:
+                data[region] = {}
+            if provincia not in data[region]:
+                data[region][provincia] = {}
+            if comuna not in data[region][provincia]:
+                data[region][provincia][comuna] = []
+
+            if direccion:
+                data[region][provincia][comuna].append(direccion)
+
+        return JsonResponse({'locations': data})
+
+    except Exception as e:
+        return JsonResponse({'error': str(e)}, status=500)
+    
+from django.shortcuts import render
+from google.cloud import bigquery
+
+def alcance1(request):
+    client = bigquery.Client()
+    data = []
+    consolidated_data = []
+    direcciones_unicas = []
+    years_unicos = []
+    months_unicos = []
+
+    # Obtener los valores de los filtros desde la solicitud GET
+    direccion_filtro = request.GET.get('direccion', 'Todos')
+    year_filtro = request.GET.get('year', 'Todos')
+    month_filtro = request.GET.get('month', 'Todos')
+
+    # Consulta para obtener direcciones únicas
+    query_direcciones = """
+    SELECT DISTINCT hc.Direccion_Cliente AS direccion
+    FROM `proyectocarbonia.datacarbonia.huella_carbono` AS hc
+    WHERE hc.Alcance = '1'
+    ORDER BY direccion;
+    """
+
+    # Consulta para obtener años únicos
+    query_years = """
+    SELECT DISTINCT EXTRACT(YEAR FROM hc.Fecha_Inicio) AS year
+    FROM `proyectocarbonia.datacarbonia.huella_carbono` AS hc
+    WHERE hc.Alcance = '1'
+    ORDER BY year;
+    """
+
+    # Consulta para obtener meses únicos
+    query_months = """
+    SELECT DISTINCT EXTRACT(MONTH FROM hc.Fecha_Inicio) AS month
+    FROM `proyectocarbonia.datacarbonia.huella_carbono` AS hc
+    WHERE hc.Alcance = '1'
+    ORDER BY month;
+    """
+
+    # Consulta principal: Datos detallados
+    query1 = """
+    SELECT 
+        EXTRACT(YEAR FROM hc.Fecha_Inicio) AS year,
+        EXTRACT(MONTH FROM hc.Fecha_Inicio) AS month,
+        hc.Direccion_Cliente as direccion,
+        c.nombre_comuna AS comuna,
+        hc.consumo AS consumo,
+        hc.unidad AS unidad,
+        e.nombre AS elemento,
+        SUM(hc.TCO2_Calculado) AS total_TCO2_mensual
+    FROM
+        `proyectocarbonia.datacarbonia.huella_carbono` AS hc
+        INNER JOIN `proyectocarbonia.datacarbonia.comuna` AS c ON hc.id_comuna = c.id_comuna
+        INNER JOIN `proyectocarbonia.datacarbonia.elemento` AS e ON hc.id_elemento = e.id_elemento
+    WHERE 
+        hc.Alcance = '1'
+    """
+
+    # Aplicar filtros dinámicos
+    if direccion_filtro != "Todos":
+        query1 += f" AND hc.Direccion_Cliente = '{direccion_filtro}'"
+    if year_filtro != "Todos":
+        query1 += f" AND EXTRACT(YEAR FROM hc.Fecha_Inicio) = {year_filtro}"
+    if month_filtro != "Todos":
+        query1 += f" AND EXTRACT(MONTH FROM hc.Fecha_Inicio) = {month_filtro}"
+
+    query1 += """
+    GROUP BY 
+        year, month, hc.Direccion_Cliente, comuna, e.nombre, hc.consumo, hc.unidad
+    ORDER BY 
+        year, month;
+    """
+
+    # Consulta consolidada
+    query2 = """
+    SELECT 
+        hc.Direccion_Cliente AS direccion,
+        SUM(hc.TCO2_Calculado) AS total_TCO2,
+        COUNT(*) AS registros
+    FROM
+        `proyectocarbonia.datacarbonia.huella_carbono` AS hc
+    WHERE 
+        hc.Alcance = '1'
+    """
+    if direccion_filtro != "Todos":
+        query2 += f" AND hc.Direccion_Cliente = '{direccion_filtro}'"
+    if year_filtro != "Todos":
+        query2 += f" AND EXTRACT(YEAR FROM hc.Fecha_Inicio) = {year_filtro}"
+    if month_filtro != "Todos":
+        query2 += f" AND EXTRACT(MONTH FROM hc.Fecha_Inicio) = {month_filtro}"
+
+    query2 += """
+    GROUP BY 
+        direccion
+    ORDER BY 
+        total_TCO2 DESC;
+    """
+
+    try:
+        # Ejecutar consulta de direcciones únicas
+        query_job_direcciones = client.query(query_direcciones)
+        for row in query_job_direcciones.result():
+            direcciones_unicas.append(row.direccion)
+
+        # Ejecutar consulta de años únicos
+        query_job_years = client.query(query_years)
+        for row in query_job_years.result():
+            years_unicos.append(int(row.year) if row.year is not None else None)
+
+        # Ejecutar consulta de meses únicos
+        query_job_months = client.query(query_months)
+        for row in query_job_months.result():
+            months_unicos.append(int(row.month) if row.month is not None else None)
+
+        # Ejecutar consulta principal
+        query_job1 = client.query(query1)
+        for row in query_job1.result():
+            data.append({
+                'year': row.year,
+                'month': row.month,
+                'direccion': row.direccion,
+                'comuna': row.comuna,
+                'consumo': row.consumo,
+                'unidad': row.unidad,
+                'elemento': row.elemento,
+                'total_TCO2': row.total_TCO2_mensual,
+            })
+
+        # Ejecutar consulta consolidada
+        query_job2 = client.query(query2)
+        for row in query_job2.result():
+            consolidated_data.append({
+                'direccion': row.direccion,
+                'total_TCO2': row.total_TCO2,
+                'registros': row.registros,
+            })
+
+    except Exception as e:
+        print(f"Error ejecutando las consultas: {e}")
+
+    # Pasar datos al contexto
+    context = {
+        'data': data,  # Datos detallados
+        'filtered_data': data,  # Datos filtrados
+        'consolidated_data': consolidated_data,  # Datos consolidados
+        'direccion_filtro': direccion_filtro,  # Filtro seleccionado (dirección)
+        'year_filtro': year_filtro,  # Filtro seleccionado (año)
+        'month_filtro': month_filtro,  # Filtro seleccionado (mes)
+        'direcciones_unicas': direcciones_unicas,  # Direcciones únicas
+        'years_unicos': [y for y in years_unicos if y is not None],  # Años únicos
+        'months_unicos': [m for m in months_unicos if m is not None],  # Meses únicos
+    }
+
+    return render(request, 'alcance1.html', context)
+
+import openai
+
+def generate_analysis_prompt_with_chatgpt(data):
+    if not data:
+        return "No hay datos suficientes para realizar un análisis."
+
+    # Generar texto para el modelo
+    prompt = f"""
+    Estos son los datos consolidados de huella de carbono por dirección:
+    {data}.
+    Genera un análisis indicando la dirección con mayor impacto, la diferencia entre las principales direcciones, y sugiere estrategias para reducción de carbono.
+    """
+    response = openai.Completion.create(
+        engine="text-davinci-003",
+        prompt=prompt,
+        max_tokens=150
+    )
+    return response.choices[0].text.strip()
+
+# En tu función alcance1:
+analysis_prompt = generate_analysis_prompt_with_chatgpt(consolidated_data)
+context['analysis_prompt'] = analysis_prompt

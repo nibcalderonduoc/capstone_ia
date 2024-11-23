@@ -5,7 +5,7 @@
 {% block content %}
 <h1>Registro de Empresas</h1>
 <div class="login-page">
-    <form id="registroForm" action="{% url 'registro' %}" method="post" novalidate>
+    <form id="registroForm" method="post" novalidate>
         {% csrf_token %}
         <div class="input-group">
             <label for="rut">RUT Empresa</label>

@@ -1,137 +1,168 @@
 {% extends 'partials/base.html' %}
-{% block title %}Alcance 1{% endblock %}
+{% load static %}
+
+{% block title %}Estadísticas de Alcance 1{% endblock %}
 
 {% block content %}
-<h1>Filtrar Estadísticas por Ubicación</h1>
+<h1>Estadísticas de Alcance 1 por Ubicación</h1>
 
-<div class="charts">
-    <!--Primer selector-->
-    <div class="chart">
-        <div>
-            <label for="region-select">Región:</label>
-            <select id="region-select">
-                <option value="">Seleccione una región</option>
-            </select>
-        </div>
-    </div>
+<!-- Formulario de filtros -->
+<form method="GET" action="{% url 'alcance1' %}">
+  <label for="direccion">Filtrar por Dirección:</label>
+  <select name="direccion" id="direccion">
+    <option value="Todos" {% if direccion_filtro == "Todos" %}selected{% endif %}>Todos</option>
+    {% for direccion in direcciones_unicas %}
+    <option value="{{ direccion }}" {% if direccion_filtro == direccion %}selected{% endif %}>
+      {{ direccion }}
+    </option>
+    {% endfor %}
+  </select>
 
-    <!--Segundo selector-->
-    <div class="chart">
-        <div>
-            <label for="province-select">Provincia:</label>
-            <select id="province-select" disabled>
-                <option value="">Seleccione una provincia</option>
-            </select>
-        </div>
-    </div>
+  <label for="year">Año:</label>
+  <select name="year" id="year">
+    <option value="Todos" {% if year_filtro == "Todos" %}selected{% endif %}>Todos</option>
+    {% for year in years_unicos %}
+    <option value="{{ year }}" {% if year_filtro == year %}selected{% endif %}>
+      {{ year }}
+    </option>
+    {% endfor %}
+  </select>
 
-    <!--Tercer selector-->
-    <div class="chart">
-        <div>
-            <label for="commune-select">Comuna:</label>
-            <select id="commune-select" disabled>
-                <option value="">Seleccione una comuna</option>
-            </select>
-        </div>
-    </div>
+  <label for="month">Mes:</label>
+  <select name="month" id="month">
+    <option value="Todos" {% if month_filtro == "Todos" %}selected{% endif %}>Todos</option>
+    {% for month in months_unicos %}
+    <option value="{{ month }}" {% if month_filtro == month %}selected{% endif %}>
+      {{ month }}
+    </option>
+    {% endfor %}
+  </select>
+
+  <button type="submit">Filtrar</button>
+</form>
+
+<!-- Tabla de datos detallados -->
+<h2>Datos Detallados</h2>
+<table>
+  <thead>
+    <tr>
+      <th>Año</th>
+      <th>Mes</th>
+      <th>Dirección</th>
+      <th>Comuna</th>
+      <th>Consumo</th>
+      <th>Unidad</th>
+      <th>Elemento</th>
+      <th>Total Mensual de TCO2e</th>
+    </tr>
+  </thead>
+  <tbody>
+    {% for item in filtered_data %}
+    <tr>
+      <td>{{ item.year }}</td>
+      <td>{{ item.month }}</td>
+      <td>{{ item.direccion }}</td>
+      <td>{{ item.comuna }}</td>
+      <td>{{ item.consumo }}</td>
+      <td>{{ item.unidad }}</td>
+      <td>{{ item.elemento }}</td>
+      <td>{{ item.total_TCO2 }}</td>
+    </tr>
+    {% endfor %}
+  </tbody>
+</table>
+
+<!-- Gráfico mensual -->
+<h2>Gráfico Mensual: Emisiones de TCO2</h2>
+<div id="monthly-chart-container">
+  <canvas id="monthlyChart"></canvas>
 </div>
 
-<!-- Resultado -->
-<div class="charts"> 
-    <div class="chart">
-        <div id="statistics">
-            <h2>Estadísticas</h2>
-            <p>Selecciona una comuna para ver las estadísticas.</p>
-        </div>
-    </div>
+<!-- Gráfico consolidado -->
+<h2>Gráfico Consolidado: Total de Emisiones por Dirección</h2>
+<div id="consolidated-chart-container">
+  <canvas id="consolidatedChart"></canvas>
 </div>
 
-
+<script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
 <script>
-    document.addEventListener('DOMContentLoaded', () => {
-        const regionSelect = document.getElementById('region-select');
-        const provinceSelect = document.getElementById('province-select');
-        const communeSelect = document.getElementById('commune-select');
-        const statisticsDiv = document.getElementById('statistics');
+  // Gráfico mensual (línea)
+  const monthlyData = {{ filtered_data|safe }};
+  const monthlyLabels = monthlyData.map(item => `${item.year}-${item.month}`);
+  const monthlyTCO2 = monthlyData.map(item => item.total_TCO2);
 
-        // Cargar regiones al cargar la página
-        fetchRegions();
-
-        // Función para obtener regiones
-        function fetchRegions() {
-            fetch('/get_regions/')
-                .then(response => response.json())
-                .then(data => {
-                    data.regions.forEach(region => {
-                        const option = document.createElement('option');
-                        option.value = region.id;
-                        option.textContent = region.name;
-                        regionSelect.appendChild(option);
-                    });
-                });
+  const monthlyCtx = document.getElementById('monthlyChart').getContext('2d');
+  new Chart(monthlyCtx, {
+    type: 'line', // Puedes cambiar a 'bar' si prefieres
+    data: {
+      labels: monthlyLabels,
+      datasets: [{
+        label: 'Emisiones Mensuales de TCO2',
+        data: monthlyTCO2,
+        borderColor: 'rgba(75, 192, 192, 1)',
+        borderWidth: 2,
+        fill: false
+      }]
+    },
+    options: {
+      responsive: true,
+      plugins: {
+        legend: {
+          position: 'top',
+        },
+        title: {
+          display: true,
+          text: 'Emisiones Mensuales de TCO2'
         }
+      }
+    }
+  });
 
-        // Evento para cargar provincias al seleccionar una región
-        regionSelect.addEventListener('change', () => {
-            const regionId = regionSelect.value;
-            provinceSelect.innerHTML = '<option value="">Seleccione una provincia</option>';
-            communeSelect.innerHTML = '<option value="">Seleccione una comuna</option>';
-            provinceSelect.disabled = !regionId;
-            communeSelect.disabled = true;
+  // Gráfico consolidado (Circular - Pie)
+  const consolidatedData = {{ consolidated_data|safe }};
+  const consolidatedLabels = consolidatedData.map(item => item.direccion);
+  const consolidatedTCO2 = consolidatedData.map(item => item.total_TCO2);
 
-            if (regionId) {
-                fetch(`/get_provinces/?region_id=${regionId}`)
-                    .then(response => response.json())
-                    .then(data => {
-                        data.provinces.forEach(province => {
-                            const option = document.createElement('option');
-                            option.value = province.id;
-                            option.textContent = province.name;
-                            provinceSelect.appendChild(option);
-                        });
-                    });
-            }
-        });
-
-        // Evento para cargar comunas al seleccionar una provincia
-        provinceSelect.addEventListener('change', () => {
-            const provinceId = provinceSelect.value;
-            communeSelect.innerHTML = '<option value="">Seleccione una comuna</option>';
-            communeSelect.disabled = !provinceId;
-
-            if (provinceId) {
-                fetch(`/get_communes/?province_id=${provinceId}`)
-                    .then(response => response.json())
-                    .then(data => {
-                        data.communes.forEach(commune => {
-                            const option = document.createElement('option');
-                            option.value = commune.id;
-                            option.textContent = commune.name;
-                            communeSelect.appendChild(option);
-                        });
-                    });
-            }
-        });
-
-        // Evento para cargar estadísticas al seleccionar una comuna
-        communeSelect.addEventListener('change', () => {
-            const communeId = communeSelect.value;
-
-            if (communeId) {
-                fetch(`/get_statistics/?commune_id=${communeId}`)
-                    .then(response => response.json())
-                    .then(data => {
-                        statisticsDiv.innerHTML = `
-                            <h2>Estadísticas para ${data.commune}</h2>
-                            <p>Total TCO2: ${data.tco2}</p>
-                            <p>Consumo: ${data.consumo}</p>
-                        `;
-                    });
-            } else {
-                statisticsDiv.innerHTML = `<h2>Estadísticas</h2><p>Selecciona una comuna para ver las estadísticas.</p>`;
-            }
-        });
-    });
+  const consolidatedCtx = document.getElementById('consolidatedChart').getContext('2d');
+  new Chart(consolidatedCtx, {
+    type: 'pie', // Cambia a 'doughnut' si prefieres una dona
+    data: {
+      labels: consolidatedLabels,
+      datasets: [{
+        label: 'Total TCO2 por Dirección',
+        data: consolidatedTCO2,
+        backgroundColor: [
+          'rgba(255, 99, 132, 0.6)',
+          'rgba(54, 162, 235, 0.6)',
+          'rgba(255, 206, 86, 0.6)',
+          'rgba(75, 192, 192, 0.6)',
+          'rgba(153, 102, 255, 0.6)',
+          'rgba(255, 159, 64, 0.6)'
+        ],
+        borderColor: [
+          'rgba(255, 99, 132, 1)',
+          'rgba(54, 162, 235, 1)',
+          'rgba(255, 206, 86, 1)',
+          'rgba(75, 192, 192, 1)',
+          'rgba(153, 102, 255, 1)',
+          'rgba(255, 159, 64, 1)'
+        ],
+        borderWidth: 1
+      }]
+    },
+    options: {
+      responsive: true,
+      plugins: {
+        legend: {
+          position: 'top',
+        },
+        title: {
+          display: true,
+          text: 'Total de Emisiones (TCO2e) por Dirección'
+        }
+      }
+    }
+  });
 </script>
-{% endblock %}
 
+{% endblock %}

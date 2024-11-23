@@ -5,7 +5,7 @@ from .views import result
 urlpatterns = [
     path('index/', views.index, name='index'),  # Página principal para subir el documento
     path('dashboard/', views.dashboard, name='dashboard'),  # Página para mostrar el dashboard de BigQuery
-    #path('result/', views.result, name='result'),  # Página mostrar resultados
+    path('result/', views.result, name='result'),  # Página mostrar resultados
     #path('dashboard/', views.alcance1_view, name='dashboard'),
     path('base/', views.base, name='base'),  # Página mostrar header
     path('sidebar/', views.sidebar, name='sidebar'),  # Página mostrar sidebar
@@ -38,7 +38,7 @@ urlpatterns = [
     path('empresas-registradas/', views.empresas_registradas, name='empresas_registradas'),       
     path('sucursales-registradas/<str:rut_empresa>/', views.sucursales_registradas, name='sucursales_registradas'),
     # Registrar una nueva empresa
-    path('registro-empresa/', views.registro_empresa, name='registro_empresa'),
+    path('registro-empresas/', views.registro_empresa, name='registro_empresa'),
     # Registrar una nueva sucursal para una empresa
     path('registro-sucursal/<str:rut_empresa>/', views.registro_sucursal, name='registro_sucursal'),    
     #insertar
