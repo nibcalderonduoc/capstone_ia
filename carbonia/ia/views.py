@@ -1280,25 +1280,3 @@ def alcance1(request):
 
     return render(request, 'alcance1.html', context)
 
-import openai
-
-def generate_analysis_prompt_with_chatgpt(data):
-    if not data:
-        return "No hay datos suficientes para realizar un análisis."
-
-    # Generar texto para el modelo
-    prompt = f"""
-    Estos son los datos consolidados de huella de carbono por dirección:
-    {data}.
-    Genera un análisis indicando la dirección con mayor impacto, la diferencia entre las principales direcciones, y sugiere estrategias para reducción de carbono.
-    """
-    response = openai.Completion.create(
-        engine="text-davinci-003",
-        prompt=prompt,
-        max_tokens=150
-    )
-    return response.choices[0].text.strip()
-
-# En tu función alcance1:
-analysis_prompt = generate_analysis_prompt_with_chatgpt(consolidated_data)
-context['analysis_prompt'] = analysis_prompt
