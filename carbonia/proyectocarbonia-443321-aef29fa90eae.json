@@ -1,0 +1,13 @@
+{
+  "type": "service_account",
+  "project_id": "proyectocarbonia-443321",
+  "private_key_id": "aef29fa90eaed48641ec387f847156d8268dfd3e",
+  "private_key": "-----BEGIN PRIVATE KEY-----\nMIIEvAIBADANBgkqhkiG9w0BAQEFAASCBKYwggSiAgEAAoIBAQCaPi9v3BQTEW/5\niDIkCaZ3jV/fZeoaMa9wfIYv/zkg6QODc6HHRAQZrCRZ2LPiP2tT+nNG0ne4mUqk\nLPoeQB5JU2pCXOfvNy9QRf727UKfx6PXC+5YjjnL1AHJBEV5yq2aU+TSW1i/jGIt\n4b0jSKcrMWO/sSq0X57+QOOXJuYAUndEXKCrmhHDqdWa0ZjMHDJg3vWeXmOhZEsd\n3g/Z9KavMXPpaBn0AdxItXO3SkbJFbQOCn+dYsrQ4XX9mHv/2quByMI6ftSXgTMk\ntnE3H3ZXjzZXO+TN+Kbvy2hIbB/QkachnecxAXcXKiVuPSW5Aa3QTDiumW0y2uxv\nl2ec/01RAgMBAAECggEAEDc9cXsnuSF6Lje9XcCN+b+pNqlWRU637RGKYf1pGial\nMeq0NWjXLYPFhpSbxMt6EygfenCiGYw0JrJ70TZYeMkGQNfXonSgysWxGnCzMm0g\nsnkUo8bAGMe/MEz8qONAARuU0PC9kdXGdKBo7A61VHsqy3pqzO/InV5hDwEN6TaY\nfRTIc3RoyxWBLtOWKL/icSC7axjiAtpTdeZy/GxDr2ClsrjPPmGzbEbU5amMxjEp\nrY+dq/D6MsNT2vLL0VFy9nQbYKNv3zPSODNEOu0k8QHROkIe1O4AHsb8B2zFRIYh\nUDMhpeNA/zEaddTmK4QgxtMACgGPsiL9Ttnp+ln/iQKBgQDKnfnHfCEnLZevHhP6\nTncgveYf6VCYWYXJErww0ePrYvLc3UokDRoJXZqcdz+5tIkk6+evmNswg0CmnGsQ\nAN+LopBsd0KMwqx39chFMga/9RsjeqEpltlqAAaoaXzupQ4649uolZeVG7EjlqVl\nvbsGfF0g6obnukR5D6pk4osIwwKBgQDC4X14DXr84qyOzpo17F2vu2BnSbz6Ljgw\ncSoDMDiO35cN0bCmpILX0t7BFlYb1yu8u7AbA3cZwWvzyBLKSrsO7skZK/uvi5J3\ntWCYInjzFzkP9ffzWuinsShxwVQ6jy+uSoYPAqv8fqCNqPMT3N8z0FaTTpomN1FJ\nxEYnDm0QWwKBgA5pynjsVZdp4N5uL1Gg/0xu9c3TVQ5hX+j70jNO2v3Fni0j+MAz\nxmRgKj1zJi9Zrl/YADU3lHARBipT+jG7Piu6trdgjHVi683kyAhUFLLXBsUxVgGV\nX4Xw1ohoaKC5URfTWa7WZWAQBjvX3ZAtPP6rHhzXUh1t3K0X9jETBHztAoGAUu5E\nR39tFAqeJhNzenkAkVTqvGmbutdKYAr4Nu0hVGN/04ilZPTjHVcGJiMMN8LEQQeZ\n9JTv7QzrlI1SubU9jyg8ebLG4zhA9yI/Xd5lnAUI6mrgvjW0hhAUxvvfjR/7yW67\nR836RHPafQ4lixFWBqWlAgDUBmlJ9VtKAzrXXLsCgYBbDywezAoAcCPYdQkACkbJ\naIxvo3zo7DCB49WHJfxkya4ZJ3r3h4/AemRtL7elvm8IkxMTdhd63BrALFcg0wCU\nrAeAzT37NucPNS60vnUEsaNJviQciOz1cnUlfLqdlb8ehpOIdC2gxEG5C00Hqs2V\nZeHom+5zuqExB4kkilRqmA==\n-----END PRIVATE KEY-----\n",
+  "client_email": "proyectocarbonia@proyectocarbonia-443321.iam.gserviceaccount.com",
+  "client_id": "103626639725082845260",
+  "auth_uri": "https://accounts.google.com/o/oauth2/auth",
+  "token_uri": "https://oauth2.googleapis.com/token",
+  "auth_provider_x509_cert_url": "https://www.googleapis.com/oauth2/v1/certs",
+  "client_x509_cert_url": "https://www.googleapis.com/robot/v1/metadata/x509/proyectocarbonia%40proyectocarbonia-443321.iam.gserviceaccount.com",
+  "universe_domain": "googleapis.com"
+}

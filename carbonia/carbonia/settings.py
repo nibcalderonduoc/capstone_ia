@@ -25,7 +25,9 @@ SECRET_KEY = 'django-insecure-unu2+zn%c7!baogvb2wcpo%h-m(tgjl+$u@or-+@5zom+7opgv
 # SECURITY WARNING: don't run with debug turned on in production!
 DEBUG = True
 
-ALLOWED_HOSTS = []
+#ALLOWED_HOSTS = []
+ALLOWED_HOSTS = ['127.0.0.1', 'localhost']
+
 
 # Application definition
 
@@ -48,10 +50,24 @@ MIDDLEWARE = [
     'django.contrib.messages.middleware.MessageMiddleware',
     'django.middleware.clickjacking.XFrameOptionsMiddleware',
     'django.middleware.csrf.CsrfViewMiddleware',
+    'django.middleware.cache.UpdateCacheMiddleware',
+    'django.middleware.cache.FetchFromCacheMiddleware',
     
 ]
 
+# Deshabilitar caché para todas las vistas
+CACHE_MIDDLEWARE_SECONDS = 0
+CACHE_MIDDLEWARE_KEY_PREFIX = ''
+
 ROOT_URLCONF = 'carbonia.urls'
+
+LOGIN_URL = '/'  # Ruta para la página de login
+LOGIN_REDIRECT_URL = '/dashboard/'  # Ruta después de un login exitoso
+LOGOUT_REDIRECT_URL = '/'  # Ruta después del logout
+
+STATIC_ROOT = os.path.join(BASE_DIR, 'staticfiles')
+
+
 
 #TEMPLATES = [
     #{
@@ -159,8 +175,8 @@ MEDIA_ROOT = os.path.join(BASE_DIR, 'media')
 
 # Ruta de tus credenciales de Google Cloud (ajusta la ruta según donde guardes tu archivo de credenciales)
 #os.environ["GOOGLE_APPLICATION_CREDENTIALS"] = os.path.join(BASE_DIR, 'carbonia-30d3f9c126a8.json')
-os.environ["GOOGLE_APPLICATION_CREDENTIALS"] = os.path.join(BASE_DIR, 'proyectocarbonia-1e008ac0c29a.json')
-#os.environ["GOOGLE_APPLICATION_CREDENTIALS"] = os.path.join(BASE_DIR, 'uploadarchive-c3dcb25592c8.json')
+#os.environ["GOOGLE_APPLICATION_CREDENTIALS"] = os.path.join(BASE_DIR, 'proyectocarbonia-1e008ac0c29a.json') #cuenta de servicio original
+os.environ["GOOGLE_APPLICATION_CREDENTIALS"] = os.path.join(BASE_DIR, 'proyectocarbonia-443321-aef29fa90eae.json') #cuennta de servivo nueva 30-11-24
 
 
 
@@ -180,8 +196,8 @@ OPENAI_API_KEY = 'sk-proj-sjFhGSURi-Rf_sm0UtwkwIhcIOfYKZP4mRnfqb_O-g6y44gobSslBt
 
 
 # Google Cloud Storage buckets for each scope
-GS_BUCKET_NAME_ALCANCE1 = 'alcance1'
-GS_BUCKET_NAME_ALCANCE2 = 'alcance2'
+GS_BUCKET_NAME_ALCANCE1 = 'alcance_1'
+GS_BUCKET_NAME_ALCANCE2 = 'alcance_2'
 
 
 # Google Cloud Storage configuration

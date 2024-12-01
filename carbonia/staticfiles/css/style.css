@@ -1,0 +1,1062 @@
+/* Estilos responsive para tablet y móvil */
+
+/* Responsive para tablet */
+@media (max-width: 1024px) {
+  #viewport {
+    padding-left: 250px; /* Ancho del sidebar */
+    margin-left: 0; /* Eliminar margen adicional a la izquierda */
+  }
+
+  #sidebar {
+    width: 200px;
+    padding: 10px;
+  }
+
+  .button-form-container, .file-upload-form {
+    flex-direction: column;
+    width: 100%;
+    align-items: center;
+  }
+
+  .back-button, .file-upload-btn {
+    width: 100%;
+  }
+}
+
+/* Responsive para móvil */
+@media (max-width: 768px) {
+  #sidebar {
+    width: 100%;
+    padding: 10px;
+    text-align: center;
+  }
+
+  .button-form-container, .file-upload-form {
+    flex-direction: column;
+    width: 100%;
+    align-items: center;
+    margin-top: 10px;
+  }
+
+  .file-upload, canvas, .styled-table-container {
+    width: 90%;
+  }
+
+  h1 {
+    font-size: 20px;
+  }
+
+  label, select, button {
+    font-size: 14px;
+  }
+
+  #recommendation {
+    font-size: 14px;
+  }
+
+  .styled-table {
+    font-size: 12px;
+  }
+
+  .styled-table thead th, .styled-table tbody td {
+    padding: 8px;
+  }
+}
+
+/* Responsive para dispositivos muy pequeños */
+@media (max-width: 480px) {
+  h1 {
+    font-size: 18px;
+  }
+
+  label, select, button {
+    font-size: 12px;
+  }
+
+  #recommendation {
+    font-size: 12px;
+    padding: 8px;
+  }
+  .styled-table {
+    font-size: 10px;
+  }
+
+  .styled-table thead th, .styled-table tbody td {
+    padding: 6px;
+  }
+}
+
+
+/*-----------------------------*/
+/* Estilos Globales */
+
+body {
+  font-family: sans-serif;
+  background-color: #eeeeee;
+}
+
+/* Logo */
+.logo {
+  display: flex;
+  justify-content: center; /* Centra horizontalmente */
+  align-items: center; /* Centra verticalmente */
+  margin-bottom: 20px;
+  height: auto;
+}
+
+.logo img {
+  height: 50px; /* Ajustar la altura para que el logo sea proporcional */
+  max-width: 100%; /* Asegura que no exceda el ancho del contenedor */
+}
+
+.icon {
+  width: 40px;
+  height: 100%;
+}
+
+.carbonia {
+  color: rgba(59, 203, 190);
+  font-size: 28px;
+  line-height: 114%;
+  font-family: Poppins, sans-serif;
+  font-weight: 600;
+}
+
+/* LOGIN */
+/* Contenedor del switch */
+.switch {
+  display: inline-block;
+  position: relative;
+  width: 50px; /* Ancho del toggle */
+  height: 24px; /* Altura del toggle */
+  margin-left: auto; /* Empuja el toggle hacia la derecha */
+}
+
+/* Ocultar el checkbox original */
+.switch input {
+  opacity: 0;
+  width: 0;
+  height: 0;
+}
+
+/* Slider del toggle */
+.slider {
+  position: absolute;
+  cursor: pointer;
+  top: 0;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  background-color: #ccc; /* Color del slider cuando está inactivo */
+  transition: 0.4s;
+  border-radius: 34px; /* Bordes redondeados */
+}
+
+/* Círculo dentro del slider */
+.slider:before {
+  position: absolute;
+  content: "";
+  height: 18px;
+  width: 18px;
+  left: 4px;
+  bottom: 3px;
+  background-color: white;
+  transition: 0.4s;
+  border-radius: 50%; /* Círculo redondeado */
+}
+
+/* Cambios al estado activo */
+input:checked + .slider {
+  background-color: #2a9d8f; /* Color del slider cuando está activo */
+}
+
+/* Movimiento del círculo al activarse */
+input:checked + .slider:before {
+  transform: translateX(26px);
+}
+
+/* Texto a la izquierda del toggle */
+.switch-label {
+  display: flex;
+  align-items: center;
+  justify-content: space-between; /* Distribuye el texto y el toggle */
+  width: 100%; /* Asegura que ocupe todo el ancho disponible */
+}
+
+.switch-label p {
+  margin: 0;
+  font-size: 14px;
+  color: #333; /* Color del texto */
+  line-height: 24px; /* Alineación vertical con el toggle */
+}
+
+/* Base */
+/* Contenedor Principal */
+
+.file-upload {
+  background-color: #ffffff;
+  width: auto;
+  margin: 0;
+  padding: 20px;
+}
+
+#viewport {
+  padding-left: 250px;
+  transition: all 0.5s ease;
+}
+
+#content {
+  padding: 0px; /* Menos padding en los laterales */
+  margin: 0; /* Centrar el contenido dentro del área disponible */
+  max-width: calc(112% - 250px); /* Asegura que el contenido no sobrepase el ancho disponible */
+}
+
+.container-fluid {
+  padding: 0;
+  align-content: flex-start;
+}
+
+
+/* Sidebar */
+#sidebar {
+  z-index: 1000;
+  position: fixed;
+  left: 250px;
+  width: 250px;
+  height: 100%;
+  margin-left: -250px;
+  overflow-y: auto;
+  background: #ffffff;
+  text-decoration: none;
+  display: flex;
+  flex-direction: column;
+  transition: all 0.5s ease;
+}
+
+
+#sidebar header {
+  background-color: rgba(59, 203, 190);
+  font-size: 20px;
+  text-align: center;
+  padding: 10px;
+  color: white;
+}
+
+#sidebar header a {
+  color: #fff;
+  display: block;
+  text-decoration: none;
+  padding: 10px 0px;
+  text-align: center;
+}
+
+#sidebar header a:hover {
+  color: #dbdbdb;
+}
+
+#sidebar .nav {
+  flex-grow: 1;
+  margin: 0;
+  padding: 0;
+  list-style: none;
+}
+
+#sidebar .nav a {
+  display: flex;
+  align-items: center;
+  padding: 8px 12px;
+  color: #2a9d8f;
+  text-decoration: none;
+  font-size: 16px;
+  transition: color 0.3s ease;
+}
+
+#sidebar .nav svg {
+  margin-right: 8px;
+  width: 20px;
+  height: 20px;
+  fill: #2a9d8f;
+}
+
+#sidebar .nav svg:hover{
+  fill: #1E7167;
+  transition: color 0.3s ease;
+}
+
+#sidebar .nav a:active{
+  color: rgba(59, 203, 190);
+}
+
+
+#sidebar .nav a:hover {
+  color: #1E7167;
+  font-weight: bold;
+}
+
+#sidebar .nav a:active{
+  background: none;
+  color: rgba(59, 203, 190);
+  font-weight: bold;
+}
+
+#sidebar .nav a i {
+  margin-right: 10px;
+}
+
+
+#sidebar ul {
+  list-style-type: none;
+  padding-left: 0;
+}
+
+#sidebar ul li {
+  padding: 5px 0;
+}
+
+#sidebar .logout-container {
+    position: absolute;
+    top: 700px;  /* Ajusta este valor según donde quieras posicionar el contenedor */
+    left: 10px;
+    right: 0;
+}
+
+#sidebar .logout-container a {
+  display: flex;
+  align-items: center;
+  color: #2a9d8f;
+  text-decoration: none;
+  font-size: 16px;
+  transition: color 0.3s ease;
+}
+
+#sidebar .logout-container a:hover {
+  color: #1E7167;
+}
+
+#sidebar .logout-container a svg {
+  margin-right: 10px;
+  width: 20px;
+  height: 20px;
+  fill: #2a9d8f;
+  transition: color 0.3s ease;
+}
+
+#sidebar .logout-container p {
+  color: #2a9d8f;
+  font-size: 14px;
+  margin: 0;
+  padding: 5px 10px;
+  line-height: 1.5;
+  text-align: left;
+}
+
+
+/* Boton volver atras */
+
+.back-button {
+  margin: 0;
+  padding: 10px 20px;
+  background-color: rgba(59, 203, 190);
+  color: white;
+  border: none;
+  border-radius: 5px;
+  font-weight: bold;
+  cursor: pointer;
+  transition: background-color 0.3s ease;
+  text-align: center;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 8px; /* Espacio entre el texto y el ícono */
+}
+
+.back-button:hover {
+  background-color: rgb(42, 154, 145);
+}
+
+.back-button svg {
+  fill: white;
+  color: white;
+  width: 20px;
+  height: 20px;
+  transform: rotate(180deg)
+}
+
+
+/* Contenido contenedor */
+
+.button-form-container {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  padding: 10px 0;
+  width: 100%;
+}
+
+.file-upload-form {
+  display: flex;
+  justify-content: flex-end; /* Alinear a la derecha */
+  align-items: center;
+  gap: 10px;
+  padding: 10px 0;
+}
+
+.file-upload-form form{
+  background-color: #fff;
+  border-radius: 30%;
+}
+
+.file-upload-form input[type="file"] {
+  font-size: 14px;
+}
+
+/* Gráficos */
+.charts {
+  align-content: start;
+  display: flex;
+  justify-content: space-between;
+  align-items: flex-start; /* Alinea los gráficos hacia la parte superior */
+  gap: 10px;
+  margin-top: 20px;
+}
+
+.file-upload {
+  background-color: white;
+  text-align: center;
+  padding: 20px;
+  border-radius: 8px;
+  box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+  width: 100%;
+  margin: auto;
+  align-content: start;
+}
+
+.chart {
+  background-color: white;
+  text-align: center;
+  padding: 20px;
+  border-radius: 8px;
+  box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+  width: 100%;
+  margin: 0; /* Elimina márgenes adicionales */
+  display: flex;
+  flex-direction: column; /* Asegura que los elementos internos estén en columna */
+  align-items: center; /* Centra los elementos internos horizontalmente */
+  justify-content: flex-start; /* Alinea los elementos internos hacia arriba */
+}
+
+.chart h3 {
+  margin: 0;
+  padding: 0;
+  color: #333;
+}
+
+.chart p {
+  margin: 6px 0;
+}	
+
+.chart button {
+  margin: 0;
+  padding: 10px 20px;
+  background-color: rgba(59, 203, 190);
+  color: white;
+  border: none;
+  border-radius: 5px;
+  cursor: pointer;
+}	
+
+.chart svg {
+  fill: rgba(59, 203, 190);
+  width: 60px;
+  height: 60px;
+  margin-bottom: 20px;
+}
+
+
+/* Tabla de Sucursales */
+.branches {
+  margin-top: 40px;
+}
+
+table {
+  width: 100%;
+  border-collapse: collapse;
+  margin-top: 20px;
+}
+
+table thead th {
+  background-color: rgba(59, 203, 190);
+  color: white;
+  padding: 10px;
+}
+
+table tbody td {
+  padding: 10px;
+  border-bottom: 1px solid #ddd;
+}
+
+button {
+  margin-top: 20px;
+  padding: 10px 20px;
+  background-color: rgba(59, 203, 190);
+  color: white;
+  border: none;
+  border-radius: 5px;
+  cursor: pointer;
+}
+
+
+/* Botones y Subida de Archivos */
+
+.file-upload-btn {
+  margin-top: 20px;
+  margin-bottom: 30px;
+  color: #fff;
+  background: rgba(59, 203, 190);
+  border: none;
+  padding: 10px 20px;
+  border-radius: 4px;
+  border-bottom: 4px solid rgb(42, 154, 145);
+  transition: all 0.2s ease;
+  outline: none;
+  text-transform: uppercase;
+  font-weight: 700;
+}
+
+.file-upload-btn:hover {
+  background: rgb(42, 154, 145);
+  cursor: pointer;
+}
+
+.upload-button-container svg {
+  fill: white;
+  color: white;
+  width: 20px;
+  height: 20px;
+  margin-right: 5px;
+}	
+
+.image-upload-wrap {
+  margin-top: 20px;
+  border: 4px dashed rgba(59, 203, 190);
+  position: relative;
+}
+
+.image-dropping,
+.image-upload-wrap:hover {
+  background-color: rgba(59, 203, 190);
+  border: 4px dashed white;
+}
+
+.file-upload-image {
+  max-height: 200px;
+  max-width: 200px;
+  margin: auto;
+  padding: 20px;
+}
+
+.remove-image {
+  width: 200px;
+  margin: 0;
+  color: white;
+  background: #cd4535;
+  border: none;
+  padding: 10px;
+  border-radius: 4px;
+  border-bottom: 4px solid #b02818;
+  transition: all 0.2s ease;
+  text-transform: uppercase;
+  font-weight: 700;
+}
+
+.remove-image:hover {
+  background: #c13b2a;
+  cursor: pointer;
+}
+
+
+/* Contenido */
+.file-upload h1 {
+  padding: 0px;
+  padding-bottom: 10px;
+  margin: 0px;
+  color: #222;
+}
+
+.file-upload form {
+  padding-top: 10px;
+}
+
+.file-upload-btn {
+  margin-top: 20px;
+  color: #fff;
+  background: rgba(59, 203, 190, 1);
+  border: none;
+  padding: 10px 20px;
+  border-radius: 4px;
+  border-bottom: 4px solid rgb(42, 154, 145);
+  transition: all .2s ease;
+  outline: none;
+  text-transform: uppercase;
+  font-weight: 700;
+  text-decoration: none;
+}
+
+.file-upload-btn:hover {
+  background: rgb(42, 154, 145);
+  color: #ffffff;
+  transition: all .2s ease;
+  cursor: pointer;
+}
+
+.file-upload-btn:active {
+  border: 0;
+  transition: all .2s ease;
+}
+
+.file-upload-content {
+  display: none;
+}
+
+.file-upload-input {
+  position: absolute;
+  margin: 0;
+  padding: 0;
+  width: 100%;
+  height: 100%;
+  outline: none;
+  opacity: 0;
+  cursor: pointer;
+}
+
+.image-upload-wrap {
+  margin-top: 20px;
+  border: 4px dashed rgba(59, 203, 190, 1);
+  position: relative;
+}
+
+.image-dropping,
+.image-upload-wrap:hover {
+  background-color: rgba(59, 203, 190, 1);
+  border: 4px dashed #ffffff;
+}
+
+.image-title-wrap {
+  padding: 0 15px 15px 15px;
+  color: #222;
+}
+
+.drag-text {
+  text-align: center;
+}
+
+.drag-text h3 {
+  font-weight: 100;
+  text-transform: uppercase;
+  color: rgb(42, 154, 145);
+  padding: 60px 0;
+}
+
+.file-upload-image {
+  max-height: 200px;
+  max-width: 200px;
+  margin: auto;
+  padding: 20px;
+}
+
+.remove-image {
+  width: 200px;
+  margin: 0;
+  color: #fff;
+  background: #cd4535;
+  border: none;
+  padding: 10px;
+  border-radius: 4px;
+  transition: all .2s ease;
+  outline: none;
+  text-transform: uppercase;
+  font-weight: 700;
+}
+
+.remove-image:hover {
+  background: #c13b2a;
+  color: #ffffff;
+  transition: all .2s ease;
+  cursor: pointer;
+}
+
+.remove-image:active {
+  border: 0;
+  transition: all .2s ease;
+}
+
+
+  /* Estilos de tabla dashboard */
+  /* Estilos Generales */
+  .styled-table-container {
+    width: 100%;
+    height: 600px;
+    overflow-x: auto; /* Habilita el scroll horizontal */
+    overflow-y: auto;
+    display: block; /* Asegura que sea un contenedor de bloque */
+    white-space: nowrap; /* Evita que el contenido de las celdas haga salto de línea */
+}
+
+  .styled-table {
+  width: 100%;
+  border-collapse: collapse;
+  font-family: Arial, sans-serif;
+  font-size: 14px;
+  margin: 20px 0;
+  background-color: #f9f9f9;
+  overflow: scroll;
+}
+
+.styled-table thead th {
+  background-color: #4CAF50;
+  color: white;
+  padding: 10px;
+  text-align: left;
+  font-weight: bold;
+}
+
+.styled-table tbody td {
+  padding: 10px;
+  border-bottom: 1px solid #ddd;
+}
+
+/* Alternar color de filas */
+.styled-table tbody tr:nth-of-type(even) {
+  background-color: #f3f3f3;
+}
+
+/* Alineación de texto para datos numéricos */
+.align-right {
+  text-align: right;
+}
+
+/* Resaltar valores numéricos altos */
+.styled-table tbody td {
+  padding: 10px;
+  border-bottom: 1px solid #ddd;
+}
+
+.styled-table tbody td.align-right {
+  padding: 10px;
+  text-align: right;
+}
+
+/* Estilos de cabecera */
+.styled-table thead th {
+  background-color: #4CAF50;
+  color: white;
+  padding: 12px;
+  text-align: left;
+  font-size: 16px;
+}
+
+/* Resaltar valores importantes */
+.styled-table tbody td.highlight-high {
+  background-color: #e74c3c;
+  color: white;
+}
+
+.styled-table tbody td.highlight-medium {
+  background-color: #f39c12;
+  color: white;
+}
+
+.styled-table tbody td.highlight-low {
+  background-color: #27ae60;
+  color: white;
+}
+
+
+/* Estilos alcance 3 */
+#data-form {
+  margin: 0px;
+}	
+
+.initial-message {
+  color: #555;
+}
+
+.item-container {
+  margin-top: 20px;
+  width: auto;
+}
+
+.item {
+  display: flex;
+  align-items: center;
+  gap: 20px;
+  margin-bottom: 15px;
+  padding: 15px;
+  background: #fff;
+  border-radius: 8px;
+  box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+  position: relative;
+}
+
+.item-number {
+  font-size: 16px;
+  font-weight: bold;
+  color: #333;
+  width: 60px;
+}
+
+.input-group {
+  display: flex;
+  flex-direction: column;
+  flex-grow: 1;
+  margin-right: 15px;
+}
+
+.input-group label {
+  font-size: 14px;
+  color: #555;
+  margin-bottom: 5px;
+}
+
+    /* Input and Select Styles */
+    .tipo-emision-select, .categoria-select, .carbon-value {
+      padding: 8px;
+      border: 1px solid #ddd;
+      border-radius: 4px;
+      width: 100%;
+    }
+
+    /* Unit Label Styling */
+    .value-input-container {
+      display: flex;
+      align-items: center;
+    }
+
+    .unit-label {
+      font-size: 16px;
+      font-weight: bold;
+      color: #555;
+      margin-left: 10px;
+    }
+
+    /* Button Styling */
+    .add-item-button-container {
+      margin-top: 6px;
+    }
+
+    .add-item-btn {
+      background-color: #27ae60;
+      color: white;
+      padding: 10px 20px;
+      border: none;
+      border-radius: 8px;
+      cursor: pointer;
+      box-shadow: 0 4px 8px rgba(0, 0, 0, 0.2);
+      transition: background-color 0.3s ease;
+      display: inline-flex;
+      align-items: center;
+      gap: 8px;
+    }
+
+    .add-item-btn:hover {
+      background-color: rgba(59, 203, 190);
+    }
+
+    .add-item-btn svg {
+      fill: white;
+      color: white;
+      width: 20px;
+      height: 20px;
+    }
+
+
+/* Encapsulando los estilos de la página de login */
+.login-page {
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  height: 100vh;
+  background-color: #eeeeee;
+}
+
+.login-page .login-container {
+  background-color: #ffffff;
+  padding: 40px 30px;
+  width: 350px;
+  box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
+  border-radius: 8px;
+  text-align: center;
+}
+
+.login-page .logo {
+  margin-bottom: 20px;
+}
+
+.login-page .logo img {
+  width: auto;
+  height: 50px;
+}
+
+.login-page .logo .brand-name {
+  font-size: 24px;
+  color: rgba(59, 203, 190);
+  font-weight: 600;
+}
+
+.login-page .form-title {
+  font-size: 18px;
+  font-weight: bold;
+  margin-bottom: 10px;
+}
+
+.login-page .form-subtitle {
+  color: #fff;
+  margin-bottom: 20px;
+}
+
+.login-page .input-group {
+  margin-bottom: 15px;
+  text-align: left;
+}
+
+.login-page .input-group label {
+  display: block;
+  font-size: 14px;
+  margin-bottom: 5px;
+  color: #333333;
+}
+
+.login-page .input-group input {
+  width: 100%;
+  padding: 10px;
+  border: 1px solid #ccc;
+  border-radius: 5px;
+  font-size: 14px;
+}
+
+.login-page .checkbox-group {
+  display: flex;
+  align-items: center;
+  margin-bottom: 20px;
+}
+
+.login-page .checkbox-group input {
+  margin-right: 10px;
+}
+
+.login-page .checkbox-group label {
+  font-size: 12px;
+  color: #666666;
+}
+
+.login-page .submit-btn {
+  width: 100%;
+  padding: 10px;
+  background-color: rgba(59, 203, 190);
+  color: #ffffff;
+  border: none;
+  border-radius: 5px;
+  font-weight: bold;
+  cursor: pointer;
+  transition: background-color 0.3s;
+}
+
+.login-page .submit-btn:hover {
+  background-color: rgba(42, 154, 145);
+}
+
+.login-page .link {
+  font-size: 12px;
+  color: #666666;
+  margin-top: 10px;
+}
+
+.login-page .link a {
+  color: rgba(59, 203, 190);
+  text-decoration: none;
+}
+
+.login-page .link a:hover {
+  text-decoration: underline;
+}
+
+
+.alcances {
+  margin: 0px 0 10px 30px;
+}
+
+.alcances svg{
+  fill: #2a9d8f;
+  margin-right: 10px;
+  width: 20px;
+  height: 20px;
+}
+
+.downsidebar {
+  align-items: end;
+
+}
+
+
+/* Estilos sitio resultados */
+
+.loader-container {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  height: 200px;
+}
+
+.loader {
+  border: 16px solid #f3f3f3;
+  border-top: 16px solid #3498db;
+  border-radius: 50%;
+  width: 120px;
+  height: 120px;
+  animation: spin 2s linear infinite;
+}
+
+@keyframes spin {
+  0% { transform: rotate(0deg); }
+  100% { transform: rotate(360deg); }
+}
+
+.loader-text {
+  margin-top: 20px;
+  font-size: 18px;
+  color: #3498db;
+}
+
+.hidden {
+  display: none;
+}
+
+.upload-btn-container {
+  text-align: right;
+  padding-right: 20px;
+  padding-top: 20px;
+}
+
+table {
+  width: 100%;
+  border-collapse: collapse;
+}
+
+th, td {
+  border: 1px solid #ccc;
+  padding: 8px;
+  text-align: left;
+}
+
+th {
+  background-color: #f4f4f4;
+}
+
+form {
+  margin-bottom: 20px;
+}
+
+#dataTable_wrapper {
+  margin-top: 20px; /* Añade un poco de margen superior al contenedor del DataTable */
+}

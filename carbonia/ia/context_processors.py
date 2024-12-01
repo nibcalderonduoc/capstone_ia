@@ -14,7 +14,7 @@ def perfil_cliente(request):
     # Consulta para obtener los datos del cliente
     query = """
         SELECT id_cliente AS rut, nomcliente AS profile_name, encargado
-        FROM `proyectocarbonia.datacarbonia.cliente`
+        FROM `proyectocarbonia-443321.datacarbonia.cliente`
         WHERE emailcliente = @correo
         LIMIT 1
     """
