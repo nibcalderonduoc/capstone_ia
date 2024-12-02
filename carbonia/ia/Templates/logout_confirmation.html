@@ -1,0 +1,69 @@
+{% extends 'partials/base-sinsidebar.html' %}
+{% load static %}
+
+{% block title %}Cerrar sesión - CarbonIA{% endblock %}
+
+{% block content %}
+<div class="login-page">
+    <div class="login-container">
+        <div class="logo">
+            <a href="/">
+                <img src="{% static 'img/LogoColor.png' %}" alt="CarbonIA Logo">
+            </a>
+        </div>
+        <div class="form-title">Cerrar sesión</div>
+        <div class="form-subtitle">¿Estás seguro de que deseas salir?</div>
+
+        <!-- Temporizador con círculo -->
+        <div class="logout-timer">
+            <svg class="circle" width="120" height="120">
+                <circle cx="60" cy="60" r="50" fill="none" stroke="#e0e0e0" stroke-width="8" />
+                <circle id="progress-circle" cx="60" cy="60" r="50" fill="none" stroke="#ff5722" stroke-width="8" />
+            </svg>
+            <div class="counter">
+                <span id="counter">10</span>
+            </div>
+        </div>
+
+        <div class="form-buttons">
+            <a href="{% url 'logout' %}" class="btn btn-danger">Cerrar sesión</a>
+            <button id="cancel-button" class="btn btn-secondary">Cancelar</button>
+        </div>
+    </div>
+</div>
+
+<!-- Script para manejar el contador -->
+<script>
+    document.addEventListener("DOMContentLoaded", () => {
+        let counter = 10;
+        const counterElement = document.getElementById('counter');
+        const progressCircle = document.getElementById('progress-circle');
+        const totalLength = 2 * Math.PI * 50; // Perímetro del círculo (2πr, r=50)
+        const cancelButton = document.getElementById('cancel-button'); // Botón de cancelar
+
+        // Configuración inicial del círculo
+        progressCircle.style.strokeDasharray = totalLength; // Perímetro completo
+        progressCircle.style.strokeDashoffset = 0; // Sin offset inicial
+
+        // Decrementar cada segundo
+        const decrement = totalLength / 10; // Cambio por segundo
+        let timer = setInterval(() => {
+            counterElement.textContent = counter;
+            progressCircle.style.strokeDashoffset = decrement * (11 - counter); // Reducir el progreso
+
+            counter--;
+            if (counter < 0) {
+                clearInterval(timer);
+                window.location.href = "{% url 'logout' %}"; // Redirigir automáticamente
+            }
+        }, 1000);
+
+        // Evento para el botón de cancelar
+        cancelButton.addEventListener("click", () => {
+            clearInterval(timer); // Detener el temporizador
+            timer = null; // Asegurar que no se vuelva a ejecutar
+            window.location.href = "{% url 'dashboard' %}"; // Redirigir a la página principal
+        });
+    });
+</script>
+{% endblock %}

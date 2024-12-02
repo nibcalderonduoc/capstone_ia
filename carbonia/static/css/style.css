@@ -208,7 +208,7 @@ input:checked + .slider:before {
 #content {
   padding: 0px; /* Menos padding en los laterales */
   margin: 0; /* Centrar el contenido dentro del área disponible */
-  max-width: calc(100% - 250px); /* Asegura que el contenido no sobrepase el ancho disponible */
+  max-width: calc(112% - 250px); /* Asegura que el contenido no sobrepase el ancho disponible */
 }
 
 .container-fluid {
@@ -316,6 +316,7 @@ input:checked + .slider:before {
 #sidebar .logout-container {
   margin-top: auto;
   padding: 10px;
+  
 }
 
 #sidebar .logout-container a {
@@ -908,7 +909,7 @@ button {
 }
 
 .login-page .form-subtitle {
-  color: #fff;
+  color: #000000;
   margin-bottom: 20px;
 }
 
@@ -1049,4 +1050,94 @@ th, td {
 
 th {
   background-color: #f4f4f4;
+}
+
+  /* Estilos principales cerrar sesion */
+  .logout-page {
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    height: 100vh;
+    background-color: #f9f9f9;
+}
+
+
+.logo img {
+    width: 150px;
+    margin-bottom: 20px;
+}
+
+.form-title {
+    font-size: 24px;
+    font-weight: bold;
+    margin-bottom: 10px;
+}
+
+
+
+.logout-timer {
+    position: relative;
+    width: 120px;
+    height: 120px;
+    margin: 20px auto;
+}
+
+.circle {
+    transform: rotate(-90deg); /* Inicia el círculo desde la parte superior */
+}
+
+#progress-circle {
+    stroke-dasharray: 314; /* Perímetro del círculo (2πr, r=50) */
+    stroke-dashoffset: 0;
+    transition: stroke-dashoffset 1s linear;
+}
+
+.counter {
+    position: absolute;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 28px;
+    font-weight: bold;
+    color: #ff5722;
+}
+
+.form-buttons {
+    margin-top: 30px;
+    display: flex;
+    justify-content: space-between;
+    gap: 10px;
+}
+
+.form-buttons .btn {
+    padding: 10px 20px;
+    border-radius: 5px;
+    text-decoration: none;
+    color: #fff;
+    font-size: 16px;
+    font-weight: bold;
+    flex: 1;
+    text-align: center;
+}
+
+.btn-danger {
+    background-color: #d9534f;
+    border: none;
+}
+
+.btn-danger:hover {
+    background-color: #c9302c;
+}
+
+.btn-secondary {
+    background-color: #6c757d;
+    border: none;
+}
+
+.btn-secondary:hover {
+    background-color: #5a6268;
 }

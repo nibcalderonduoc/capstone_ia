@@ -24,6 +24,8 @@ from django.shortcuts import render
 from django.conf import settings
 from google.cloud import storage
 from datetime import timedelta
+from django.views.decorators.cache import cache_control
+from django.contrib.auth.decorators import login_required
 
 #@cache_control(no_cache=True, must_revalidate=True, no_store=True)
 def upload_to_gcs_and_generate_signed_url(file, perfil_id, alcance, bucket_name):
@@ -64,6 +66,7 @@ def get_bucket_name(alcance):
         return settings.GS_BUCKET_NAME_ALCANCE2    
     return settings.GS_BUCKET_NAME_ALCANCE1  # Bucket predeterminado si no se especifica un alcance
 
+@login_required
 def index(request):
     if request.method == 'POST' and request.FILES.get('pdf_file'):
         uploaded_file = request.FILES['pdf_file']
@@ -82,20 +85,21 @@ def index(request):
 
 # Vista para mostrar previsualización de informe
 from google.cloud import bigquery
-
+@login_required
+@cache_control(no_cache=True, must_revalidate=True, no_store=True)
 def result(request):
     client = bigquery.Client()
     query = """
     SELECT
     num_cli AS numero_cliente,
     Numero_Boleta AS numero_boleta,
-    (SELECT nombre_comuna FROM `proyectocarbonia.datacarbonia.comuna` WHERE id_comuna = hc.id_comuna) AS comuna,
+    (SELECT nombre_comuna FROM `proyectocarbonia-443321.datacarbonia.comuna` WHERE id_comuna = hc.id_comuna) AS comuna,
     consumo,
     unidad,
-    (SELECT nombre FROM `proyectocarbonia.datacarbonia.elemento` WHERE id_elemento = hc.id_elemento) AS elemento,
+    (SELECT nombre FROM `proyectocarbonia-443321.datacarbonia.elemento` WHERE id_elemento = hc.id_elemento) AS elemento,
     fecha_registro AS updated
 FROM
-    `proyectocarbonia.datacarbonia.huella_carbono` AS hc
+    `proyectocarbonia-443321.datacarbonia.huella_carbono` AS hc
 ORDER BY
     updated DESC
 LIMIT 1;
@@ -122,75 +126,108 @@ LIMIT 1;
     return render(request, 'empresas-registradas.html')
 
 # Vista para mostrar Header
+@login_required
 def base(request):
     return render(request, 'base.html')
 
 # Vista para mostrar sidebar
+@login_required
 def sidebar(request):
     return render(request, 'sidebar.html')
 
 # Vista para mostrar content
+@login_required
 def content(request):
     return render(request, 'content.html')
 
 # Vista para mostrar recomendaciones
+@login_required
 def recomendaciones(request):
     return render(request, 'recomendaciones.html')
 
 # Vista para mostrar carga-item-alcance3
+@login_required
 def carga_item_alcance3(request):
     return render(request, 'carga-item-alcance3.html')
 
 # Vista para mostrar base-admin
+@login_required
 def base_admin(request):
     return render(request, 'base-admin.html')
 
 # Vista para mostrar dashboard-admin
+@login_required
 def dashboard_admin(request):
     return render(request, 'dashboard-admin.html')
 
 # Vista para mostrar registro-admin 
+@login_required
 def registro_admin(request):
     return render(request, 'registro-admin.html')
 
 # Vista para mostrar login-admin
+@login_required
 def login_admin(request):
     return render(request, 'login-admin.html')
 
 # Vista para mostrar sidebar-admin
+@login_required
 def sidebar_admin(request):
     return render(request, 'sidebar-admin.html')
 
 # Vista para mostrar infostoric
+from django.shortcuts import render
+from google.cloud import bigquery
+
+@login_required
 def infostoric(request):
-     # Inicializa el cliente de BigQuery
+    """Muestra los datos históricos de la tabla huella_carbono con filtro por alcance."""
     client = bigquery.Client()
 
-    # Define la consulta
+    # Obtener el parámetro de filtro por alcance
+    alcance = request.GET.get('alcance', '')
+
+    # Consulta base
     query = """
-    SELECT * FROM `proyectocarbonia.alcance2.silver_parse_table`
-    LIMIT 100
+    SELECT * 
+    FROM `proyectocarbonia-443321.datacarbonia.huella_carbono`
     """
+    
+    # Modificar consulta si se aplica el filtro
+    if alcance:
+        query += f" WHERE Alcance = '{alcance}'"
 
-    # Ejecuta la consulta
-    query_job = client.query(query)  # Ejecuta la consulta
-    results = query_job.result()  # Obtiene los resultados
+    query += " ORDER BY fecha_registro DESC"
 
-    # Prepara los datos en una lista para enviar al template
-    data = []
-    for row in results:
-        data.append(dict(row))  # Convierte cada fila en un diccionario
-        
-      # Renderiza los datos en el template dashboard.html
-    return render(request, 'infostoric.html', {'data': data})
+    # Ejecutar consulta
+    query_job = client.query(query)
+    results = query_job.result()
+
+    # Convertir los resultados en una lista de diccionarios
+    data = [dict(row) for row in results]
+
+    # Pasar los datos al template
+    context = {
+        'data': data,
+        'alcance': alcance,  # Mantener el alcance seleccionado en el formulario
+    }
+
+    return render(request, 'infostoric.html', context)
 
 # Vista para obtener los datos de BigQuery y mostrarlos en el dashboard
 from google.cloud import bigquery
 from django.shortcuts import render
 from google.cloud import bigquery
 from django.shortcuts import render
+from django.views.decorators.cache import cache_control
 
+
+@cache_control(no_cache=True, must_revalidate=True, no_store=True)
+@login_required
 def dashboard(request):
+    if 'email' not in request.session:
+        return redirect('login')  # Redirigir al inicio de sesión si no está autenticado
+
     client = bigquery.Client()
     
     try:
@@ -199,7 +236,7 @@ def dashboard(request):
         SELECT
             ROUND(SUM(TCO2_Calculado), 4) AS total_tco2_calculado
         FROM
-            `proyectocarbonia.datacarbonia.huella_carbono`
+            `proyectocarbonia-443321.datacarbonia.huella_carbono`
         WHERE Alcance = '1'
         """
         tco2_total_result = client.query(tco2_total_query).result()
@@ -210,7 +247,7 @@ def dashboard(request):
         SELECT
             ROUND(SUM(TCO2_Calculado), 4) AS total_tco2_calculado2
         FROM
-            `proyectocarbonia.datacarbonia.huella_carbono`
+            `proyectocarbonia-443321.datacarbonia.huella_carbono`
         WHERE Alcance = '2'
         """
         tco2_total_result2 = client.query(tco2_total_query2).result()
@@ -221,7 +258,7 @@ def dashboard(request):
         SELECT
             ROUND(SUM(TCO2_Calculado), 4) AS total_tco2_calculado3
         FROM
-            `proyectocarbonia.datacarbonia.huella_carbono`
+            `proyectocarbonia-443321.datacarbonia.huella_carbono`
         WHERE Alcance = '3'
         """
         tco2_total_result3 = client.query(tco2_total_query3).result()
@@ -233,7 +270,7 @@ def dashboard(request):
           EXTRACT(YEAR FROM Fecha_Inicio) AS year,
           EXTRACT(MONTH FROM Fecha_Termino) AS month,
           ROUND(SUM(TCO2_Calculado), 4) AS total_tco2_calculado
-        FROM `proyectocarbonia.datacarbonia.huella_carbono`
+        FROM `proyectocarbonia-443321.datacarbonia.huella_carbono`
         WHERE Alcance = '1'
         GROUP BY year, month
         ORDER BY year, month
@@ -245,7 +282,7 @@ def dashboard(request):
           EXTRACT(YEAR FROM Fecha_Inicio) AS year,
           EXTRACT(MONTH FROM Fecha_Termino) AS month,
           ROUND(SUM(TCO2_Calculado), 4) AS total_tco2_calculado2
-        FROM `proyectocarbonia.datacarbonia.huella_carbono`
+        FROM `proyectocarbonia-443321.datacarbonia.huella_carbono`
         WHERE Alcance = '2'
         GROUP BY year, month
         ORDER BY year, month
@@ -257,7 +294,7 @@ def dashboard(request):
           EXTRACT(YEAR FROM Fecha_Inicio) AS year,
           EXTRACT(MONTH FROM Fecha_Termino) AS month,
           ROUND(SUM(TCO2_Calculado), 4) AS total_tco2_calculado3
-        FROM `proyectocarbonia.datacarbonia.huella_carbono`
+        FROM `proyectocarbonia-443321.datacarbonia.huella_carbono`
         WHERE Alcance = '3'
         GROUP BY year, month
         ORDER BY year, month
@@ -322,6 +359,8 @@ def dashboard(request):
 
 
 ## ver graficos en combobox y recomendaciones
+@cache_control(no_cache=True, must_revalidate=True, no_store=True)
+@login_required
 def recomendaciones(request):
     client = bigquery.Client()
 
@@ -332,7 +371,7 @@ def recomendaciones(request):
       EXTRACT(MONTH FROM fec_ter) AS month,
       SUM(consumo) AS total_consumo,
       SUM(TCO2) AS total_TCO2
-    FROM `proyectocarbonia.alcance2.silver_parse_table`
+    FROM `proyectocarbonia-443321.alcance2.silver_parse_table`
     GROUP BY year, month
     ORDER BY year, month
     """
@@ -359,7 +398,7 @@ def recomendaciones(request):
     SELECT 
       nom_dist,
       SUM(consumo) AS total_consumo
-    FROM `proyectocarbonia.alcance2.silver_parse_table`
+    FROM `proyectocarbonia-443321.alcance2.silver_parse_table`
     GROUP BY nom_dist
     ORDER BY total_consumo DESC
     """
@@ -438,7 +477,7 @@ from django.http import JsonResponse
 #def alcance1(request):
  #    return render(request, 'alcance1.html')
 
-
+@login_required
 def alcance2(request):
     return render(request, 'alcance2.html')
 
@@ -455,14 +494,14 @@ def obtener_datos_bigquery(request):
     s.nombre AS subcategoria, 
     e.nombre AS elemento,
     u.unidad AS unidad
-    FROM `proyectocarbonia.datacarbonia.categoria` c
-    JOIN `proyectocarbonia.datacarbonia.subcategoria` s 
+    FROM `proyectocarbonia-443321.datacarbonia.categoria` c
+    JOIN `proyectocarbonia-443321.datacarbonia.subcategoria` s 
     ON c.id_categoria = s.id_categoria
-    JOIN `proyectocarbonia.datacarbonia.elemento` e 
+    JOIN `proyectocarbonia-443321.datacarbonia.elemento` e 
     ON s.id_subcategoria = e.id_subcategoria
-    JOIN `proyectocarbonia.datacarbonia.unidad_medida` u 
+    JOIN `proyectocarbonia-443321.datacarbonia.unidad_medida` u 
     ON e.id_elemento = u.id_elemento
-    JOIN `proyectocarbonia.datacarbonia.alcance` a
+    JOIN `proyectocarbonia-443321.datacarbonia.alcance` a
     ON c.id_alcance = a.id_alcance
     WHERE a.id_alcance = 3
     """
@@ -528,7 +567,7 @@ def upload_to_bigquery(request):
         id_cliente = str(rut)
 
         client = bigquery.Client()
-        table_id = 'proyectocarbonia.alcance3.alcance3_data'
+        table_id = 'proyectocarbonia-443321.alcance3.alcance3_data'
 
         # Preparar filas para insertar
         rows_to_insert = []
@@ -621,7 +660,7 @@ def registro(request):
         # Configura el cliente de BigQuery
         client = bigquery.Client()
 
-        # Define tu dataset y tabla proyectocarbonia.datacarbonia.cliente
+        # Define tu dataset y tabla proyectocarbonia-443321.datacarbonia.cliente
         dataset_id = 'datacarbonia'
         table_id = 'cliente'
         table_ref = client.dataset(dataset_id).table(table_id)
@@ -679,6 +718,17 @@ def registro(request):
     return render(request, 'registro.html')
 
 # Vista para mostrar la página de éxito
+from django.shortcuts import render, redirect
+from django.http import JsonResponse
+from google.cloud import bigquery
+from django.contrib.auth import login
+from django.contrib import messages
+from django.contrib.auth.models import User
+from django.contrib.auth.backends import BaseBackend
+from django.contrib.sessions.models import Session
+from django.conf import settings
+from django.contrib.auth.decorators import login_required
+
 def login_view(request):
     if request.method == 'POST':
         email = request.POST.get('email')
@@ -686,46 +736,59 @@ def login_view(request):
         
         # Configura el cliente de BigQuery
         client = bigquery.Client()
-        
+
         # Define tu dataset y tabla
         dataset_id = 'datacarbonia'
         table_id = 'cliente'
-        
-        # Realiza la consulta a BigQuery para buscar el usuario por correo
-        query = f"""
-            SELECT psscliente FROM `{dataset_id}.{table_id}`
-            WHERE emailcliente = @correo
-        """
-        job_config = bigquery.QueryJobConfig(
-            query_parameters=[bigquery.ScalarQueryParameter("correo", "STRING", email)]
-        )
-        query_job = client.query(query, job_config=job_config)
-        results = query_job.result()
 
-        # Verificar si el usuario existe y si la contraseña coincide
-        user = None
-        for row in results:
-            if check_password(password, row.psscliente):
-                user = True
-                break
-        
-        if user:
-            # Guardar el email en la sesión
-            request.session['email'] = email
+        try:
+            # Realiza la consulta a BigQuery para buscar el usuario por correo
+            query = f"""
+                SELECT id_cliente, nomcliente, emailcliente, psscliente 
+                FROM `{dataset_id}.{table_id}`
+                WHERE emailcliente = @correo
+            """
+            job_config = bigquery.QueryJobConfig(
+                query_parameters=[bigquery.ScalarQueryParameter("correo", "STRING", email)]
+            )
+            query_job = client.query(query, job_config=job_config)
+            results = query_job.result()
 
-            # Inicializar el perfil en la sesión llamando a initialize_profile
-            perfil_data = perfil_cliente(request)
-            request.session['rut'] = perfil_data.get('rut', 'No Disponible')
-            request.session['profile_name'] = perfil_data.get('profile_name', 'No Disponible')
-            request.session['encargado'] = perfil_data.get('encargado', 'No Disponible')
-            
-            # Redirige a la página principal si el login es exitoso
-            return redirect('dashboard')
-        else:
-            error_message = "Correo o contraseña incorrectos."
-            return render(request, 'login.html', {'error_message': error_message})
+            # Verificar si el usuario existe y si la contraseña coincide
+            user_data = None
+            for row in results:
+                user_data = row
+                if check_password(password, row.psscliente):  # Validar contraseña encriptada
+                    # Guarda los datos del usuario en la sesión
+                    request.session['id_cliente'] = row.id_cliente
+                    request.session['email'] = row.emailcliente
+                    request.session['nombre_cliente'] = row.nomcliente
+
+                    # Simula el inicio de sesión con Django
+                    user, created = User.objects.get_or_create(username=row.emailcliente)
+                    if created:
+                        user.set_password(password)  # Establece una contraseña temporal
+                        user.save()
+                    login(request, user)
+
+                    # Redirige al dashboard si el login es exitoso
+                    return redirect('dashboard')
+                else:
+                    messages.error(request, "Correo o contraseña incorrectos.")
+                    return render(request, 'login.html')
+
+            if not user_data:
+                messages.error(request, "Usuario no encontrado.")
+                return render(request, 'login.html')
+
+        except Exception as e:
+            print(f"Error al autenticar: {e}")
+            messages.error(request, "Ocurrió un error durante el inicio de sesión.")
+            return render(request, 'login.html')
 
     return render(request, 'login.html')
+
+
 
 from django.http import JsonResponse
 from ia.context_processors import perfil_cliente
@@ -744,6 +807,8 @@ from django.shortcuts import render
 from google.cloud import bigquery
 import json
 from google.cloud import bigquery
+
+@login_required
 def alcance3(request):
     # Inicializa el cliente de BigQuery
     client = bigquery.Client()
@@ -757,7 +822,7 @@ def alcance3(request):
         SUM(valor) AS total_valor,
         EXTRACT(MONTH FROM fecha_registro) AS mes,
         EXTRACT(YEAR FROM fecha_registro) AS anio
-    FROM `proyectocarbonia.alcance3.alcance3_data`
+    FROM `proyectocarbonia-443321.alcance3.alcance3_data`
     GROUP BY categoria, subcategoria, elemento, mes, anio
     ORDER BY anio, mes
     """
@@ -812,7 +877,7 @@ def get_regions(request):
     client = bigquery.Client()
     query = """
     SELECT DISTINCT id_region, nombre_region
-    FROM `proyectocarbonia.datacarbonia.region`
+    FROM `proyectocarbonia-443321.datacarbonia.region`
     ORDER BY nombre_region
     """
     query_job = client.query(query)
@@ -831,7 +896,7 @@ def get_provinces(request):
     client = bigquery.Client()
     query = f"""
     SELECT DISTINCT id_provincia, nombre_provincia
-    FROM `proyectocarbonia.datacarbonia.provincia`
+    FROM `proyectocarbonia-443321.datacarbonia.provincia`
     WHERE id_region = {region_id}
     ORDER BY nombre_provincia
     """
@@ -851,7 +916,7 @@ def get_communes(request):
     client = bigquery.Client()
     query = f"""
     SELECT DISTINCT id_comuna, nombre_comuna
-    FROM `proyectocarbonia.datacarbonia.comuna`
+    FROM `proyectocarbonia-443321.datacarbonia.comuna`
     WHERE id_provincia = {province_id}
     ORDER BY nombre_comuna
     """
@@ -875,8 +940,8 @@ def get_statistics(request):
         c.nombre_comuna,
         d.Direccion_Cliente,
         SUM(d.TCO2_Calculado) AS total_tco2
-    FROM `proyectocarbonia.datacarbonia.huella_carbono` d
-    JOIN `proyectocarbonia.datacarbonia.comuna` c ON d.id_comuna = c.id_comuna
+    FROM `proyectocarbonia-443321.datacarbonia.huella_carbono` d
+    JOIN `proyectocarbonia-443321.datacarbonia.comuna` c ON d.id_comuna = c.id_comuna
     WHERE d.id_comuna = {commune_id}
     GROUP BY c.nombre_comuna, d.Direccion_Cliente
     """
@@ -910,6 +975,7 @@ import uuid
 import json
 
 # Listar empresas registradas
+@login_required
 def empresas_registradas(request):
     """Lista todas las empresas y cuenta sus sucursales."""
     client = bigquery.Client()
@@ -923,9 +989,9 @@ def empresas_registradas(request):
         e.direccion, 
         r.nombre_region AS region, 
         COUNT(s.id_sucursal) AS sucursal_count
-    FROM `proyectocarbonia.datacarbonia.empresa` e
-    LEFT JOIN `proyectocarbonia.datacarbonia.sucursal` s ON e.rut = s.rut_empresa
-    LEFT JOIN `proyectocarbonia.datacarbonia.region` r ON e.id_region = r.id_region
+    FROM `proyectocarbonia-443321.datacarbonia.empresa` e
+    LEFT JOIN `proyectocarbonia-443321.datacarbonia.sucursal` s ON e.rut = s.rut_empresa
+    LEFT JOIN `proyectocarbonia-443321.datacarbonia.region` r ON e.id_region = r.id_region
     GROUP BY e.rut, e.nombre_cliente, e.email_cliente, e.direccion, region
     ORDER BY e.nombre_cliente
     """
@@ -949,6 +1015,7 @@ def empresas_registradas(request):
 
 
 # Ver sucursales de una empresa específica
+@login_required
 def sucursales_registradas(request, rut_empresa):
     """Muestra las sucursales de una empresa específica."""
     client = bigquery.Client()
@@ -961,10 +1028,10 @@ def sucursales_registradas(request, rut_empresa):
         r.nombre_region AS region, 
         p.nombre_provincia AS provincia, 
         c.nombre_comuna AS comuna
-    FROM `proyectocarbonia.datacarbonia.sucursal` s
-    LEFT JOIN `proyectocarbonia.datacarbonia.region` r ON s.id_region = r.id_region
-    LEFT JOIN `proyectocarbonia.datacarbonia.provincia` p ON s.id_provincia = p.id_provincia
-    LEFT JOIN `proyectocarbonia.datacarbonia.comuna` c ON s.id_comuna = c.id_comuna
+    FROM `proyectocarbonia-443321.datacarbonia.sucursal` s
+    LEFT JOIN `proyectocarbonia-443321.datacarbonia.region` r ON s.id_region = r.id_region
+    LEFT JOIN `proyectocarbonia-443321.datacarbonia.provincia` p ON s.id_provincia = p.id_provincia
+    LEFT JOIN `proyectocarbonia-443321.datacarbonia.comuna` c ON s.id_comuna = c.id_comuna
     WHERE s.rut_empresa = '{rut_empresa}'
     ORDER BY s.nombre_sucursal
     """
@@ -985,7 +1052,7 @@ def sucursales_registradas(request, rut_empresa):
     # Obtener información de la empresa
     empresa_query = f"""
     SELECT nombre_cliente
-    FROM `proyectocarbonia.datacarbonia.empresa`
+    FROM `proyectocarbonia-443321.datacarbonia.empresa`
     WHERE rut = '{rut_empresa}'
     """
     empresa_job = client.query(empresa_query)
@@ -995,6 +1062,7 @@ def sucursales_registradas(request, rut_empresa):
 
 
 # Registrar una nueva empresa
+@login_required
 def registro_empresa(request):
     """Registra una empresa nueva."""
     if request.method == 'POST':
@@ -1014,7 +1082,7 @@ def registro_empresa(request):
             client = bigquery.Client()
 
             # Insertar empresa
-            empresa_table = 'proyectocarbonia.datacarbonia.empresa'
+            empresa_table = 'proyectocarbonia-443321.datacarbonia.empresa'
             empresa_row = {
                 'rut': rut,
                 'nombre_cliente': nombre_cliente,
@@ -1038,6 +1106,7 @@ def registro_empresa(request):
 
 
 # Registrar una sucursal para una empresa
+@login_required
 def registro_sucursal(request, rut_empresa):
     """Registra una nueva sucursal para una empresa existente."""
     if request.method == 'POST':
@@ -1055,7 +1124,7 @@ def registro_sucursal(request, rut_empresa):
             client = bigquery.Client()
 
             # Insertar sucursal
-            sucursal_table = 'proyectocarbonia.datacarbonia.sucursal'
+            sucursal_table = 'proyectocarbonia-443321.datacarbonia.sucursal'
             sucursal_row = {
                 'id_sucursal': str(uuid.uuid4()),  # ID único para la sucursal
                 'rut_empresa': rut_empresa,
@@ -1092,11 +1161,11 @@ def get_locations_with_data(request):
             p.nombre_provincia AS provincia,
             c.nombre_comuna AS comuna,
             d.Direccion_Cliente AS direccion
-        FROM `proyectocarbonia.datacarbonia.huella_carbono` h
-        JOIN `proyectocarbonia.datacarbonia.region` r ON h.id_region = r.id_region
-        JOIN `proyectocarbonia.datacarbonia.provincia` p ON h.id_provincia = p.id_provincia
-        JOIN `proyectocarbonia.datacarbonia.comuna` c ON h.id_comuna = c.id_comuna
-        LEFT JOIN `proyectocarbonia.datacarbonia.direcciones` d ON h.id_comuna = d.id_comuna
+        FROM `proyectocarbonia-443321.datacarbonia.huella_carbono` h
+        JOIN `proyectocarbonia-443321.datacarbonia.region` r ON h.id_region = r.id_region
+        JOIN `proyectocarbonia-443321.datacarbonia.provincia` p ON h.id_provincia = p.id_provincia
+        JOIN `proyectocarbonia-443321.datacarbonia.comuna` c ON h.id_comuna = c.id_comuna
+        LEFT JOIN `proyectocarbonia-443321.datacarbonia.direcciones` d ON h.id_comuna = d.id_comuna
         GROUP BY region, provincia, comuna, direccion
         """
         query_job = client.query(query)
@@ -1128,6 +1197,7 @@ def get_locations_with_data(request):
 from django.shortcuts import render
 from google.cloud import bigquery
 
+@login_required
 def alcance1(request):
     client = bigquery.Client()
     data = []
@@ -1144,7 +1214,7 @@ def alcance1(request):
     # Consulta para obtener direcciones únicas
     query_direcciones = """
     SELECT DISTINCT hc.Direccion_Cliente AS direccion
-    FROM `proyectocarbonia.datacarbonia.huella_carbono` AS hc
+    FROM `proyectocarbonia-443321.datacarbonia.huella_carbono` AS hc
     WHERE hc.Alcance = '1'
     ORDER BY direccion;
     """
@@ -1152,7 +1222,7 @@ def alcance1(request):
     # Consulta para obtener años únicos
     query_years = """
     SELECT DISTINCT EXTRACT(YEAR FROM hc.Fecha_Inicio) AS year
-    FROM `proyectocarbonia.datacarbonia.huella_carbono` AS hc
+    FROM `proyectocarbonia-443321.datacarbonia.huella_carbono` AS hc
     WHERE hc.Alcance = '1'
     ORDER BY year;
     """
@@ -1160,7 +1230,7 @@ def alcance1(request):
     # Consulta para obtener meses únicos
     query_months = """
     SELECT DISTINCT EXTRACT(MONTH FROM hc.Fecha_Inicio) AS month
-    FROM `proyectocarbonia.datacarbonia.huella_carbono` AS hc
+    FROM `proyectocarbonia-443321.datacarbonia.huella_carbono` AS hc
     WHERE hc.Alcance = '1'
     ORDER BY month;
     """
@@ -1177,9 +1247,9 @@ def alcance1(request):
         e.nombre AS elemento,
         SUM(hc.TCO2_Calculado) AS total_TCO2_mensual
     FROM
-        `proyectocarbonia.datacarbonia.huella_carbono` AS hc
-        INNER JOIN `proyectocarbonia.datacarbonia.comuna` AS c ON hc.id_comuna = c.id_comuna
-        INNER JOIN `proyectocarbonia.datacarbonia.elemento` AS e ON hc.id_elemento = e.id_elemento
+        `proyectocarbonia-443321.datacarbonia.huella_carbono` AS hc
+        INNER JOIN `proyectocarbonia-443321.datacarbonia.comuna` AS c ON hc.id_comuna = c.id_comuna
+        INNER JOIN `proyectocarbonia-443321.datacarbonia.elemento` AS e ON hc.id_elemento = e.id_elemento
     WHERE 
         hc.Alcance = '1'
     """
@@ -1206,7 +1276,7 @@ def alcance1(request):
         SUM(hc.TCO2_Calculado) AS total_TCO2,
         COUNT(*) AS registros
     FROM
-        `proyectocarbonia.datacarbonia.huella_carbono` AS hc
+        `proyectocarbonia-443321.datacarbonia.huella_carbono` AS hc
     WHERE 
         hc.Alcance = '1'
     """
@@ -1280,4 +1350,121 @@ def alcance1(request):
     }
 
     return render(request, 'alcance1.html', context)
+
+from django.shortcuts import render, redirect
+from django.conf import settings
+from django.http import HttpResponse, JsonResponse
+from django.contrib.auth.hashers import make_password, check_password
+from django.views.decorators.cache import cache_control
+from django.contrib.sessions.models import Session
+
+# Otros imports necesarios
+from google.cloud import bigquery, storage
+import json
+from datetime import date
+
+# --- Función para verificar sesión ---
+def verify_session(request):
+    """Verifica si hay una sesión activa, si no, redirige al login."""
+    if not request.session.get('email'):
+        return redirect('login')
+    
+    # --- Vista para el cierre de sesión ---
+def logout_view(request):
+    """Cierra la sesión del usuario."""
+    request.session.flush()  # Limpia la sesión actual
+    return redirect('login')  # Redirige al inicio de sesión
+
+from django.shortcuts import render
+@login_required
+def logout_confirmation(request):
+    """Vista para confirmar el cierre de sesión."""
+    return render(request, 'logout_confirmation.html')
+
+#exportar excel
+import pandas as pd
+from django.http import HttpResponse
+from google.cloud import bigquery
+
+def infostoric_export_excel(request):
+    """Exporta los datos filtrados de huella_carbono a un archivo Excel."""
+    client = bigquery.Client()
+    alcance = request.GET.get('alcance', '')  # Obtiene el filtro de alcance desde la URL
+    search_query = request.GET.get('search', '')  # Obtiene el término de búsqueda desde la URL
+
+    # Construir la consulta basada en el filtro de alcance y la búsqueda
+    query = """
+    SELECT * FROM `proyectocarbonia-443321.datacarbonia.huella_carbono`
+    """
+    conditions = []
+    if alcance:
+        conditions.append(f"Alcance = '{alcance}'")
+    if search_query:
+        conditions.append(f"""
+        (
+            CAST(Numero_Boleta AS STRING) LIKE '%{search_query}%' OR
+            Nombre_Cliente LIKE '%{search_query}%' OR
+            Direccion_Cliente LIKE '%{search_query}%' OR
+            Empresa_Distribuidora LIKE '%{search_query}%'
+        )
+        """)
+
+    if conditions:
+        query += " WHERE " + " AND ".join(conditions)
+
+    # Ejecutar la consulta
+    query_job = client.query(query)
+    results = query_job.result()
+
+    # Convertir los resultados de la consulta en un DataFrame
+    data = [dict(row) for row in results]
+    df = pd.DataFrame(data)
+
+    # Si no hay datos, devolver un mensaje
+    if df.empty:
+        response = HttpResponse("No hay datos para exportar con este filtro o búsqueda.", content_type="text/plain")
+        response.status_code = 404
+        return response
+
+    # Eliminar la información de zona horaria en columnas de tipo datetime
+    for column in df.select_dtypes(include=['datetime64[ns, UTC]']).columns:
+        df[column] = df[column].dt.tz_localize(None)
+
+    # Procesar la columna 'link_pdf' para agregar hipervínculos visibles en Excel
+    if 'link_pdf' in df.columns:
+        df['link_pdf'] = df['link_pdf'].apply(lambda x: f'=HYPERLINK("{x}", "Ver PDF")' if pd.notnull(x) else None)
+
+    # Crear el archivo Excel en memoria
+    response = HttpResponse(content_type='application/vnd.openxmlformats-officedocument.spreadsheetml.sheet')
+    response['Content-Disposition'] = f'attachment; filename="huella_carbono_{alcance or "todos"}_filtered.xlsx"'
+
+    with pd.ExcelWriter(response, engine='openpyxl') as writer:
+        df.to_excel(writer, index=False, sheet_name='Datos Filtrados')
+
+    return response
+
+import pandas as pd
+from django.http import JsonResponse, HttpResponse
+import json
+
+def export_filtered_excel(request):
+    if request.method == 'POST':
+        try:
+            filtered_data = json.loads(request.body).get('data', [])
+            df = pd.DataFrame(filtered_data)
+
+            # Crear archivo Excel
+            response = HttpResponse(
+                content_type='application/vnd.openxmlformats-officedocument.spreadsheetml.sheet'
+            )
+            response['Content-Disposition'] = 'attachment; filename="filtrado_huella_carbono.xlsx"'
+
+            with pd.ExcelWriter(response, engine='openpyxl') as writer:
+                df.to_excel(writer, index=False, sheet_name='Filtrado')
+
+            return response
+        except Exception as e:
+            return JsonResponse({'error': str(e)}, status=500)
+    return JsonResponse({'error': 'Método no permitido'}, status=405)
+
 

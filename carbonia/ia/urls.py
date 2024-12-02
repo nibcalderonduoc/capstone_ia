@@ -41,7 +41,11 @@ urlpatterns = [
     path('registro-empresas/', views.registro_empresa, name='registro_empresa'),
     # Registrar una nueva sucursal para una empresa
     path('registro-sucursal/<str:rut_empresa>/', views.registro_sucursal, name='registro_sucursal'),    
-    #insertar
+    path('logout-confirmation/', views.logout_confirmation, name='logout_confirmation'),
+    path('logout/', views.logout_view, name='logout'),  # Mantén la ruta existente
+    path('infostoric-export-excel/', views.infostoric_export_excel, name='infostoric_export_excel'),
+    path('export-filtered-excel/', views.export_filtered_excel, name='export_filtered_excel'), 
+    #error de pagina no encontrada error_404
     
 
    
