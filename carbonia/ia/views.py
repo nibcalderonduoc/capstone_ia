@@ -25,6 +25,7 @@ from django.conf import settings
 from google.cloud import storage
 from datetime import timedelta
 
+#@cache_control(no_cache=True, must_revalidate=True, no_store=True)
 def upload_to_gcs_and_generate_signed_url(file, perfil_id, alcance, bucket_name):
     """Sube un archivo a Google Cloud Storage y retorna la URL pública."""
     client = storage.Client()
