@@ -23,3 +23,5 @@ urlpatterns = [
     path('', include('ia.urls')),  # Añadir la URL de la aplicación
     
 ]
+
+
