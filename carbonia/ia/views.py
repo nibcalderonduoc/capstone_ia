@@ -188,9 +188,11 @@ def infostoric(request):
     alcance = request.GET.get('alcance', '')
 
     # Consulta base
-    query = """
-    SELECT * 
-    FROM `proyectocarbonia-443321.datacarbonia.huella_carbono`
+    query = f"""
+    SELECT FORMAT_TIMESTAMP('%m', hc.Fecha_Termino) as `Mes Boleta`, hc.Numero_Boleta AS `Número Boleta`, hc.num_cli AS `Número Cliente`, 
+           hc.consumo as Consumo, hc.unidad as Unidad, e.nombre as `Nombre Elemento`, hc.TCO2_Calculado as `Total CO2`, hc.link_pdf AS `Link PDF`
+    FROM `proyectocarbonia-443321.datacarbonia.huella_carbono` hc
+    JOIN `proyectocarbonia-443321.datacarbonia.elemento` e ON hc.id_elemento = e.id_elemento
     """
     
     # Modificar consulta si se aplica el filtro
@@ -1194,162 +1196,221 @@ def get_locations_with_data(request):
     except Exception as e:
         return JsonResponse({'error': str(e)}, status=500)
     
+    
 from django.shortcuts import render
 from google.cloud import bigquery
-
+import pandas as pd
+import plotly.express as px
+from langchain_openai import ChatOpenAI
+from langchain.prompts import PromptTemplate
+from django.conf import settings
+from django.contrib.auth.decorators import login_required
 @login_required
 def alcance1(request):
     client = bigquery.Client()
-    data = []
-    consolidated_data = []
-    direcciones_unicas = []
-    years_unicos = []
-    months_unicos = []
 
-    # Obtener los valores de los filtros desde la solicitud GET
-    direccion_filtro = request.GET.get('direccion', 'Todos')
+    # Capturar filtros desde la solicitud GET
+    direcciones_filtro = request.GET.getlist('direcciones')
     year_filtro = request.GET.get('year', 'Todos')
     month_filtro = request.GET.get('month', 'Todos')
 
-    # Consulta para obtener direcciones únicas
-    query_direcciones = """
-    SELECT DISTINCT hc.Direccion_Cliente AS direccion
-    FROM `proyectocarbonia-443321.datacarbonia.huella_carbono` AS hc
-    WHERE hc.Alcance = '1'
-    ORDER BY direccion;
+    if not direcciones_filtro or "Todos" in direcciones_filtro:
+        direcciones_filtro = None
+
+    # Construir consulta SQL con JOIN para incluir el nombre del elemento y el cliente
+    query = """
+    SELECT 
+        EXTRACT(YEAR FROM hc.Fecha_Inicio) AS year,
+        EXTRACT(MONTH FROM hc.Fecha_Inicio) AS month,
+        e.nombre AS elemento,
+        hc.Nombre_Cliente AS cliente,
+        {}
+        SUM(hc.consumo) AS consumo_total,
+        SUM(hc.TCO2_Calculado) AS emisiones_totales
+    FROM 
+        `proyectocarbonia-443321.datacarbonia.huella_carbono` AS hc
+    JOIN 
+        `proyectocarbonia-443321.datacarbonia.elemento` AS e
+    ON 
+        hc.id_elemento = e.id_elemento
+    WHERE 
+        hc.Alcance = '1'
     """
 
-    # Consulta para obtener años únicos
+    if direcciones_filtro:
+        direcciones_str = ", ".join([f"'{direccion}'" for direccion in direcciones_filtro])
+        query += f" AND hc.Direccion_Cliente IN ({direcciones_str})"
+        query = query.format("hc.Direccion_Cliente AS direccion,")
+    else:
+        query = query.format("'Total' AS direccion,")
+
+    if year_filtro != 'Todos':
+        query += f" AND EXTRACT(YEAR FROM hc.Fecha_Inicio) = {year_filtro}"
+    if month_filtro != 'Todos':
+        query += f" AND EXTRACT(MONTH FROM hc.Fecha_Inicio) = {month_filtro}"
+
+    query += """
+    GROUP BY year, month, elemento, cliente, direccion
+    ORDER BY year, month;
+    """
+
+    query_job = client.query(query)
+    data = [
+        {
+            'year': row.year,
+            'month': row.month,
+            'elemento': row.elemento,
+            'cliente': row.cliente,
+            'direccion': row.direccion,
+            'consumo': row.consumo_total,
+            'emisiones': row.emisiones_totales,
+        }
+        for row in query_job.result()
+    ]
+    df = pd.DataFrame(data)
+
+    # Consultar años, meses y direcciones únicas
     query_years = """
     SELECT DISTINCT EXTRACT(YEAR FROM hc.Fecha_Inicio) AS year
     FROM `proyectocarbonia-443321.datacarbonia.huella_carbono` AS hc
     WHERE hc.Alcance = '1'
     ORDER BY year;
     """
+    years_unicos = [int(row.year) for row in client.query(query_years).result()]
 
-    # Consulta para obtener meses únicos
     query_months = """
     SELECT DISTINCT EXTRACT(MONTH FROM hc.Fecha_Inicio) AS month
     FROM `proyectocarbonia-443321.datacarbonia.huella_carbono` AS hc
     WHERE hc.Alcance = '1'
     ORDER BY month;
     """
+    months_unicos = [int(row.month) for row in client.query(query_months).result()]
 
-    # Consulta principal: Datos detallados
-    query1 = """
-    SELECT 
-        EXTRACT(YEAR FROM hc.Fecha_Inicio) AS year,
-        EXTRACT(MONTH FROM hc.Fecha_Inicio) AS month,
-        hc.Direccion_Cliente as direccion,
-        c.nombre_comuna AS comuna,
-        hc.consumo AS consumo,
-        hc.unidad AS unidad,
-        e.nombre AS elemento,
-        SUM(hc.TCO2_Calculado) AS total_TCO2_mensual
-    FROM
-        `proyectocarbonia-443321.datacarbonia.huella_carbono` AS hc
-        INNER JOIN `proyectocarbonia-443321.datacarbonia.comuna` AS c ON hc.id_comuna = c.id_comuna
-        INNER JOIN `proyectocarbonia-443321.datacarbonia.elemento` AS e ON hc.id_elemento = e.id_elemento
-    WHERE 
-        hc.Alcance = '1'
+    query_direcciones = """
+    SELECT DISTINCT hc.Direccion_Cliente AS direccion
+    FROM `proyectocarbonia-443321.datacarbonia.huella_carbono` AS hc
+    WHERE hc.Alcance = '1'
+    ORDER BY direccion;
     """
+    direcciones_unicas = [row.direccion for row in client.query(query_direcciones).result()]
 
-    # Aplicar filtros dinámicos
-    if direccion_filtro != "Todos":
-        query1 += f" AND hc.Direccion_Cliente = '{direccion_filtro}'"
-    if year_filtro != "Todos":
-        query1 += f" AND EXTRACT(YEAR FROM hc.Fecha_Inicio) = {year_filtro}"
-    if month_filtro != "Todos":
-        query1 += f" AND EXTRACT(MONTH FROM hc.Fecha_Inicio) = {month_filtro}"
+    # Generar gráficos con Plotly
+    if not df.empty:
+        fig1 = px.line(
+            df,
+            x="month",
+            y="emisiones",
+            color="direccion",
+            title=f"Emisiones Totales por Mes ({'Total Consolidado' if not direcciones_filtro else 'Por Dirección'})",
+            labels={"month": "Mes", "emisiones": "Emisiones (tCO2e)", "direccion": "Dirección"}
+        )
 
-    query1 += """
-    GROUP BY 
-        year, month, hc.Direccion_Cliente, comuna, e.nombre, hc.consumo, hc.unidad
-    ORDER BY 
-        year, month;
-    """
+        fig2 = px.bar(
+            df,
+            x="month",
+            y="consumo",
+            color="direccion",
+            title=f"Consumo Total por Mes ({'Total Consolidado' if not direcciones_filtro else 'Por Dirección'})",
+            labels={"month": "Mes", "consumo": "Consumo Total (m³)", "direccion": "Dirección"}
+        )
 
-    # Consulta consolidada
-    query2 = """
-    SELECT 
-        hc.Direccion_Cliente AS direccion,
-        SUM(hc.TCO2_Calculado) AS total_TCO2,
-        COUNT(*) AS registros
-    FROM
-        `proyectocarbonia-443321.datacarbonia.huella_carbono` AS hc
-    WHERE 
-        hc.Alcance = '1'
-    """
-    if direccion_filtro != "Todos":
-        query2 += f" AND hc.Direccion_Cliente = '{direccion_filtro}'"
-    if year_filtro != "Todos":
-        query2 += f" AND EXTRACT(YEAR FROM hc.Fecha_Inicio) = {year_filtro}"
-    if month_filtro != "Todos":
-        query2 += f" AND EXTRACT(MONTH FROM hc.Fecha_Inicio) = {month_filtro}"
+        graph1_html = fig1.to_html(full_html=False)
+        graph2_html = fig2.to_html(full_html=False)
+    else:
+        graph1_html = graph2_html = "<p>No hay datos para mostrar.</p>"
 
-    query2 += """
-    GROUP BY 
-        direccion
-    ORDER BY 
-        total_TCO2 DESC;
-    """
+    # Generar análisis con LangChain
+    if not df.empty:
+        elemento = df['elemento'].iloc[0]
+        cliente = df['cliente'].iloc[0]
 
-    try:
-        # Ejecutar consulta de direcciones únicas
-        query_job_direcciones = client.query(query_direcciones)
-        for row in query_job_direcciones.result():
-            direcciones_unicas.append(row.direccion)
+        # Prompt para Emisiones
+        emisiones_summary = df.groupby('direccion')[['emisiones']].sum().to_dict(orient="index")
+        template_emisiones = """
+Eres un experto en eficiencia energética y de gran onocimiento en proyecto de Huellas Chile,  estás presentando un informe a un gerente de la empresa. Analiza el consumo energético en metros cúbicos para el cliente {cliente}, quien utiliza {elemento}. Este informe ayudará al gerente a tomar decisiones estratégicas para mejorar la eficiencia energética.
+revisa los datos mensuales para no tener sesgos en los datos y no hacer comparaciones incorrectas.
+Datos de Emisión:
+{emisiones_summary}
 
-        # Ejecutar consulta de años únicos
-        query_job_years = client.query(query_years)
-        for row in query_job_years.result():
-            years_unicos.append(int(row.year) if row.year is not None else None)
+Instrucciones para el análisis:
+1. Proporciona un análisis conciso de emisiones de tCO2e, identificando patrones o tendencias de interés estratégico.
+2. Ofrece 2-3 recomendaciones técnicas y concretas para reducir el consumo en los próximos meses, que sean prácticas y ejecutables a corto plazo.
+3. Realiza comparaciones clave entre direcciones, solo si es aplicable. Si no hay suficientes direcciones para comparar, omite esta sección.
 
-        # Ejecutar consulta de meses únicos
-        query_job_months = client.query(query_months)
-        for row in query_job_months.result():
-            months_unicos.append(int(row.month) if row.month is not None else None)
+Resultados esperados:
+1. Análisis del Emisiones de tCO2e.
+2. Recomendaciones técnicas.
+3. Comparaciones clave entre direcciones, Si no hay suficientes direcciones para comparar, omite esta sección.
+"""
+        prompt_emisiones = PromptTemplate(
+            input_variables=["cliente", "elemento", "emisiones_summary"],
+            template=template_emisiones,
+        )
+        prompt_text_emisiones = prompt_emisiones.format(
+            cliente=cliente,
+            elemento=elemento,
+            emisiones_summary=emisiones_summary,
+        )
 
-        # Ejecutar consulta principal
-        query_job1 = client.query(query1)
-        for row in query_job1.result():
-            data.append({
-                'year': row.year,
-                'month': row.month,
-                'direccion': row.direccion,
-                'comuna': row.comuna,
-                'consumo': row.consumo,
-                'unidad': row.unidad,
-                'elemento': row.elemento,
-                'total_TCO2': row.total_TCO2_mensual,
-            })
+        # Prompt para Consumo
+        consumo_summary = df.groupby('direccion')[['consumo']].sum().to_dict(orient="index")
+        template_consumo ="""
+Eres un experto en eficiencia energética y de gran onocimiento en proyecto de Huellas Chile,  estás presentando un informe a un gerente de la empresa. Analiza el consumo energético en metros cúbicos para el cliente {cliente}, quien utiliza {elemento}. Este informe ayudará al gerente a tomar decisiones estratégicas para mejorar la eficiencia energética.
+revisa los datos mensuales para no tener sesgos en los datos y no hacer comparaciones incorrectas.
 
-        # Ejecutar consulta consolidada
-        query_job2 = client.query(query2)
-        for row in query_job2.result():
-            consolidated_data.append({
-                'direccion': row.direccion,
-                'total_TCO2': row.total_TCO2,
-                'registros': row.registros,
-            })
+Datos de Consumo:
+{consumo_summary}
 
-    except Exception as e:
-        print(f"Error ejecutando las consultas: {e}")
+Instrucciones para el análisis:
+1. Proporciona un análisis conciso del consumo total, identificando patrones o tendencias de interés estratégico.
+2. Ofrece 2-3 recomendaciones técnicas y concretas para reducir el consumo en los próximos meses, que sean prácticas y ejecutables a corto plazo.
+3. Realiza comparaciones clave entre direcciones, solo si es aplicable. Si no hay suficientes direcciones para comparar, omite esta sección.
 
-    # Pasar datos al contexto
+Resultados esperados:
+1. Análisis del consumo total.
+2. Recomendaciones técnicas.
+3. Comparaciones clave entre direcciones, Si no hay suficientes direcciones para comparar, omite esta sección.
+"""
+        prompt_consumo = PromptTemplate(
+            input_variables=["cliente", "elemento", "consumo_summary"],
+            template=template_consumo,
+        )
+        prompt_text_consumo = prompt_consumo.format(
+            cliente=cliente,
+            elemento=elemento,
+            consumo_summary=consumo_summary,
+        )
+
+        # Llamadas a la API de LangChain y generación de recomendaciones
+    llm = ChatOpenAI(temperature=0.5, model="gpt-4o", openai_api_key=settings.OPENAI_API_KEY)
+    recommendations_emisiones = llm.invoke(prompt_text_emisiones).content
+    recommendations_consumo = llm.invoke(prompt_text_consumo).content
+
+    # Limpieza y formateo de las recomendaciones
+    clean_recommendations_emisiones = clean_markdown(recommendations_emisiones)
+    clean_recommendations_consumo = clean_markdown(recommendations_consumo)
+
+    
+    # Preparar el contexto para el template
     context = {
-        'data': data,  # Datos detallados
-        'filtered_data': data,  # Datos filtrados
-        'consolidated_data': consolidated_data,  # Datos consolidados
-        'direccion_filtro': direccion_filtro,  # Filtro seleccionado (dirección)
-        'year_filtro': year_filtro,  # Filtro seleccionado (año)
-        'month_filtro': month_filtro,  # Filtro seleccionado (mes)
-        'direcciones_unicas': direcciones_unicas,  # Direcciones únicas
-        'years_unicos': [y for y in years_unicos if y is not None],  # Años únicos
-        'months_unicos': [m for m in months_unicos if m is not None],  # Meses únicos
-    }
+        'data': data,
+        'direcciones_unicas': direcciones_unicas,
+        'years_unicos': years_unicos,
+        'months_unicos': months_unicos,
+        'direcciones_filtro': direcciones_filtro,
+        'year_filtro': year_filtro,
+        'month_filtro': month_filtro,
+        'graph1': graph1_html,
+        'graph2': graph2_html,
+        'recommendations_emisiones': clean_recommendations_emisiones,
+        'recommendations_consumo': clean_recommendations_consumo,
+         }
 
     return render(request, 'alcance1.html', context)
+
+
+
+
 
 from django.shortcuts import render, redirect
 from django.conf import settings
@@ -1386,62 +1447,84 @@ import pandas as pd
 from django.http import HttpResponse
 from google.cloud import bigquery
 
+import pandas as pd
+from django.http import HttpResponse
+from google.cloud import bigquery
+
 def infostoric_export_excel(request):
-    """Exporta los datos filtrados de huella_carbono a un archivo Excel."""
+    """Exporta los datos de huella_carbono a un archivo Excel con hojas separadas."""
     client = bigquery.Client()
     alcance = request.GET.get('alcance', '')  # Obtiene el filtro de alcance desde la URL
     search_query = request.GET.get('search', '')  # Obtiene el término de búsqueda desde la URL
 
-    # Construir la consulta basada en el filtro de alcance y la búsqueda
-    query = """
-    SELECT * FROM `proyectocarbonia-443321.datacarbonia.huella_carbono`
-    """
-    conditions = []
-    if alcance:
-        conditions.append(f"Alcance = '{alcance}'")
-    if search_query:
-        conditions.append(f"""
-        (
-            CAST(Numero_Boleta AS STRING) LIKE '%{search_query}%' OR
-            Nombre_Cliente LIKE '%{search_query}%' OR
-            Direccion_Cliente LIKE '%{search_query}%' OR
-            Empresa_Distribuidora LIKE '%{search_query}%'
-        )
-        """)
-
-    if conditions:
-        query += " WHERE " + " AND ".join(conditions)
-
-    # Ejecutar la consulta
-    query_job = client.query(query)
-    results = query_job.result()
-
-    # Convertir los resultados de la consulta en un DataFrame
-    data = [dict(row) for row in results]
-    df = pd.DataFrame(data)
-
-    # Si no hay datos, devolver un mensaje
-    if df.empty:
-        response = HttpResponse("No hay datos para exportar con este filtro o búsqueda.", content_type="text/plain")
-        response.status_code = 404
-        return response
-
-    # Eliminar la información de zona horaria en columnas de tipo datetime
-    for column in df.select_dtypes(include=['datetime64[ns, UTC]']).columns:
-        df[column] = df[column].dt.tz_localize(None)
-
-    # Procesar la columna 'link_pdf' para agregar hipervínculos visibles en Excel
-    if 'link_pdf' in df.columns:
-        df['link_pdf'] = df['link_pdf'].apply(lambda x: f'=HYPERLINK("{x}", "Ver PDF")' if pd.notnull(x) else None)
-
     # Crear el archivo Excel en memoria
     response = HttpResponse(content_type='application/vnd.openxmlformats-officedocument.spreadsheetml.sheet')
-    response['Content-Disposition'] = f'attachment; filename="huella_carbono_{alcance or "todos"}_filtered.xlsx"'
+    response['Content-Disposition'] = 'attachment; filename="huella_carbono.xlsx"'
 
     with pd.ExcelWriter(response, engine='openpyxl') as writer:
-        df.to_excel(writer, index=False, sheet_name='Datos Filtrados')
+        # Consulta completa para la hoja "Todos"
+        base_query = "SELECT * FROM `proyectocarbonia-443321.datacarbonia.huella_carbono`"
+        full_query_job = client.query(base_query)
+        full_results = full_query_job.result()
+        full_data = [dict(row) for row in full_results]
+        full_df = pd.DataFrame(full_data)
+
+        # Convertir columnas con zona horaria
+        for column in full_df.select_dtypes(include=['datetime64[ns, UTC]']).columns:
+            full_df[column] = full_df[column].dt.tz_localize(None)
+
+        # Escribir hoja "Todos"
+        full_df.to_excel(writer, index=False, sheet_name='Todos')
+
+        # Consultas separadas por alcance
+        for alcance_num in [1, 2, 3]:
+            alcance_query = f"""
+            SELECT * FROM `proyectocarbonia-443321.datacarbonia.huella_carbono`
+            WHERE CAST(Alcance AS STRING) = '{alcance_num}'
+            """
+            alcance_query_job = client.query(alcance_query)
+            alcance_results = alcance_query_job.result()
+            alcance_data = [dict(row) for row in alcance_results]
+            alcance_df = pd.DataFrame(alcance_data)
+
+            # Convertir columnas con zona horaria
+            for column in alcance_df.select_dtypes(include=['datetime64[ns, UTC]']).columns:
+                alcance_df[column] = alcance_df[column].dt.tz_localize(None)
+
+            # Escribir hoja para cada alcance si hay datos
+            if not alcance_df.empty:
+                alcance_df.to_excel(writer, index=False, sheet_name=f'Alcance {alcance_num}')
+
+        # Si hay un filtro, generar hoja filtrada
+        if alcance or search_query:
+            conditions = []
+            if alcance:
+                conditions.append(f"CAST(Alcance AS STRING) = '{alcance}'")
+            if search_query:
+                conditions.append(f"""
+                (
+                    CAST(Numero_Boleta AS STRING) LIKE '%{search_query}%' OR
+                    Nombre_Cliente LIKE '%{search_query}%' OR
+                    Direccion_Cliente LIKE '%{search_query}%' OR
+                    Empresa_Distribuidora LIKE '%{search_query}%'
+                )
+                """)
+            filtered_query = base_query + " WHERE " + " AND ".join(conditions)
+            filtered_query_job = client.query(filtered_query)
+            filtered_results = filtered_query_job.result()
+            filtered_data = [dict(row) for row in filtered_results]
+            filtered_df = pd.DataFrame(filtered_data)
+
+            # Convertir columnas de zona horaria
+            for column in filtered_df.select_dtypes(include=['datetime64[ns, UTC]']).columns:
+                filtered_df[column] = filtered_df[column].dt.tz_localize(None)
+
+            # Escribir hoja "Filtrado"
+            if not filtered_df.empty:
+                filtered_df.to_excel(writer, index=False, sheet_name='Filtrado')
 
     return response
+
 
 import pandas as pd
 from django.http import JsonResponse, HttpResponse
@@ -1466,5 +1549,23 @@ def export_filtered_excel(request):
         except Exception as e:
             return JsonResponse({'error': str(e)}, status=500)
     return JsonResponse({'error': 'Método no permitido'}, status=405)
+
+def clean_markdown(text):
+    """
+    Convierte los símbolos de Markdown en formato HTML limpio y elimina saltos de línea adicionales.
+    """
+    # Reemplazar títulos Markdown (###) por etiquetas <b>
+    text = text.replace('###', '<b>').replace('\n', '</b><br>')
+
+    # Reemplazar texto entre **...** con etiquetas <b>...</b>
+    while '**' in text:
+        text = text.replace('**', '<b>', 1).replace('**', '</b>', 1)
+    
+    # Eliminar saltos de línea adicionales
+    text = text.replace('\n', '').strip()
+    
+    return text
+
+
 
 
