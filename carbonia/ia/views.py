@@ -1546,7 +1546,30 @@ def alcance2(request):
         for row in query_job_2.result()
     ]
     df_2 = pd.DataFrame(data_2)
+    # Consultar años, meses y direcciones únicas
+    query_years_2 = """
+    SELECT DISTINCT EXTRACT(YEAR FROM hc.Fecha_Inicio) AS year
+    FROM `proyectocarbonia-443321.datacarbonia.huella_carbono` AS hc
+    WHERE hc.Alcance = '2'
+    ORDER BY year;
+    """
+    years_unicos_2 = [int(row.year) for row in client.query(query_years_2).result()]
 
+    query_months_2 = """
+    SELECT DISTINCT EXTRACT(MONTH FROM hc.Fecha_Inicio) AS month
+    FROM `proyectocarbonia-443321.datacarbonia.huella_carbono` AS hc
+    WHERE hc.Alcance = '2'
+    ORDER BY month;
+    """
+    months_unicos_2 = [int(row.month) for row in client.query(query_months_2).result()]
+
+    query_direcciones_2 = """
+    SELECT DISTINCT hc.Direccion_Cliente AS direccion
+    FROM `proyectocarbonia-443321.datacarbonia.huella_carbono` AS hc
+    WHERE hc.Alcance = '2'
+    ORDER BY direccion;
+    """
+    direcciones_unicas_2 = [row.direccion for row in client.query(query_direcciones_2).result()]
     # Generar gráficos con Plotly para alcance 2
     if not df_2.empty:
         fig1_2 = px.line(
