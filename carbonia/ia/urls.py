@@ -47,6 +47,7 @@ urlpatterns = [
     path('export-filtered-excel/', views.export_filtered_excel, name='export_filtered_excel'), 
     #error de pagina no encontrada error_404
     
+    
 
    
     

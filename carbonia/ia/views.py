@@ -535,12 +535,11 @@ import time
 
 @csrf_protect
 @require_POST
+# alcance 3 subiendo datos.
 def upload_to_bigquery(request):
     try:
-        # Depuración para ver el contenido del cuerpo de la solicitud
         print("Contenido de la solicitud:", request.body)
-        
-        # Intentar cargar los datos JSON
+
         data = json.loads(request.body)
         print("Datos JSON recibidos:", data)
 
@@ -552,76 +551,128 @@ def upload_to_bigquery(request):
                     return JsonResponse({'message': f'El campo {field} es requerido.'}, status=400)
 
         # Obtener datos del perfil desde la sesión
-        rut = request.session.get('rut', 'No Disponible')
+        id_cliente = request.session.get('rut', 'No Disponible')
         nombre_cliente = request.session.get('profile_name', 'No Disponible')
-        encargado = request.session.get('encargado', 'No Disponible')
-        
-        # Imprimir datos de sesión para depuración
-        print("Datos de la sesión - RUT:", rut)
-        print("Datos de la sesión - Nombre del cliente:", nombre_cliente)
-        print("Datos de la sesión - Encargado:", encargado)
 
-        # Verificación adicional de los datos esenciales del perfil
-        if rut == 'No Disponible' or nombre_cliente == 'No Disponible':
+        if id_cliente == 'No Disponible' or nombre_cliente == 'No Disponible':
             return JsonResponse({'message': 'Los datos del perfil del cliente no están completos.'}, status=400)
 
-        # Asegurarse de que id_cliente (rut) sea enviado como STRING
-        id_cliente = str(rut)
-
+        # Crear cliente BigQuery
         client = bigquery.Client()
-        table_id = 'proyectocarbonia-443321.alcance3.alcance3_data'
+        table_id = 'proyectocarbonia-443321.datacarbonia.huella_carbono'
 
-        # Preparar filas para insertar
+        # Consultar datos relacionados
+        categoria_table = 'proyectocarbonia-443321.datacarbonia.categoria'
+        subcategoria_table = 'proyectocarbonia-443321.datacarbonia.subcategoria'
+        elemento_table = 'proyectocarbonia-443321.datacarbonia.elemento'
+        unidad_table = 'proyectocarbonia-443321.datacarbonia.unidad_medida'
+
+        query_categorias = f"SELECT id_categoria, nombre FROM `{categoria_table}`"
+        query_subcategorias = f"SELECT id_subcategoria, nombre FROM `{subcategoria_table}`"
+        query_elementos = f"SELECT id_elemento, nombre, CO2, N2O, CH4, HFC, TCO2 FROM `{elemento_table}`"
+        query_unidades = f"SELECT id_unidad_medida, id_elemento, unidad FROM `{unidad_table}`"
+
+        categorias_data = {row['nombre']: row['id_categoria'] for row in client.query(query_categorias).result()}
+        subcategorias_data = {row['nombre']: row['id_subcategoria'] for row in client.query(query_subcategorias).result()}
+        elementos_data = {row['nombre']: row for row in client.query(query_elementos).result()}
+        unidades_data = [
+            {"id_unidad_medida": row["id_unidad_medida"], "id_elemento": row["id_elemento"], "unidad": row["unidad"]}
+            for row in client.query(query_unidades).result()
+        ]
+
         rows_to_insert = []
         for item in data:
-            # Generar un ID único basado en el tiempo en milisegundos
             unique_id = int(time.time() * 1000)
 
-            # Convertir valor a float
+            # Validar y convertir consumo (valor) a float
             try:
-                valor = float(item["valor"])
+                consumo = float(item["valor"])
             except ValueError:
                 return JsonResponse({'message': f'El valor "{item["valor"]}" no es un número válido.'}, status=400)
 
-            # Convertir fecha a formato DATE
+            # Convertir fechaRegistro a formato TIMESTAMP
             try:
-                fecha_registro = datetime.strptime(item["fechaRegistro"], '%Y-%m-%d').date()
+                fecha_registro = datetime.strptime(item["fechaRegistro"], '%Y-%m-%d').isoformat()
             except ValueError:
                 return JsonResponse({'message': f'La fecha "{item["fechaRegistro"]}" no tiene el formato correcto YYYY-MM-DD.'}, status=400)
 
-            # Crear el diccionario de la fila a insertar
+            # Buscar id_categoria
+            nombre_categoria = item["categoria"]
+            id_categoria = categorias_data.get(nombre_categoria)
+            if not id_categoria:
+                print(f"No se encontró la categoría: {nombre_categoria}")
+                return JsonResponse({'message': f'Categoría "{nombre_categoria}" no existe.'}, status=400)
+
+            # Buscar id_subcategoria
+            nombre_subcategoria = item["subcategoria"]
+            id_subcategoria = subcategorias_data.get(nombre_subcategoria)
+            if not id_subcategoria:
+                print(f"No se encontró la subcategoría: {nombre_subcategoria}")
+                return JsonResponse({'message': f'Subcategoría "{nombre_subcategoria}" no existe.'}, status=400)
+
+            # Buscar id_elemento
+            nombre_elemento = item["elemento"]
+            elemento_factors = elementos_data.get(nombre_elemento)
+            if not elemento_factors:
+                print(f"No se encontró el elemento: {nombre_elemento}")
+                return JsonResponse({'message': f'Elemento "{nombre_elemento}" no existe.'}, status=400)
+
+            id_elemento = elemento_factors['id_elemento']
+
+            # Buscar id_unidad_medida
+            unidad = item["unidad"]
+            id_unidad_medida = None
+            for unidad_row in unidades_data:
+                if unidad_row["id_elemento"] == id_elemento and unidad_row["unidad"] == unidad:
+                    id_unidad_medida = unidad_row["id_unidad_medida"]
+                    break
+
+            if not id_unidad_medida:
+                print(f"No se encontró unidad de medida para elemento: {id_elemento}, unidad: {unidad}")
+                return JsonResponse({'message': f'Unidad "{unidad}" no existe para el elemento "{nombre_elemento}".'}, status=400)
+
+            # Calcular emisiones
+            co2_factor = elemento_factors['CO2']
+            n2o_factor = elemento_factors['N2O']
+            ch4_factor = elemento_factors['CH4']
+            hfc_factor = elemento_factors['HFC']
+            emision_co2 = round(consumo * co2_factor, 4)
+            emision_n2o = round(consumo * n2o_factor, 4)
+            emision_ch4 = round(consumo * ch4_factor, 4)
+            emision_hfc = round(consumo * hfc_factor, 4)
+            tco2_calculado = round((emision_co2 + emision_n2o + emision_ch4 + emision_hfc) / 1000, 4)
+
+            # Construir la fila a insertar
             row = {
-                "id": unique_id,                  # ID único para cada registro, basado en tiempo en milisegundos
-                "id_cliente": id_cliente,         # RUT como id_cliente en STRING
-                "nombre_cliente": nombre_cliente, # Nombre del cliente desde el perfil
-                "rut": rut,                       # RUT completo con guion
-                "categoria": item["categoria"],
-                "subcategoria": item["subcategoria"],
-                "elemento": item["elemento"],
-                "valor": valor,
-                "unidad": item["unidad"],
-                "fecha_registro": str(fecha_registro)
+                "id": unique_id,
+                "fecha_registro": fecha_registro,
+                "Rut_Cliente": id_cliente,
+                "Nombre_Cliente": nombre_cliente.title(),
+                "consumo": consumo,
+                "id_unidad_medida": id_unidad_medida,
+                "unidad": unidad,
+                "Alcance": "3",
+                "id_categoria": id_categoria,
+                "id_subcategoria": id_subcategoria,
+                "id_elemento": id_elemento,
+                "Emision_CO2": emision_co2,
+                "Emision_N2O": emision_n2o,
+                "Emision_CH4": emision_ch4,
+                "Emision_HFC": emision_hfc,
+                "TCO2_Calculado": tco2_calculado
             }
 
             rows_to_insert.append(row)
 
-        # Obtener la tabla para asegurar que el esquema coincide
-        table = client.get_table(table_id)
-
         # Insertar filas en BigQuery
-        errors = client.insert_rows_json(table, rows_to_insert)
-
+        errors = client.insert_rows_json(table_id, rows_to_insert)
         if not errors:
             return JsonResponse({'message': 'Datos subidos exitosamente'})
         else:
-            # Imprimir errores para depuración
             print('Errors:', errors)
             return JsonResponse({'message': 'Error al subir los datos', 'errors': errors}, status=400)
 
-    except json.JSONDecodeError:
-        return JsonResponse({'message': 'Datos JSON inválidos'}, status=400)
     except Exception as e:
-        # Imprimir excepción para depuración
         print('Exception:', str(e))
         return JsonResponse({'message': f'Error del servidor: {str(e)}'}, status=500)
 
@@ -1327,7 +1378,7 @@ def alcance1(request):
         # Prompt para Emisiones
         emisiones_summary = df.groupby('direccion')[['emisiones']].sum().to_dict(orient="index")
         template_emisiones = """
-Eres un experto en eficiencia energética y de gran onocimiento en proyecto de Huellas Chile,  estás presentando un informe a un gerente de la empresa. Analiza el consumo energético en metros cúbicos para el cliente {cliente}, quien utiliza {elemento}. Este informe ayudará al gerente a tomar decisiones estratégicas para mejorar la eficiencia energética.
+Eres un experto en eficiencia energética y de gran conocimiento en proyecto de Huellas Chile,  estás presentando un informe a un gerente de la empresa. Analiza el consumo energético en metros cúbicos para el cliente {cliente}, quien utiliza {elemento}. Este informe ayudará al gerente a tomar decisiones estratégicas para mejorar la eficiencia energética.
 revisa los datos mensuales para no tener sesgos en los datos y no hacer comparaciones incorrectas.
 Datos de Emisión:
 {emisiones_summary}
@@ -1409,6 +1460,143 @@ Resultados esperados:
     return render(request, 'alcance1.html', context)
 
 
+from django.shortcuts import render
+from google.cloud import bigquery
+import pandas as pd
+import plotly.express as px
+from langchain_openai import ChatOpenAI
+from langchain.prompts import PromptTemplate
+from django.conf import settings
+from django.contrib.auth.decorators import login_required
+
+@login_required
+def alcance2(request):
+    client = bigquery.Client()
+
+    # Capturar filtros desde la solicitud GET
+    direcciones_filtro_2 = request.GET.getlist('direcciones_2')
+    year_filtro_2 = request.GET.get('year_2', 'Todos')
+    month_filtro_2 = request.GET.get('month_2', 'Todos')
+
+    if not direcciones_filtro_2 or "Todos" in direcciones_filtro_2:
+        direcciones_filtro_2 = None
+
+    # Construir consulta SQL con JOIN para incluir el nombre del elemento y el cliente
+    query_2 = """
+    SELECT 
+        EXTRACT(YEAR FROM hc.Fecha_Inicio) AS year,
+        EXTRACT(MONTH FROM hc.Fecha_Inicio) AS month,
+        e.nombre AS elemento_2,
+        hc.Nombre_Cliente AS cliente_2,
+        {}
+        SUM(hc.consumo) AS consumo_total_2,
+        SUM(hc.TCO2_Calculado) AS emisiones_totales_2
+    FROM 
+        `proyectocarbonia-443321.datacarbonia.huella_carbono` AS hc
+    JOIN 
+        `proyectocarbonia-443321.datacarbonia.elemento` AS e
+    ON 
+        hc.id_elemento = e.id_elemento
+    WHERE 
+        hc.Alcance = '2'
+    """
+
+    if direcciones_filtro_2:
+        direcciones_str_2 = ", ".join([f"'{direccion}'" for direccion in direcciones_filtro_2])
+        query_2 += f" AND hc.Direccion_Cliente IN ({direcciones_str_2})"
+        query_2 = query_2.format("hc.Direccion_Cliente AS direccion_2,")
+    else:
+        query_2 = query_2.format("'Total' AS direccion_2,")
+
+    if year_filtro_2 != 'Todos':
+        query_2 += f" AND EXTRACT(YEAR FROM hc.Fecha_Inicio) = {year_filtro_2}"
+    if month_filtro_2 != 'Todos':
+        query_2 += f" AND EXTRACT(MONTH FROM hc.Fecha_Inicio) = {month_filtro_2}"
+
+    query_2 += """
+    GROUP BY year, month, elemento_2, cliente_2, direccion_2
+    ORDER BY year, month;
+    """
+
+    query_job_2 = client.query(query_2)
+    data_2 = [
+        {
+            'year': row.year,
+            'month': row.month,
+            'elemento_2': row.elemento_2,
+            'cliente_2': row.cliente_2,
+            'direccion_2': row.direccion_2,
+            'consumo_2': row.consumo_total_2,
+            'emisiones_2': row.emisiones_totales_2,
+        }
+        for row in query_job_2.result()
+    ]
+    df_2 = pd.DataFrame(data_2)
+
+    # Consultar años, meses y direcciones únicas para alcance 2
+    query_years_2 = """
+    SELECT DISTINCT EXTRACT(YEAR FROM hc.Fecha_Inicio) AS year
+    FROM `proyectocarbonia-443321.datacarbonia.huella_carbono` AS hc
+    WHERE hc.Alcance = '2'
+    ORDER BY year;
+    """
+    years_unicos_2 = [int(row.year) for row in client.query(query_years_2).result()]
+
+    query_months_2 = """
+    SELECT DISTINCT EXTRACT(MONTH FROM hc.Fecha_Inicio) AS month
+    FROM `proyectocarbonia-443321.datacarbonia.huella_carbono` AS hc
+    WHERE hc.Alcance = '2'
+    ORDER BY month;
+    """
+    months_unicos_2 = [int(row.month) for row in client.query(query_months_2).result()]
+
+    query_direcciones_2 = """
+    SELECT DISTINCT hc.Direccion_Cliente AS direccion
+    FROM `proyectocarbonia-443321.datacarbonia.huella_carbono` AS hc
+    WHERE hc.Alcance = '2'
+    ORDER BY direccion;
+    """
+    direcciones_unicas_2 = [row.direccion for row in client.query(query_direcciones_2).result()]
+
+    # Generar gráficos con Plotly para alcance 2
+    if not df_2.empty:
+        fig1_2 = px.line(
+            df_2,
+            x="month",
+            y="emisiones_2",
+            color="direccion_2",
+            title=f"Emisiones Totales por Mes (Alcance 2)",
+            labels={"month": "Mes", "emisiones_2": "Emisiones (tCO2e)", "direccion_2": "Dirección"}
+        )
+
+        fig2_2 = px.bar(
+            df_2,
+            x="month",
+            y="consumo_2",
+            color="direccion_2",
+            title=f"Consumo Total por Mes (Alcance 2)",
+            labels={"month": "Mes", "consumo_2": "Consumo Total (m³)", "direccion_2": "Dirección"}
+        )
+
+        graph1_html_2 = fig1_2.to_html(full_html=False)
+        graph2_html_2 = fig2_2.to_html(full_html=False)
+    else:
+        graph1_html_2 = graph2_html_2 = "<p>No hay datos para mostrar.</p>"
+
+    # Preparar el contexto para el template
+    context_2 = {
+        'data_2': data_2,
+        'direcciones_unicas_2': direcciones_unicas_2,
+        'years_unicos_2': years_unicos_2,
+        'months_unicos_2': months_unicos_2,
+        'direcciones_filtro_2': direcciones_filtro_2,
+        'year_filtro_2': year_filtro_2,
+        'month_filtro_2': month_filtro_2,
+        'graph1_2': graph1_html_2,
+        'graph2_2': graph2_html_2,
+    }
+
+    return render(request, 'alcance2.html', context_2)
 
 
 
@@ -1565,7 +1753,5 @@ def clean_markdown(text):
     text = text.replace('\n', '').strip()
     
     return text
-
-
 
 

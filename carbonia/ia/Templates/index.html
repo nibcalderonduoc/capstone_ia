@@ -1,43 +1,29 @@
 {% extends 'partials/base.html' %}
 {% load static %}
 
-{% block title %}Dashboard de Consumo y Emisiones{% endblock %}
+{% block title %}Carga de documentos{% endblock %}
 
 {% block content %}
-<h1>Dashboard de Consumo y Emisiones</h1>
-
-<!-- Formulario de filtros -->
-<form method="GET" action="{% url 'alcance1' %}" id="filterForm">
-    <label for="direccion">Selecciona Direcciones:</label>
-    <select name="direcciones" id="direccion" multiple>
-        {% for direccion in direcciones_unicas %}
-        <option value="{{ direccion }}" {% if direccion in direcciones_filtro %}selected{% endif %}>
-            {{ direccion }}
-        </option>
-        {% endfor %}
+  <h1>Subir respaldo</h1>
+  <div class="charts">
+    <div class="chart">
+      <h2>Selector de Alcances de Huella de Carbono</h2>
+      <select id="alcanceSelector" onchange="handleSelectChange()">
+        <option value="">-- Selecciona un Alcance --</option>
+        <option value="1">Alcance 1</option>
+        <option value="2">Alcance 2</option>
+        <option value="3">Alcance 3</option>
     </select>
 
-    <label for="year">Año:</label>
-    <select name="year" id="year">
-        <option value="Todos" {% if year_filtro == "Todos" %}selected{% endif %}>Todos</option>
-        {% for year in years_unicos %}
-        <option value="{{ year }}" {% if year_filtro == year %}selected{% endif %}>
-            {{ year }}
-        </option>
-        {% endfor %}
-    </select>
+      <p id="description">Selecciona un alcance para ver su descripción.</p>
+      <div id="buttonContainer"></div>
 
-    <label for="month">Mes:</label>
-    <select name="month" id="month">
-        <option value="Todos" {% if month_filtro == "Todos" %}selected{% endif %}>Todos</option>
-        {% for month in months_unicos %}
-        <option value="{{ month }}" {% if month_filtro == month %}selected{% endif %}>
-            {{ month }}
-        </option>
-        {% endfor %}
-    </select>
-
-    <button type="submit">Filtrar</button>
+      <div class="file-upload" id="fileUploadContainer" style="display: none;">
+        <form method="post" enctype="multipart/form-data">
+          {% csrf_token %}
+          <input type="hidden" id="alcanceInput" name="alcance" value="">
+          <input type="file" name="pdf_file" required> <br>
+          <button class="file-upload-btn" type="submit">Subir y Procesar</button>
 </form>
 
 <!-- Gráfico 1: Consumo y Emisiones -->
@@ -45,37 +31,42 @@
 <div>
     {{ graph1|safe }}
 </div>
-
-<!-- Gráfico 2: Comparación de Direcciones -->
-<h2>Emisiones Totales por Dirección</h2>
-<div>
-    {{ graph2|safe }}
+    </div>
 </div>
 
-<!-- Tabla de datos -->
-<h2>Detalles de Datos</h2>
-<table>
-    <thead>
-        <tr>
-            <th>Año</th>
-            <th>Mes</th>
-            <th>Dirección</th>
-            <th>Consumo</th>
-            <th>Emisiones (tCO2)</th>
-            <th>Link PDF</th>
-        </tr>
-    </thead>
-    <tbody>
-        {% for item in data %}
-        <tr>
-            <td>{{ item.year }}</td>
-            <td>{{ item.month }}</td>
-            <td>{{ item.direccion }}</td>
-            <td>{{ item.consumo }}</td>
-            <td>{{ item.emisiones }}</td>
-            <td><a href="{{ item.link_pdf }}" target="_blank">Ver Boleta</a></td>
-        </tr>
-        {% endfor %}
-    </tbody>
-</table>
+  <script>
+    var cargaAlcance3Url = "{% url 'carga_item_alcance3' %}";
+
+    function handleSelectChange() {
+      var alcance = document.getElementById('alcanceSelector').value;
+      var description = document.getElementById('description');
+      var buttonContainer = document.getElementById('buttonContainer');
+      var fileUploadContainer = document.getElementById('fileUploadContainer');
+      var alcanceInput = document.getElementById('alcanceInput');
+      
+      switch(alcance) {
+        case '1':
+        case '2':
+          description.innerText = alcance === '1' ? 
+            'Alcance 1: Emisiones directas de GEI procedentes de fuentes que son propiedad de la empresa o que están bajo su control.' : 
+            'Alcance 2: Emisiones indirectas de GEI procedentes del consumo de energía eléctrica adquirida y consumida por la empresa.';
+          buttonContainer.style.display = 'none';
+          fileUploadContainer.style.display = 'block';
+          alcanceInput.value = alcance;
+          break;
+        case '3':
+          description.innerText = 'Alcance 3: Otras emisiones indirectas, como las resultantes de las actividades de la empresa pero que ocurren en fuentes que no son propiedad de la empresa ni están bajo su control.';
+          buttonContainer.style.display = 'block';
+          buttonContainer.innerHTML = '<button class="button-upload" onclick="location.href=\'' + cargaAlcance3Url + '\'">Cargar documentos</button>';
+          fileUploadContainer.style.display = 'none';
+          alcanceInput.value = '';
+          break;
+        default:
+          description.innerText = 'Por favor selecciona un alcance para ver la información relacionada.';
+          buttonContainer.style.display = 'none';
+          fileUploadContainer.style.display = 'none';
+          alcanceInput.value = '';
+      }
+    }
+  </script>
 {% endblock %}
