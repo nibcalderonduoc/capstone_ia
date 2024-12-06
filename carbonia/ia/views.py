@@ -88,21 +88,34 @@ from google.cloud import bigquery
 @login_required
 @cache_control(no_cache=True, must_revalidate=True, no_store=True)
 def result(request):
+     # Retrasar la ejecución por 10 segundos
+    time.sleep(25)
     client = bigquery.Client()
     query = """
     SELECT
-    num_cli AS numero_cliente,
-    Numero_Boleta AS numero_boleta,
-    (SELECT nombre_comuna FROM `proyectocarbonia-443321.datacarbonia.comuna` WHERE id_comuna = hc.id_comuna) AS comuna,
-    consumo,
-    unidad,
-    (SELECT nombre FROM `proyectocarbonia-443321.datacarbonia.elemento` WHERE id_elemento = hc.id_elemento) AS elemento,
-    fecha_registro AS updated
+    hc.num_cli AS numero_cliente,
+    hc.Numero_Boleta AS numero_boleta,
+    c.nombre_comuna AS comuna,
+    hc.consumo,
+    hc.unidad,
+    e.nombre AS elemento,
+    hc.fecha_registro AS updated
 FROM
     `proyectocarbonia-443321.datacarbonia.huella_carbono` AS hc
-ORDER BY
-    updated DESC
+LEFT JOIN
+    `proyectocarbonia-443321.datacarbonia.comuna` AS c
+    ON hc.id_comuna = c.id_comuna
+LEFT JOIN
+    `proyectocarbonia-443321.datacarbonia.elemento` AS e
+    ON hc.id_elemento = e.id_elemento
+WHERE
+    hc.fecha_registro = (
+        SELECT MAX(fecha_registro)
+        FROM `proyectocarbonia-443321.datacarbonia.huella_carbono`
+    )
 LIMIT 1;
+
+
     """
     query_job = client.query(query)
     results = query_job.result()
@@ -479,12 +492,12 @@ from django.http import JsonResponse
 #def alcance1(request):
  #    return render(request, 'alcance1.html')
 
-@login_required
-def alcance2(request):
-    return render(request, 'alcance2.html')
+#@login_required
+#def alcance2(request):
+    #return render(request, 'alcance2.html')
 
 #def alcance3(request):  
-    return render(request, 'alcance3.html')
+    #return render(request, 'alcance3.html')
 
 # Vista para obtener los datos de BigQuery y mostrarlos en el dashboard
 
@@ -1469,6 +1482,7 @@ from langchain.prompts import PromptTemplate
 from django.conf import settings
 from django.contrib.auth.decorators import login_required
 
+
 @login_required
 def alcance2(request):
     client = bigquery.Client()
@@ -1481,7 +1495,7 @@ def alcance2(request):
     if not direcciones_filtro_2 or "Todos" in direcciones_filtro_2:
         direcciones_filtro_2 = None
 
-    # Construir consulta SQL con JOIN para incluir el nombre del elemento y el cliente
+    # Construir consulta SQL para alcance 2
     query_2 = """
     SELECT 
         EXTRACT(YEAR FROM hc.Fecha_Inicio) AS year,
@@ -1533,31 +1547,6 @@ def alcance2(request):
     ]
     df_2 = pd.DataFrame(data_2)
 
-    # Consultar años, meses y direcciones únicas para alcance 2
-    query_years_2 = """
-    SELECT DISTINCT EXTRACT(YEAR FROM hc.Fecha_Inicio) AS year
-    FROM `proyectocarbonia-443321.datacarbonia.huella_carbono` AS hc
-    WHERE hc.Alcance = '2'
-    ORDER BY year;
-    """
-    years_unicos_2 = [int(row.year) for row in client.query(query_years_2).result()]
-
-    query_months_2 = """
-    SELECT DISTINCT EXTRACT(MONTH FROM hc.Fecha_Inicio) AS month
-    FROM `proyectocarbonia-443321.datacarbonia.huella_carbono` AS hc
-    WHERE hc.Alcance = '2'
-    ORDER BY month;
-    """
-    months_unicos_2 = [int(row.month) for row in client.query(query_months_2).result()]
-
-    query_direcciones_2 = """
-    SELECT DISTINCT hc.Direccion_Cliente AS direccion
-    FROM `proyectocarbonia-443321.datacarbonia.huella_carbono` AS hc
-    WHERE hc.Alcance = '2'
-    ORDER BY direccion;
-    """
-    direcciones_unicas_2 = [row.direccion for row in client.query(query_direcciones_2).result()]
-
     # Generar gráficos con Plotly para alcance 2
     if not df_2.empty:
         fig1_2 = px.line(
@@ -1565,23 +1554,76 @@ def alcance2(request):
             x="month",
             y="emisiones_2",
             color="direccion_2",
-            title=f"Emisiones Totales por Mes (Alcance 2)",
+            title="Emisiones Totales por Mes (Alcance 2)",
             labels={"month": "Mes", "emisiones_2": "Emisiones (tCO2e)", "direccion_2": "Dirección"}
         )
-
         fig2_2 = px.bar(
             df_2,
             x="month",
             y="consumo_2",
             color="direccion_2",
-            title=f"Consumo Total por Mes (Alcance 2)",
+            title="Consumo Total por Mes (Alcance 2)",
             labels={"month": "Mes", "consumo_2": "Consumo Total (m³)", "direccion_2": "Dirección"}
         )
-
         graph1_html_2 = fig1_2.to_html(full_html=False)
         graph2_html_2 = fig2_2.to_html(full_html=False)
     else:
         graph1_html_2 = graph2_html_2 = "<p>No hay datos para mostrar.</p>"
+
+    # Generar análisis con LangChain para recomendaciones
+    if not df_2.empty:
+        elemento_2 = df_2['elemento_2'].iloc[0]
+        cliente_2 = df_2['cliente_2'].iloc[0]
+
+        # Preparar el resumen de emisiones
+        emisiones_summary_2 = df_2.groupby('direccion_2')[['emisiones_2']].sum().to_dict(orient="index")
+        template_emisiones_2 = """
+Eres un experto en eficiencia energética. Analiza las emisiones de tCO2e para el cliente {cliente_2}, quien utiliza {elemento_2}.
+Resumen de Emisiones:
+{emisiones_summary_2}
+
+Resultados esperados:
+1. Análisis de tendencias de emisiones.
+2. Recomendaciones para reducir emisiones.
+"""
+        prompt_emisiones_2 = PromptTemplate(
+            input_variables=["cliente_2", "elemento_2", "emisiones_summary_2"],
+            template=template_emisiones_2,
+        )
+        prompt_text_emisiones_2 = prompt_emisiones_2.format(
+            cliente_2=cliente_2,
+            elemento_2=elemento_2,
+            emisiones_summary_2=emisiones_summary_2,
+        )
+
+        # Preparar el resumen de consumo
+        consumo_summary_2 = df_2.groupby('direccion_2')[['consumo_2']].sum().to_dict(orient="index")
+        template_consumo_2 = """
+Eres un experto en eficiencia energética. Analiza el consumo energético total para el cliente {cliente_2}, quien utiliza {elemento_2}.
+Resumen de Consumo:
+{consumo_summary_2}
+
+Resultados esperados:
+1. Análisis de patrones de consumo.
+2. Recomendaciones para optimizar el uso de energía.
+"""
+        prompt_consumo_2 = PromptTemplate(
+            input_variables=["cliente_2", "elemento_2", "consumo_summary_2"],
+            template=template_consumo_2,
+        )
+        prompt_text_consumo_2 = prompt_consumo_2.format(
+            cliente_2=cliente_2,
+            elemento_2=elemento_2,
+            consumo_summary_2=consumo_summary_2,
+        )
+
+        # Llamadas a LangChain para obtener recomendaciones
+        llm = ChatOpenAI(temperature=0.5, model="gpt-4o", openai_api_key=settings.OPENAI_API_KEY)
+        recommendations_emisiones_2 = llm.invoke(prompt_text_emisiones_2).content
+        recommendations_consumo_2 = llm.invoke(prompt_text_consumo_2).content
+    else:
+        recommendations_emisiones_2 = "No hay datos suficientes para generar recomendaciones de emisiones."
+        recommendations_consumo_2 = "No hay datos suficientes para generar recomendaciones de consumo."
 
     # Preparar el contexto para el template
     context_2 = {
@@ -1594,9 +1636,12 @@ def alcance2(request):
         'month_filtro_2': month_filtro_2,
         'graph1_2': graph1_html_2,
         'graph2_2': graph2_html_2,
+        'recommendations_emisiones_2': recommendations_emisiones_2,
+        'recommendations_consumo_2': recommendations_consumo_2,
     }
 
     return render(request, 'alcance2.html', context_2)
+
 
 
 
